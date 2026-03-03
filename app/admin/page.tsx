@@ -2,7 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { Plus, Search } from "lucide-react";
-import { Content } from "@/types/content";
+import { Content, ContentType, Season } from "@/types/content";
 
 const emptyPayload: Partial<Content> = {
   type: "movie",
@@ -24,13 +24,35 @@ const emptyPayload: Partial<Content> = {
   seasons: []
 };
 
+const defaultSeasonTemplate = JSON.stringify(
+  [
+    {
+      seasonNumber: 1,
+      episodes: [
+        {
+          episodeNumber: 1,
+          episodeTitle: "Episode 1",
+          hlsLink: "",
+          embedIframeLink: "",
+          quality: "HD"
+        }
+      ]
+    }
+  ],
+  null,
+  2
+);
+
 export default function AdminPage() {
+  const [mode, setMode] = useState<ContentType>("movie");
   const [adminKey, setAdminKey] = useState("");
   const [authorized, setAuthorized] = useState(false);
   const [tmdbQuery, setTmdbQuery] = useState("");
   const [tmdbResults, setTmdbResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [payload, setPayload] = useState<Partial<Content>>(emptyPayload);
+  const [seasonsInput, setSeasonsInput] = useState(defaultSeasonTemplate);
+  const [items, setItems] = useState<Content[]>([]);
   const [status, setStatus] = useState("");
 
   const slugPreview = useMemo(() => {
@@ -41,6 +63,39 @@ export default function AdminPage() {
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
   }, [payload.title]);
+
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => item.type === mode);
+  }, [items, mode]);
+
+  const searchResults = useMemo(() => {
+    const expected = mode === "movie" ? "movie" : "tv";
+    return tmdbResults.filter((item) => item.mediaType === expected);
+  }, [tmdbResults, mode]);
+
+  const applyMode = (nextMode: ContentType) => {
+    setMode(nextMode);
+    setPayload((prev) => ({
+      ...prev,
+      type: nextMode
+    }));
+  };
+
+  const loadContent = async () => {
+    const res = await fetch("/api/admin/content", {
+      method: "GET",
+      headers: {
+        "x-admin-key": adminKey
+      }
+    });
+
+    if (!res.ok) {
+      return;
+    }
+
+    const data = await res.json();
+    setItems(Array.isArray(data.items) ? data.items : []);
+  };
 
   const searchTMDB = async () => {
     if (!tmdbQuery.trim()) return;
@@ -55,13 +110,33 @@ export default function AdminPage() {
     setLoading(true);
     const res = await fetch(`/api/tmdb/details/${id}?mediaType=${mediaType}`);
     const data = await res.json();
-    setPayload((prev) => ({ ...prev, ...data.details }));
+    const nextType: ContentType = mediaType === "movie" ? "movie" : "series";
+    const details = data.details || {};
+
+    applyMode(nextType);
+    setPayload((prev) => ({ ...prev, ...details, type: nextType }));
+    setSeasonsInput(JSON.stringify(details.seasons || [], null, 2) || "[]");
     setLoading(false);
   };
 
   const submitContent = async (event: FormEvent) => {
     event.preventDefault();
     setStatus("Saving...");
+
+    let parsedSeasons: Season[] = [];
+    if (mode === "series") {
+      try {
+        const parsed = JSON.parse(seasonsInput || "[]");
+        if (!Array.isArray(parsed)) {
+          setStatus("Invalid seasons JSON. Expected an array.");
+          return;
+        }
+        parsedSeasons = parsed as Season[];
+      } catch {
+        setStatus("Invalid seasons JSON format.");
+        return;
+      }
+    }
 
     const res = await fetch("/api/admin/content", {
       method: "POST",
@@ -71,6 +146,10 @@ export default function AdminPage() {
       },
       body: JSON.stringify({
         ...payload,
+        type: mode,
+        seasons: mode === "series" ? parsedSeasons : [],
+        hlsLink: mode === "movie" ? payload.hlsLink : "",
+        embedIframeLink: mode === "movie" ? payload.embedIframeLink : "",
         tags: Array.isArray(payload.tags)
           ? payload.tags
           : String(payload.tags || "")
@@ -86,7 +165,9 @@ export default function AdminPage() {
       return;
     }
 
-    setPayload(emptyPayload);
+    setPayload({ ...emptyPayload, type: mode });
+    setSeasonsInput(defaultSeasonTemplate);
+    await loadContent();
     setStatus("Content saved successfully.");
   };
 
@@ -107,6 +188,7 @@ export default function AdminPage() {
 
     setAuthorized(true);
     setStatus("");
+    await loadContent();
   };
 
   if (!authorized) {
@@ -136,13 +218,30 @@ export default function AdminPage() {
     <div className="space-y-8">
       <h1 className="font-[var(--font-heading)] text-3xl">WATCHMIRROR Admin Panel</h1>
 
+      <section className="glass flex gap-2 rounded-2xl p-2">
+        <button
+          type="button"
+          onClick={() => applyMode("movie")}
+          className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold ${mode === "movie" ? "bg-primary text-black" : "border border-border"}`}
+        >
+          Movies
+        </button>
+        <button
+          type="button"
+          onClick={() => applyMode("series")}
+          className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold ${mode === "series" ? "bg-primary text-black" : "border border-border"}`}
+        >
+          Series
+        </button>
+      </section>
+
       <section className="glass rounded-2xl p-4">
-        <h2 className="mb-3 text-lg font-semibold">TMDB Auto Import</h2>
+        <h2 className="mb-3 text-lg font-semibold">TMDB Auto Import ({mode === "movie" ? "Movies" : "Series"})</h2>
         <div className="flex gap-2">
           <input
             value={tmdbQuery}
             onChange={(e) => setTmdbQuery(e.target.value)}
-            placeholder="Search movie or series"
+            placeholder={mode === "movie" ? "Search movie" : "Search series"}
             className="flex-1 rounded-xl border border-border bg-black/20 px-4 py-2 text-sm"
           />
           <button onClick={searchTMDB} className="rounded-xl border border-border px-4 py-2 text-sm">
@@ -151,7 +250,7 @@ export default function AdminPage() {
         </div>
 
         <div className="mt-4 grid gap-2 md:grid-cols-2">
-          {tmdbResults.map((item) => (
+          {searchResults.map((item) => (
             <button
               key={`${item.mediaType}-${item.id}`}
               onClick={() => importTMDB(item.id, item.mediaType)}
@@ -179,8 +278,19 @@ export default function AdminPage() {
         <input value={payload.quality || ""} onChange={(e) => setPayload({ ...payload, quality: e.target.value })} placeholder="Quality" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
         <input value={String(payload.rating || 0)} onChange={(e) => setPayload({ ...payload, rating: Number(e.target.value) })} placeholder="Rating" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
         <input value={String(payload.popularity || 0)} onChange={(e) => setPayload({ ...payload, popularity: Number(e.target.value) })} placeholder="Popularity" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-        <input value={payload.hlsLink || ""} onChange={(e) => setPayload({ ...payload, hlsLink: e.target.value })} placeholder="HLS Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-        <input value={payload.embedIframeLink || ""} onChange={(e) => setPayload({ ...payload, embedIframeLink: e.target.value })} placeholder="Embed Iframe Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
+        {mode === "movie" ? (
+          <>
+            <input value={payload.hlsLink || ""} onChange={(e) => setPayload({ ...payload, hlsLink: e.target.value })} placeholder="HLS Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
+            <input value={payload.embedIframeLink || ""} onChange={(e) => setPayload({ ...payload, embedIframeLink: e.target.value })} placeholder="Embed Iframe Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
+          </>
+        ) : (
+          <textarea
+            value={seasonsInput}
+            onChange={(e) => setSeasonsInput(e.target.value)}
+            placeholder="Seasons JSON"
+            className="min-h-[160px] rounded-xl border border-border bg-black/20 px-4 py-2 text-sm md:col-span-2"
+          />
+        )}
         <input value={payload.trailerEmbedUrl || ""} onChange={(e) => setPayload({ ...payload, trailerEmbedUrl: e.target.value })} placeholder="Trailer Embed URL" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm md:col-span-2" />
         <input
           value={Array.isArray(payload.tags) ? payload.tags.join(", ") : ""}
@@ -193,10 +303,24 @@ export default function AdminPage() {
         <p className="text-xs text-muted md:col-span-2">Slug preview: {slugPreview || "-"}</p>
 
         <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black md:col-span-2">
-          <Plus size={16} /> Save Content
+          <Plus size={16} /> Save {mode === "movie" ? "Movie" : "Series"}
         </button>
         <p className="text-sm text-muted md:col-span-2">{status}</p>
       </form>
+
+      <section className="glass rounded-2xl p-4">
+        <h2 className="mb-3 text-lg font-semibold">{mode === "movie" ? "Recent Movies" : "Recent Series"}</h2>
+        <div className="grid gap-2 md:grid-cols-2">
+          {filteredItems.slice(0, 20).map((item) => (
+            <div key={item._id || item.slug} className="rounded-xl border border-border p-3">
+              <p className="font-semibold">{item.title}</p>
+              <p className="text-xs text-muted">
+                {item.type.toUpperCase()} | {item.year} | {item.language}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
