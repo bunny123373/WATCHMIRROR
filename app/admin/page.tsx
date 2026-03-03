@@ -25,24 +25,18 @@ const emptyPayload: Partial<Content> = {
   seasons: []
 };
 
-const defaultSeasonTemplate = JSON.stringify(
-  [
-    {
-      seasonNumber: 1,
-      episodes: [
-        {
-          episodeNumber: 1,
-          episodeTitle: "Episode 1",
-          hlsLink: "",
-          embedIframeLink: "",
-          quality: "HD"
-        }
-      ]
-    }
-  ],
-  null,
-  2
-);
+const createEpisode = (episodeNumber: number) => ({
+  episodeNumber,
+  episodeTitle: `Episode ${episodeNumber}`,
+  hlsLink: "",
+  embedIframeLink: "",
+  quality: "HD"
+});
+
+const createSeason = (seasonNumber: number): Season => ({
+  seasonNumber,
+  episodes: [createEpisode(1)]
+});
 
 export default function AdminPage() {
   const [mode, setMode] = useState<ContentType>("movie");
@@ -52,7 +46,7 @@ export default function AdminPage() {
   const [tmdbResults, setTmdbResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [payload, setPayload] = useState<Partial<Content>>(emptyPayload);
-  const [seasonsInput, setSeasonsInput] = useState(defaultSeasonTemplate);
+  const [seasonsDraft, setSeasonsDraft] = useState<Season[]>([createSeason(1)]);
   const [items, setItems] = useState<Content[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [status, setStatus] = useState("");
@@ -117,7 +111,10 @@ export default function AdminPage() {
 
     applyMode(nextType);
     setPayload((prev) => ({ ...prev, ...details, type: nextType }));
-    setSeasonsInput(JSON.stringify(details.seasons || [], null, 2) || "[]");
+    if (nextType === "series") {
+      const importedSeasons = Array.isArray(details.seasons) && details.seasons.length ? (details.seasons as Season[]) : [createSeason(1)];
+      setSeasonsDraft(importedSeasons);
+    }
     setLoading(false);
   };
 
@@ -128,34 +125,84 @@ export default function AdminPage() {
       ...item,
       type: item.type
     });
-    setSeasonsInput(JSON.stringify(item.seasons || [], null, 2));
+    setSeasonsDraft(item.seasons && item.seasons.length ? item.seasons : [createSeason(1)]);
     setStatus(`Editing: ${item.title}`);
   };
 
   const resetForm = () => {
     setEditingId(null);
     setPayload({ ...emptyPayload, type: mode });
-    setSeasonsInput(defaultSeasonTemplate);
+    setSeasonsDraft([createSeason(1)]);
+  };
+
+  const addSeason = () => {
+    setSeasonsDraft((prev) => [...prev, createSeason(prev.length + 1)]);
+  };
+
+  const removeSeason = (seasonIndex: number) => {
+    setSeasonsDraft((prev) => prev.filter((_, idx) => idx !== seasonIndex).map((season, idx) => ({ ...season, seasonNumber: idx + 1 })));
+  };
+
+  const updateSeasonField = (seasonIndex: number, value: number) => {
+    setSeasonsDraft((prev) => prev.map((season, idx) => (idx === seasonIndex ? { ...season, seasonNumber: value } : season)));
+  };
+
+  const addEpisode = (seasonIndex: number) => {
+    setSeasonsDraft((prev) =>
+      prev.map((season, idx) =>
+        idx === seasonIndex ? { ...season, episodes: [...season.episodes, createEpisode(season.episodes.length + 1)] } : season
+      )
+    );
+  };
+
+  const removeEpisode = (seasonIndex: number, episodeIndex: number) => {
+    setSeasonsDraft((prev) =>
+      prev.map((season, idx) => {
+        if (idx !== seasonIndex) return season;
+        const episodes = season.episodes.filter((_, epIdx) => epIdx !== episodeIndex).map((ep, epIdx) => ({ ...ep, episodeNumber: epIdx + 1 }));
+        return { ...season, episodes: episodes.length ? episodes : [createEpisode(1)] };
+      })
+    );
+  };
+
+  const updateEpisodeField = (
+    seasonIndex: number,
+    episodeIndex: number,
+    field: "episodeNumber" | "episodeTitle" | "hlsLink" | "embedIframeLink" | "quality",
+    value: string
+  ) => {
+    setSeasonsDraft((prev) =>
+      prev.map((season, sIdx) => {
+        if (sIdx !== seasonIndex) return season;
+        const episodes = season.episodes.map((episode, eIdx) => {
+          if (eIdx !== episodeIndex) return episode;
+          if (field === "episodeNumber") {
+            return { ...episode, episodeNumber: Number(value) || episode.episodeNumber };
+          }
+          return { ...episode, [field]: value };
+        });
+        return { ...season, episodes };
+      })
+    );
   };
 
   const submitContent = async (event: FormEvent) => {
     event.preventDefault();
     setStatus("Saving...");
 
-    let parsedSeasons: Season[] = [];
-    if (mode === "series") {
-      try {
-        const parsed = JSON.parse(seasonsInput || "[]");
-        if (!Array.isArray(parsed)) {
-          setStatus("Invalid seasons JSON. Expected an array.");
-          return;
-        }
-        parsedSeasons = parsed as Season[];
-      } catch {
-        setStatus("Invalid seasons JSON format.");
-        return;
-      }
-    }
+    const parsedSeasons: Season[] =
+      mode === "series"
+        ? seasonsDraft.map((season, seasonIndex) => ({
+            seasonNumber: Number(season.seasonNumber) || seasonIndex + 1,
+            episodes: (season.episodes || []).map((episode, episodeIndex) => ({
+              episodeNumber: Number(episode.episodeNumber) || episodeIndex + 1,
+              episodeTitle: (episode.episodeTitle || `Episode ${episodeIndex + 1}`).trim(),
+              hlsLink: episode.hlsLink || "",
+              embedIframeLink: episode.embedIframeLink || "",
+              quality: episode.quality || "HD"
+            }))
+          }))
+        : [];
 
     const isEditing = Boolean(editingId);
     const res = await fetch("/api/admin/content", {
@@ -337,12 +384,76 @@ export default function AdminPage() {
             <input value={payload.embedIframeLink || ""} onChange={(e) => setPayload({ ...payload, embedIframeLink: e.target.value })} placeholder="Embed Iframe Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
           </>
         ) : (
-          <textarea
-            value={seasonsInput}
-            onChange={(e) => setSeasonsInput(e.target.value)}
-            placeholder="Seasons JSON"
-            className="min-h-[160px] rounded-xl border border-border bg-black/20 px-4 py-2 text-sm md:col-span-2"
-          />
+          <div className="space-y-3 md:col-span-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold">Seasons & Episodes</p>
+              <button type="button" onClick={addSeason} className="rounded-lg border border-border px-3 py-1 text-xs hover:border-primary">
+                Add Season
+              </button>
+            </div>
+            {seasonsDraft.map((season, seasonIndex) => (
+              <div key={`season-${seasonIndex}`} className="space-y-2 rounded-xl border border-border p-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    value={season.seasonNumber}
+                    onChange={(e) => updateSeasonField(seasonIndex, Number(e.target.value) || season.seasonNumber)}
+                    className="w-24 rounded-lg border border-border bg-black/20 px-3 py-1 text-sm"
+                  />
+                  <button type="button" onClick={() => addEpisode(seasonIndex)} className="rounded-lg border border-border px-2 py-1 text-xs hover:border-primary">
+                    Add Episode
+                  </button>
+                  <button type="button" onClick={() => removeSeason(seasonIndex)} className="rounded-lg border border-border px-2 py-1 text-xs text-red-300 hover:border-red-400">
+                    Remove Season
+                  </button>
+                </div>
+                {season.episodes.map((episode, episodeIndex) => (
+                  <div key={`episode-${seasonIndex}-${episodeIndex}`} className="grid gap-2 rounded-lg border border-border/60 p-2 md:grid-cols-2">
+                    <input
+                      type="number"
+                      min={1}
+                      value={episode.episodeNumber}
+                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeNumber", e.target.value)}
+                      placeholder="Episode #"
+                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
+                    />
+                    <input
+                      value={episode.episodeTitle}
+                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeTitle", e.target.value)}
+                      placeholder="Episode title"
+                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
+                    />
+                    <input
+                      value={episode.hlsLink || ""}
+                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "hlsLink", e.target.value)}
+                      placeholder="Episode HLS link"
+                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
+                    />
+                    <input
+                      value={episode.embedIframeLink || ""}
+                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "embedIframeLink", e.target.value)}
+                      placeholder="Episode iframe link"
+                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
+                    />
+                    <input
+                      value={episode.quality || "HD"}
+                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "quality", e.target.value)}
+                      placeholder="Quality"
+                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeEpisode(seasonIndex, episodeIndex)}
+                      className="rounded-lg border border-border px-3 py-2 text-xs text-red-300 hover:border-red-400"
+                    >
+                      Remove Episode
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         )}
         <input value={payload.trailerEmbedUrl || ""} onChange={(e) => setPayload({ ...payload, trailerEmbedUrl: e.target.value })} placeholder="Trailer Embed URL" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm md:col-span-2" />
         <input
