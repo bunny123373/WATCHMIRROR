@@ -10,6 +10,7 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/movies", label: "Movies" },
   { href: "/series", label: "Series" },
+  { href: "/my-list", label: "My List" },
   { href: "/trending", label: "Trending" }
 ];
 

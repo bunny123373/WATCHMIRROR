@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import continueReducer from "@/store/slices/continueSlice";
+import myListReducer from "@/store/slices/myListSlice";
 import uiReducer from "@/store/slices/uiSlice";
 
 export const makeStore = () =>
   configureStore({
     reducer: {
       continue: continueReducer,
+      myList: myListReducer,
       ui: uiReducer
     }
   });

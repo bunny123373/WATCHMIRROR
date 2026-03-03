@@ -71,3 +71,13 @@ export interface ContinueWatchingItem {
   episodeNumber?: number;
   updatedAt: string;
 }
+
+export interface MyListItem {
+  slug: string;
+  type: ContentType;
+  title: string;
+  poster: string;
+  year: number;
+  rating: number;
+  quality: string;
+}

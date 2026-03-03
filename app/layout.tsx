@@ -6,6 +6,9 @@ import Footer from "@/components/layout/Footer";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import MobileSearchOverlay from "@/components/layout/MobileSearchOverlay";
 import ContinueHydrator from "@/components/common/ContinueHydrator";
+import MyListHydrator from "@/components/common/MyListHydrator";
+import ServiceWorkerRegister from "@/components/providers/sw-register";
+import ProfileGate from "@/components/providers/profile-gate";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://watchmirror.vercel.app"),
@@ -19,6 +22,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.png"
   },
+  manifest: "/manifest.webmanifest",
   description: "WATCHMIRROR is a premium OTT movie and web series streaming platform.",
   openGraph: {
     title: "WATCHMIRROR",
@@ -40,11 +44,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="font-[var(--font-body)]">
         <ReduxProvider>
           <ContinueHydrator />
-          <Navbar />
-          <MobileSearchOverlay />
-          <main className="mx-auto min-h-screen max-w-[1600px] px-4 pb-28 pt-24 md:px-8 md:pb-10">{children}</main>
-          <Footer />
-          <MobileBottomNav />
+          <MyListHydrator />
+          <ServiceWorkerRegister />
+          <ProfileGate>
+            <Navbar />
+            <MobileSearchOverlay />
+            <main className="mx-auto min-h-screen max-w-[1600px] px-4 pb-28 pt-24 md:px-8 md:pb-10">{children}</main>
+            <Footer />
+            <MobileBottomNav />
+          </ProfileGate>
         </ReduxProvider>
       </body>
     </html>

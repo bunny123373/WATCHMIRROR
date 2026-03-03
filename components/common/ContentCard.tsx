@@ -1,9 +1,17 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { Play } from "lucide-react";
+import { Check, Play, Plus } from "lucide-react";
 import { Content } from "@/types/content";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { toggleMyList } from "@/store/slices/myListSlice";
 
 export default function ContentCard({ item }: { item: Content }) {
+  const dispatch = useAppDispatch();
+  const myList = useAppSelector((state) => state.myList.items);
+  const isInList = myList.some((saved) => saved.slug === item.slug && saved.type === item.type);
+
   const detailsHref = item.type === "movie" ? `/movie/${item.slug}` : `/series/${item.slug}`;
   const watchHref = item.type === "movie" ? `/watch/${item.slug}` : `/series/watch/${item.slug}`;
   const hasValidPoster =
@@ -11,10 +19,24 @@ export default function ContentCard({ item }: { item: Content }) {
     (item.poster.startsWith("/") || item.poster.startsWith("https://image.tmdb.org/"));
   const yearLabel = Number.isFinite(item.year) ? String(item.year) : "N/A";
   const ratingLabel = Number.isFinite(item.rating) ? item.rating.toFixed(1) : "N/A";
-  const topTags = (item.tags || []).slice(0, 2).join(" | ");
+  const topTags = (item.tags || []).slice(0, 3).join(" | ");
+
+  const toggleList = () => {
+    dispatch(
+      toggleMyList({
+        slug: item.slug,
+        type: item.type,
+        title: item.title,
+        poster: item.poster,
+        year: item.year,
+        rating: item.rating,
+        quality: item.quality
+      })
+    );
+  };
 
   return (
-    <article className="group w-[170px] shrink-0 transition sm:w-[210px] md:w-[230px]">
+    <article className="group relative w-[170px] shrink-0 transition sm:w-[210px] md:w-[230px]">
       <div className="relative overflow-hidden rounded-xl border border-[#202020] bg-[#141414] transition duration-300 group-hover:z-20 group-hover:scale-[1.08] group-hover:border-[#343434] group-hover:shadow-[0_18px_40px_rgba(0,0,0,0.55)]">
         <Link href={detailsHref}>
           {hasValidPoster ? (
@@ -39,12 +61,35 @@ export default function ContentCard({ item }: { item: Content }) {
             <Link href={watchHref} className="inline-flex items-center gap-1 rounded bg-white/95 px-2 py-1 text-[10px] font-bold text-black">
               <Play size={11} /> Play
             </Link>
-            <Link href={detailsHref} className="rounded border border-white/40 px-2 py-1 text-[10px] font-semibold text-white">
-              Details
-            </Link>
+            <button
+              type="button"
+              onClick={toggleList}
+              className="inline-flex items-center gap-1 rounded border border-white/40 px-2 py-1 text-[10px] font-semibold text-white"
+            >
+              {isInList ? <Check size={11} /> : <Plus size={11} />}
+              {isInList ? "In List" : "My List"}
+            </button>
           </div>
         </div>
         <span className="absolute left-2 top-2 rounded bg-[#E50914] px-2 py-1 text-[10px] font-bold text-white">{item.quality}</span>
+      </div>
+
+      <div className="pointer-events-none absolute left-0 right-0 top-[calc(100%-10px)] hidden rounded-xl border border-[#2a2a2a] bg-[#181818] p-3 opacity-0 shadow-[0_18px_30px_rgba(0,0,0,0.55)] transition duration-300 group-hover:pointer-events-auto group-hover:opacity-100 md:block">
+        <p className="line-clamp-1 text-sm font-semibold text-white">{item.title}</p>
+        <p className="mt-1 line-clamp-2 text-xs text-[#b3b3b3]">{item.description || "No description available."}</p>
+        <div className="mt-2 flex gap-2">
+          <Link href={watchHref} className="inline-flex items-center gap-1 rounded bg-white px-2 py-1 text-[10px] font-bold text-black">
+            <Play size={11} /> Play
+          </Link>
+          <button
+            type="button"
+            onClick={toggleList}
+            className="inline-flex items-center gap-1 rounded border border-[#3a3a3a] px-2 py-1 text-[10px] font-semibold text-white"
+          >
+            {isInList ? <Check size={11} /> : <Plus size={11} />}
+            {isInList ? "Saved" : "My List"}
+          </button>
+        </div>
       </div>
     </article>
   );
