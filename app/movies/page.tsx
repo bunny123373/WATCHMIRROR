@@ -41,10 +41,13 @@ export default async function MoviesPage({
 
   return (
     <div className="space-y-8">
-      <h1 className="font-[var(--font-heading)] text-3xl">Movies</h1>
-      <form className="glass grid gap-3 rounded-2xl p-4 md:grid-cols-5">
-        <input name="q" defaultValue={params.q || ""} placeholder="Search title" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-        <select name="language" defaultValue={params.language || ""} className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm">
+      <section className="rounded-2xl border border-[#2A2A2A] bg-[#141414] p-5">
+        <h1 className="font-[var(--font-heading)] text-4xl text-white">Movies</h1>
+        <p className="mt-1 text-sm text-[#A1A1AA]">Browse like a streaming shelf. Filter and binge by mood.</p>
+      </section>
+      <form className="grid gap-3 rounded-2xl border border-[#2A2A2A] bg-[#141414] p-4 md:grid-cols-5">
+        <input name="q" defaultValue={params.q || ""} placeholder="Search title" className="rounded-xl border border-[#303030] bg-black/30 px-4 py-2 text-sm text-white" />
+        <select name="language" defaultValue={params.language || ""} className="rounded-xl border border-[#303030] bg-black/30 px-4 py-2 text-sm text-white">
           <option value="">All Languages</option>
           {languages.map((item) => (
             <option key={item} value={item}>
@@ -52,7 +55,7 @@ export default async function MoviesPage({
             </option>
           ))}
         </select>
-        <select name="genre" defaultValue={params.genre || ""} className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm">
+        <select name="genre" defaultValue={params.genre || ""} className="rounded-xl border border-[#303030] bg-black/30 px-4 py-2 text-sm text-white">
           <option value="">All Genres</option>
           {genres.map((item) => (
             <option key={item} value={item}>
@@ -60,7 +63,7 @@ export default async function MoviesPage({
             </option>
           ))}
         </select>
-        <select name="year" defaultValue={params.year || ""} className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm">
+        <select name="year" defaultValue={params.year || ""} className="rounded-xl border border-[#303030] bg-black/30 px-4 py-2 text-sm text-white">
           <option value="">All Years</option>
           {years.map((item) => (
             <option key={item} value={String(item)}>
@@ -68,12 +71,12 @@ export default async function MoviesPage({
             </option>
           ))}
         </select>
-        <select name="sort" defaultValue={sort} className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm">
+        <select name="sort" defaultValue={sort} className="rounded-xl border border-[#303030] bg-black/30 px-4 py-2 text-sm text-white">
           <option value="latest">Latest</option>
           <option value="popular">Most Popular</option>
           <option value="rating">Top Rated</option>
         </select>
-        <button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-black md:col-span-5">
+        <button type="submit" className="rounded-xl bg-[#E50914] px-4 py-2 text-sm font-bold text-white md:col-span-5">
           Apply Filters
         </button>
       </form>
