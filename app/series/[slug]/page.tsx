@@ -66,11 +66,18 @@ export default async function SeriesDetailsPage({ params }: { params: Promise<{ 
 
         <div className="glass rounded-2xl p-4">
           <h2 className="mb-3 font-[var(--font-heading)] text-xl">Cast</h2>
-          <div className="space-y-2 text-sm text-muted">
+          <div className="space-y-2">
             {content.cast.map((actor) => (
-              <p key={`${actor.name}-${actor.character}`}>
-                {actor.name} as {actor.character}
-              </p>
+              <div key={`${actor.name}-${actor.character}`} className="flex items-center gap-3 text-sm text-muted">
+                {actor.profileImage ? (
+                  <Image src={actor.profileImage} alt={actor.name} width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-black/30" />
+                )}
+                <p>
+                  {actor.name} as {actor.character}
+                </p>
+              </div>
             ))}
           </div>
         </div>

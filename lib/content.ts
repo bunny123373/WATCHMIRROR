@@ -56,7 +56,7 @@ export async function getContentBySlug(slug: string): Promise<Content | null> {
 
 export async function getSimilarContent(content: Content): Promise<Content[]> {
   await connectDB();
-  const data = await ContentModel.find({
+  const primary = await ContentModel.find({
     _id: { $ne: content._id },
     type: content.type,
     $or: [{ tags: { $in: content.tags } }, { category: content.category }]
@@ -65,7 +65,20 @@ export async function getSimilarContent(content: Content): Promise<Content[]> {
     .limit(12)
     .lean<Content[]>();
 
-  return data;
+  if (primary.length >= 6) {
+    return primary;
+  }
+
+  const existingIds = primary.map((item) => item._id).filter(Boolean);
+  const fallback = await ContentModel.find({
+    _id: { $nin: [content._id, ...existingIds] },
+    type: content.type
+  })
+    .sort({ createdAt: -1, popularity: -1 })
+    .limit(12 - primary.length)
+    .lean<Content[]>();
+
+  return [...primary, ...fallback];
 }
 
 export async function getAllContent(type?: "movie" | "series"): Promise<Content[]> {

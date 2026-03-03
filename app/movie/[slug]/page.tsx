@@ -82,9 +82,16 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
         <h2 className="font-[var(--font-heading)] text-2xl">Cast</h2>
         <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
           {content.cast.map((actor) => (
-            <div key={`${actor.name}-${actor.character}`} className="glass rounded-2xl p-3">
-              <p className="text-sm font-semibold">{actor.name}</p>
-              <p className="text-xs text-muted">{actor.character}</p>
+            <div key={`${actor.name}-${actor.character}`} className="glass flex items-center gap-3 rounded-2xl p-3">
+              {actor.profileImage ? (
+                <Image src={actor.profileImage} alt={actor.name} width={48} height={48} className="h-12 w-12 rounded-full object-cover" />
+              ) : (
+                <div className="h-12 w-12 rounded-full bg-black/30" />
+              )}
+              <div>
+                <p className="text-sm font-semibold">{actor.name}</p>
+                <p className="text-xs text-muted">{actor.character}</p>
+              </div>
             </div>
           ))}
         </div>
