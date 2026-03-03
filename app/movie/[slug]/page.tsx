@@ -63,7 +63,6 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
       <section className="relative overflow-hidden rounded-2xl border border-border">
         <Image src={content.banner || content.poster} alt={content.title} width={1600} height={700} className="h-[340px] w-full object-cover opacity-55 md:h-[440px]" />
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/20" />
-        <div className="absolute -right-20 top-0 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
         <div className="absolute inset-0 grid gap-6 p-6 md:grid-cols-[240px,1fr] md:items-end md:p-10">
           <Image src={content.poster} alt={content.title} width={240} height={340} className="hidden rounded-2xl border border-border md:block" />
           <div>
@@ -77,7 +76,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
             <h1 className="font-[var(--font-heading)] text-3xl md:text-5xl">{content.title}</h1>
             <p className="mt-2 text-sm text-muted">{content.year} | {content.language}</p>
             <p className="mt-4 max-w-2xl text-sm text-muted md:text-base">{content.description}</p>
-            <Link href={`/watch/${content.slug}`} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black shadow-[0_0_30px_rgba(245,197,66,0.2)]">
+            <Link href={`/watch/${content.slug}`} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black">
               <Play size={16} /> Watch Now
             </Link>
           </div>

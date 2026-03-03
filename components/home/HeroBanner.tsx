@@ -20,7 +20,6 @@ export default function HeroBanner({ item }: { item: Content | null }) {
     <section className="relative overflow-hidden rounded-2xl border border-border shadow-glass">
       <Image src={item.banner || item.poster} alt={item.title} width={1600} height={700} className="h-[360px] w-full object-cover opacity-60 md:h-[460px]" />
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/20" />
-      <div className="absolute -right-20 top-0 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
       <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <span className="inline-flex w-fit rounded-full bg-primary px-3 py-1 text-xs font-bold text-black">Featured</span>
