@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import Image from "next/image";
+import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { Content, ContentType, Season } from "@/types/content";
 
 const emptyPayload: Partial<Content> = {
@@ -53,6 +54,7 @@ export default function AdminPage() {
   const [payload, setPayload] = useState<Partial<Content>>(emptyPayload);
   const [seasonsInput, setSeasonsInput] = useState(defaultSeasonTemplate);
   const [items, setItems] = useState<Content[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [status, setStatus] = useState("");
 
   const slugPreview = useMemo(() => {
@@ -119,6 +121,23 @@ export default function AdminPage() {
     setLoading(false);
   };
 
+  const startEdit = (item: Content) => {
+    setEditingId(item._id || null);
+    applyMode(item.type);
+    setPayload({
+      ...item,
+      type: item.type
+    });
+    setSeasonsInput(JSON.stringify(item.seasons || [], null, 2));
+    setStatus(`Editing: ${item.title}`);
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setPayload({ ...emptyPayload, type: mode });
+    setSeasonsInput(defaultSeasonTemplate);
+  };
+
   const submitContent = async (event: FormEvent) => {
     event.preventDefault();
     setStatus("Saving...");
@@ -138,14 +157,16 @@ export default function AdminPage() {
       }
     }
 
+    const isEditing = Boolean(editingId);
     const res = await fetch("/api/admin/content", {
-      method: "POST",
+      method: isEditing ? "PATCH" : "POST",
       headers: {
         "Content-Type": "application/json",
         "x-admin-key": adminKey
       },
       body: JSON.stringify({
         ...payload,
+        _id: editingId || undefined,
         type: mode,
         seasons: mode === "series" ? parsedSeasons : [],
         hlsLink: mode === "movie" ? payload.hlsLink : "",
@@ -165,10 +186,35 @@ export default function AdminPage() {
       return;
     }
 
-    setPayload({ ...emptyPayload, type: mode });
-    setSeasonsInput(defaultSeasonTemplate);
+    resetForm();
     await loadContent();
-    setStatus("Content saved successfully.");
+    setStatus(isEditing ? "Content updated successfully." : "Content saved successfully.");
+  };
+
+  const deleteContent = async (id?: string) => {
+    if (!id) return;
+    const confirmed = window.confirm("Delete this content item? This action cannot be undone.");
+    if (!confirmed) return;
+
+    setStatus("Deleting...");
+    const res = await fetch(`/api/admin/content?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: {
+        "x-admin-key": adminKey
+      }
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      setStatus(err.error || "Failed to delete");
+      return;
+    }
+
+    if (editingId === id) {
+      resetForm();
+    }
+    await loadContent();
+    setStatus("Content deleted successfully.");
   };
 
   const unlockAdmin = async () => {
@@ -254,10 +300,17 @@ export default function AdminPage() {
             <button
               key={`${item.mediaType}-${item.id}`}
               onClick={() => importTMDB(item.id, item.mediaType)}
-              className="rounded-xl border border-border p-3 text-left hover:border-primary"
+              className="flex gap-3 rounded-xl border border-border p-3 text-left hover:border-primary"
             >
-              <p className="font-semibold">{item.title}</p>
-              <p className="text-xs text-muted">{item.mediaType.toUpperCase()} | {item.year || "-"}</p>
+              {item.poster ? (
+                <Image src={item.poster} alt={item.title} width={56} height={80} className="h-20 w-14 rounded-md object-cover" />
+              ) : (
+                <div className="h-20 w-14 rounded-md bg-black/30" />
+              )}
+              <div>
+                <p className="font-semibold">{item.title}</p>
+                <p className="text-xs text-muted">{item.mediaType.toUpperCase()} | {item.year || "-"}</p>
+              </div>
             </button>
           ))}
         </div>
@@ -266,7 +319,7 @@ export default function AdminPage() {
 
       <form onSubmit={submitContent} className="glass grid gap-4 rounded-2xl p-4 md:grid-cols-2">
         <input value={payload.title || ""} onChange={(e) => setPayload({ ...payload, title: e.target.value })} placeholder="Title" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" required />
-        <select value={payload.type} onChange={(e) => setPayload({ ...payload, type: e.target.value as "movie" | "series" })} className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm">
+        <select value={mode} onChange={(e) => applyMode(e.target.value as "movie" | "series")} className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm">
           <option value="movie">Movie</option>
           <option value="series">Series</option>
         </select>
@@ -302,9 +355,23 @@ export default function AdminPage() {
 
         <p className="text-xs text-muted md:col-span-2">Slug preview: {slugPreview || "-"}</p>
 
-        <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black md:col-span-2">
-          <Plus size={16} /> Save {mode === "movie" ? "Movie" : "Series"}
-        </button>
+        <div className="flex gap-2 md:col-span-2">
+          <button type="submit" className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black">
+            <Plus size={16} /> {editingId ? "Update" : "Save"} {mode === "movie" ? "Movie" : "Series"}
+          </button>
+          {editingId && (
+            <button
+              type="button"
+              onClick={() => {
+                resetForm();
+                setStatus("Edit cancelled.");
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm"
+            >
+              <X size={16} /> Cancel
+            </button>
+          )}
+        </div>
         <p className="text-sm text-muted md:col-span-2">{status}</p>
       </form>
 
@@ -312,11 +379,34 @@ export default function AdminPage() {
         <h2 className="mb-3 text-lg font-semibold">{mode === "movie" ? "Recent Movies" : "Recent Series"}</h2>
         <div className="grid gap-2 md:grid-cols-2">
           {filteredItems.slice(0, 20).map((item) => (
-            <div key={item._id || item.slug} className="rounded-xl border border-border p-3">
-              <p className="font-semibold">{item.title}</p>
-              <p className="text-xs text-muted">
-                {item.type.toUpperCase()} | {item.year} | {item.language}
-              </p>
+            <div key={item._id || item.slug} className="flex gap-3 rounded-xl border border-border p-3">
+              {item.poster ? (
+                <Image src={item.poster} alt={item.title} width={56} height={80} className="h-20 w-14 rounded-md object-cover" />
+              ) : (
+                <div className="h-20 w-14 rounded-md bg-black/30" />
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold">{item.title}</p>
+                <p className="text-xs text-muted">
+                  {item.type.toUpperCase()} | {item.year} | {item.language}
+                </p>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => startEdit(item)}
+                    className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs hover:border-primary"
+                  >
+                    <Pencil size={13} /> Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteContent(item._id)}
+                    className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs text-red-300 hover:border-red-400"
+                  >
+                    <Trash2 size={13} /> Delete
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
