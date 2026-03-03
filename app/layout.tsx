@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Cinzel, Manrope } from "next/font/google";
 import "./globals.css";
 import ReduxProvider from "@/components/providers/redux-provider";
 import Navbar from "@/components/layout/Navbar";
@@ -8,14 +7,14 @@ import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import MobileSearchOverlay from "@/components/layout/MobileSearchOverlay";
 import ContinueHydrator from "@/components/common/ContinueHydrator";
 
-const headingFont = Cinzel({ subsets: ["latin"], variable: "--font-heading" });
-const bodyFont = Manrope({ subsets: ["latin"], variable: "--font-body" });
-
 export const metadata: Metadata = {
   metadataBase: new URL("https://watchmirror.vercel.app"),
   title: {
     default: "WATCHMIRROR - Stream Without Limits.",
     template: "%s | WATCHMIRROR"
+  },
+  icons: {
+    icon: "/favicon.png"
   },
   description: "WATCHMIRROR is a premium OTT movie and web series streaming platform.",
   openGraph: {
@@ -34,7 +33,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`}>
+    <html lang="en">
       <body className="font-[var(--font-body)]">
         <ReduxProvider>
           <ContinueHydrator />

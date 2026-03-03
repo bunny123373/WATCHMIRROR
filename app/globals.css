@@ -11,6 +11,8 @@
   --accent: #22c55e;
   --text: #f9fafb;
   --muted: #9ca3af;
+  --font-heading: Cambria, "Times New Roman", Times, serif;
+  --font-body: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {

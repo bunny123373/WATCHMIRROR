@@ -12,10 +12,10 @@ export async function getHomeRows(): Promise<{
   await connectDB();
 
   const [trending, latest, movies, series] = await Promise.all([
-    ContentModel.find({ $or: [{ popularity: { $gt: 100 } }, { rating: { $gt: 7.5 } }] }).sort({ popularity: -1 }).limit(16).lean(),
-    ContentModel.find({}).sort({ createdAt: -1 }).limit(16).lean(),
-    ContentModel.find({ type: "movie" }).sort({ createdAt: -1 }).limit(16).lean(),
-    ContentModel.find({ type: "series" }).sort({ createdAt: -1 }).limit(16).lean()
+    ContentModel.find({ $or: [{ popularity: { $gt: 100 } }, { rating: { $gt: 7.5 } }] }).sort({ popularity: -1 }).limit(16).lean<Content[]>(),
+    ContentModel.find({}).sort({ createdAt: -1 }).limit(16).lean<Content[]>(),
+    ContentModel.find({ type: "movie" }).sort({ createdAt: -1 }).limit(16).lean<Content[]>(),
+    ContentModel.find({ type: "series" }).sort({ createdAt: -1 }).limit(16).lean<Content[]>()
   ]);
 
   const languageRows = await ContentModel.aggregate([
@@ -40,18 +40,18 @@ export async function getHomeRows(): Promise<{
   }, {});
 
   return {
-    trending: trending as Content[],
-    latest: latest as Content[],
-    movies: movies as Content[],
-    series: series as Content[],
+    trending,
+    latest,
+    movies,
+    series,
     languages
   };
 }
 
 export async function getContentBySlug(slug: string): Promise<Content | null> {
   await connectDB();
-  const data = await ContentModel.findOne({ slug }).lean();
-  return (data as Content) || null;
+  const data = await ContentModel.findOne({ slug }).lean<Content | null>();
+  return data;
 }
 
 export async function getSimilarContent(content: Content): Promise<Content[]> {
@@ -63,14 +63,14 @@ export async function getSimilarContent(content: Content): Promise<Content[]> {
   })
     .sort({ popularity: -1 })
     .limit(12)
-    .lean();
+    .lean<Content[]>();
 
-  return data as Content[];
+  return data;
 }
 
 export async function getAllContent(type?: "movie" | "series"): Promise<Content[]> {
   await connectDB();
   const query = type ? { type } : {};
-  const data = await ContentModel.find(query).sort({ createdAt: -1 }).lean();
-  return data as Content[];
+  const data = await ContentModel.find(query).sort({ createdAt: -1 }).lean<Content[]>();
+  return data;
 }
