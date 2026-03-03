@@ -17,26 +17,27 @@ export default function HeroBanner({ item }: { item: Content | null }) {
   const watchHref = item.type === "movie" ? `/watch/${item.slug}` : `/series/watch/${item.slug}`;
 
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-border shadow-glass">
-      <Image src={item.banner || item.poster} alt={item.title} width={1600} height={700} className="h-[360px] w-full object-cover opacity-60 md:h-[460px]" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/20" />
-      <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
+    <section className="relative overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#111]">
+      <Image src={item.banner || item.poster} alt={item.title} width={1600} height={700} className="h-[420px] w-full object-cover opacity-75 md:h-[560px]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/35" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent" />
+      <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12">
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <span className="inline-flex w-fit rounded-full bg-primary px-3 py-1 text-xs font-bold text-black">Featured</span>
-          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-black/40 px-3 py-1 text-xs text-muted">
-            <Star size={12} className="text-primary" /> {Number.isFinite(item.rating) ? item.rating.toFixed(1) : "N/A"}
+          <span className="inline-flex w-fit rounded-full bg-[#e50914] px-3 py-1 text-xs font-bold text-white">N Series</span>
+          <span className="inline-flex items-center gap-1 rounded-full border border-[#3a3a3a] bg-black/50 px-3 py-1 text-xs text-[#d4d4d4]">
+            <Star size={12} className="text-[#e50914]" /> {Number.isFinite(item.rating) ? item.rating.toFixed(1) : "N/A"}
           </span>
-          <span className="rounded-full border border-border bg-black/40 px-3 py-1 text-xs text-muted">
+          <span className="rounded-full border border-[#3a3a3a] bg-black/50 px-3 py-1 text-xs text-[#d4d4d4]">
             {item.year} | {item.language}
           </span>
         </div>
-        <h1 className="max-w-2xl font-[var(--font-heading)] text-3xl md:text-5xl">{item.title}</h1>
-        <p className="mt-3 line-clamp-3 max-w-xl text-sm text-muted md:text-base">{item.description}</p>
+        <h1 className="max-w-3xl font-[var(--font-heading)] text-4xl md:text-6xl">{item.title}</h1>
+        <p className="mt-3 line-clamp-3 max-w-2xl text-sm text-[#d4d4d4] md:text-base">{item.description}</p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <Link href={watchHref} className="inline-flex w-fit items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black">
+          <Link href={watchHref} className="inline-flex w-fit items-center gap-2 rounded-md bg-white px-6 py-3 text-sm font-bold text-black">
             <Play size={16} /> Watch Now
           </Link>
-          <Link href={detailsHref} className="inline-flex w-fit items-center gap-2 rounded-xl border border-border bg-black/50 px-5 py-3 text-sm font-semibold">
+          <Link href={detailsHref} className="inline-flex w-fit items-center gap-2 rounded-md bg-[#4b4b4b]/80 px-6 py-3 text-sm font-semibold text-white">
             <Info size={16} /> More Info
           </Link>
         </div>

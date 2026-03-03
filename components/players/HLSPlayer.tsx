@@ -56,7 +56,7 @@ export default function HLSPlayer({ src, subtitles = [], videoRef: controlledRef
   }, [src, onReady, onFatal]);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-[#1F232D] bg-[#0E1015]">
+    <div className="relative overflow-hidden rounded-xl border border-[#2a2a2a] bg-black">
       <video ref={videoRef} controls playsInline className="aspect-video w-full bg-black">
         {subtitles.map((track) => (
           <track
@@ -71,13 +71,13 @@ export default function HLSPlayer({ src, subtitles = [], videoRef: controlledRef
       </video>
 
       {loading && !error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-          <Loader2 className="animate-spin text-primary" />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+          <Loader2 className="animate-spin text-white" />
         </div>
       )}
 
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/70 text-sm text-red-400">
+        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/80 text-sm text-[#E50914]">
           <AlertCircle size={16} /> {error}
         </div>
       )}

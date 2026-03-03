@@ -22,7 +22,7 @@ export default function IframePlayer({ src }: IframePlayerProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#1F232D] bg-[#0E1015]">
+    <div className="overflow-hidden rounded-xl border border-[#2a2a2a] bg-black">
       <div className="relative aspect-video w-full">
         <iframe
           src={safeSrc}

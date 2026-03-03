@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import ContentRow from "@/components/common/ContentRow";
 import SeriesWatchClient from "@/components/series/SeriesWatchClient";
 import { getContentBySlug, getSimilarContent } from "@/lib/content";
@@ -33,9 +34,28 @@ export default async function SeriesWatchPage({ params }: { params: Promise<{ sl
 
   return (
     <div className="space-y-8">
-      <h1 className="font-[var(--font-heading)] text-3xl">{content.title}</h1>
-      <SeriesWatchClient content={content} />
-      <ContentRow title="Related Series" items={similar.filter((item) => item.type === "series")} />
+      <section className="rounded-2xl border border-[#2a2a2a] bg-[#111] p-4 md:p-6">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h1 className="font-[var(--font-heading)] text-3xl">{content.title}</h1>
+            <p className="text-sm text-[#b3b3b3]">
+              {content.year} | {content.language} | {Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}
+            </p>
+          </div>
+          <span className="rounded bg-[#E50914] px-3 py-1 text-xs font-bold text-white">Series</span>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-[1fr,320px]">
+          <SeriesWatchClient content={content} />
+          <aside className="rounded-xl border border-[#2a2a2a] bg-[#181818] p-4">
+            <Image src={content.poster} alt={content.title} width={280} height={400} className="w-full rounded-lg object-cover" />
+            <p className="mt-3 text-sm text-[#d4d4d4]">{content.description}</p>
+            <p className="mt-2 text-xs text-[#b3b3b3]">{(content.seasons || []).length} seasons available</p>
+          </aside>
+        </div>
+      </section>
+
+      <ContentRow title="More Like This" items={similar.filter((item) => item.type === "series")} />
     </div>
   );
 }

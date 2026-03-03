@@ -80,14 +80,14 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
       )}
 
       {sources.length > 1 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 rounded-xl border border-[#2a2a2a] bg-[#181818] p-2">
           {sources.map((source, index) => (
             <button
               key={`${source.type}-${source.label}-${index}`}
               type="button"
               onClick={() => setActiveSourceIndex(index)}
-              className={`rounded-lg border px-3 py-1.5 text-xs ${
-                index === activeSourceIndex ? "border-primary bg-primary/10 text-primary" : "border-border text-muted"
+              className={`rounded-md border px-3 py-1.5 text-xs ${
+                index === activeSourceIndex ? "border-[#E50914] bg-[#E50914] text-white" : "border-[#3a3a3a] text-[#d4d4d4]"
               }`}
             >
               {source.label}
