@@ -3,6 +3,8 @@ import ContinueWatchingRow from "@/components/home/ContinueWatchingRow";
 import ContentRow from "@/components/common/ContentRow";
 import { getHomeRows } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const data = await getHomeRows();
 

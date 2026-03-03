@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import ContentRow from "@/components/common/ContentRow";
 import { getAllContent } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Movies"
 };
