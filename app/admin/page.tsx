@@ -3,7 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import Image from "next/image";
 import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
-import { Content, ContentType, Season } from "@/types/content";
+import { Content, ContentType, Season, SubtitleTrack } from "@/types/content";
 
 const emptyPayload: Partial<Content> = {
   type: "movie",
@@ -22,14 +22,43 @@ const emptyPayload: Partial<Content> = {
   cast: [],
   hlsLink: "",
   embedIframeLink: "",
+  backupHlsLink: "",
+  backupEmbedIframeLink: "",
+  subtitleTracks: [],
+  publishAt: "",
   seasons: []
 };
+
+const parseSubtitleLines = (raw: string): SubtitleTrack[] =>
+  raw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [lang = "", label = "", url = "", defaultFlag = ""] = line.split("|").map((item) => item.trim());
+      return {
+        lang: lang || "en",
+        label: label || "Subtitle",
+        url,
+        isDefault: defaultFlag.toLowerCase() === "default"
+      };
+    })
+    .filter((track) => Boolean(track.url));
+
+const subtitleLines = (tracks?: SubtitleTrack[]) =>
+  (tracks || [])
+    .map((track) => `${track.lang}|${track.label}|${track.url}${track.isDefault ? "|default" : ""}`)
+    .join("\n");
 
 const createEpisode = (episodeNumber: number) => ({
   episodeNumber,
   episodeTitle: `Episode ${episodeNumber}`,
   hlsLink: "",
   embedIframeLink: "",
+  backupHlsLink: "",
+  backupEmbedIframeLink: "",
+  subtitleTracks: [],
+  releaseAt: "",
   quality: "HD"
 });
 
@@ -47,6 +76,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [payload, setPayload] = useState<Partial<Content>>(emptyPayload);
   const [seasonsDraft, setSeasonsDraft] = useState<Season[]>([createSeason(1)]);
+  const [movieSubtitlesInput, setMovieSubtitlesInput] = useState("");
   const [items, setItems] = useState<Content[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [status, setStatus] = useState("");
@@ -111,6 +141,7 @@ export default function AdminPage() {
 
     applyMode(nextType);
     setPayload((prev) => ({ ...prev, ...details, type: nextType }));
+    setMovieSubtitlesInput(subtitleLines((details.subtitleTracks || []) as SubtitleTrack[]));
     if (nextType === "series") {
       const importedSeasons = Array.isArray(details.seasons) && details.seasons.length ? (details.seasons as Season[]) : [createSeason(1)];
       setSeasonsDraft(importedSeasons);
@@ -125,6 +156,7 @@ export default function AdminPage() {
       ...item,
       type: item.type
     });
+    setMovieSubtitlesInput(subtitleLines(item.subtitleTracks));
     setSeasonsDraft(item.seasons && item.seasons.length ? item.seasons : [createSeason(1)]);
     setStatus(`Editing: ${item.title}`);
   };
@@ -133,6 +165,7 @@ export default function AdminPage() {
     setEditingId(null);
     setPayload({ ...emptyPayload, type: mode });
     setSeasonsDraft([createSeason(1)]);
+    setMovieSubtitlesInput("");
   };
 
   const addSeason = () => {
@@ -168,7 +201,15 @@ export default function AdminPage() {
   const updateEpisodeField = (
     seasonIndex: number,
     episodeIndex: number,
-    field: "episodeNumber" | "episodeTitle" | "hlsLink" | "embedIframeLink" | "quality",
+    field:
+      | "episodeNumber"
+      | "episodeTitle"
+      | "hlsLink"
+      | "embedIframeLink"
+      | "backupHlsLink"
+      | "backupEmbedIframeLink"
+      | "quality"
+      | "releaseAt",
     value: string
   ) => {
     setSeasonsDraft((prev) =>
@@ -181,6 +222,18 @@ export default function AdminPage() {
           }
           return { ...episode, [field]: value };
         });
+        return { ...season, episodes };
+      })
+    );
+  };
+
+  const updateEpisodeSubtitles = (seasonIndex: number, episodeIndex: number, value: string) => {
+    setSeasonsDraft((prev) =>
+      prev.map((season, sIdx) => {
+        if (sIdx !== seasonIndex) return season;
+        const episodes = season.episodes.map((episode, eIdx) =>
+          eIdx === episodeIndex ? { ...episode, subtitleTracks: parseSubtitleLines(value) } : episode
+        );
         return { ...season, episodes };
       })
     );
@@ -199,6 +252,10 @@ export default function AdminPage() {
               episodeTitle: (episode.episodeTitle || `Episode ${episodeIndex + 1}`).trim(),
               hlsLink: episode.hlsLink || "",
               embedIframeLink: episode.embedIframeLink || "",
+              backupHlsLink: episode.backupHlsLink || "",
+              backupEmbedIframeLink: episode.backupEmbedIframeLink || "",
+              subtitleTracks: episode.subtitleTracks || [],
+              releaseAt: episode.releaseAt || "",
               quality: episode.quality || "HD"
             }))
           }))
@@ -218,6 +275,10 @@ export default function AdminPage() {
         seasons: mode === "series" ? parsedSeasons : [],
         hlsLink: mode === "movie" ? payload.hlsLink : "",
         embedIframeLink: mode === "movie" ? payload.embedIframeLink : "",
+        backupHlsLink: mode === "movie" ? payload.backupHlsLink : "",
+        backupEmbedIframeLink: mode === "movie" ? payload.backupEmbedIframeLink : "",
+        subtitleTracks: mode === "movie" ? parseSubtitleLines(movieSubtitlesInput) : [],
+        publishAt: payload.publishAt || null,
         tags: Array.isArray(payload.tags)
           ? payload.tags
           : String(payload.tags || "")
@@ -373,6 +434,12 @@ export default function AdminPage() {
         <input value={payload.poster || ""} onChange={(e) => setPayload({ ...payload, poster: e.target.value })} placeholder="Poster URL" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" required />
         <input value={payload.banner || ""} onChange={(e) => setPayload({ ...payload, banner: e.target.value })} placeholder="Banner URL" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" required />
         <input value={String(payload.year || "")} onChange={(e) => setPayload({ ...payload, year: Number(e.target.value) })} placeholder="Year" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" required />
+        <input
+          type="datetime-local"
+          value={payload.publishAt ? new Date(payload.publishAt).toISOString().slice(0, 16) : ""}
+          onChange={(e) => setPayload({ ...payload, publishAt: e.target.value ? new Date(e.target.value).toISOString() : "" })}
+          className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm"
+        />
         <input value={payload.language || ""} onChange={(e) => setPayload({ ...payload, language: e.target.value })} placeholder="Language" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
         <input value={payload.category || ""} onChange={(e) => setPayload({ ...payload, category: e.target.value })} placeholder="Category" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
         <input value={payload.quality || ""} onChange={(e) => setPayload({ ...payload, quality: e.target.value })} placeholder="Quality" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
@@ -382,6 +449,14 @@ export default function AdminPage() {
           <>
             <input value={payload.hlsLink || ""} onChange={(e) => setPayload({ ...payload, hlsLink: e.target.value })} placeholder="HLS Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
             <input value={payload.embedIframeLink || ""} onChange={(e) => setPayload({ ...payload, embedIframeLink: e.target.value })} placeholder="Embed Iframe Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
+            <input value={payload.backupHlsLink || ""} onChange={(e) => setPayload({ ...payload, backupHlsLink: e.target.value })} placeholder="Backup HLS Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
+            <input value={payload.backupEmbedIframeLink || ""} onChange={(e) => setPayload({ ...payload, backupEmbedIframeLink: e.target.value })} placeholder="Backup Embed Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
+            <textarea
+              value={movieSubtitlesInput}
+              onChange={(e) => setMovieSubtitlesInput(e.target.value)}
+              placeholder="Subtitles: lang|label|url|default (one per line)"
+              className="min-h-[90px] rounded-xl border border-border bg-black/20 px-4 py-2 text-sm md:col-span-2"
+            />
           </>
         ) : (
           <div className="space-y-3 md:col-span-2">
@@ -437,10 +512,36 @@ export default function AdminPage() {
                       className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
                     />
                     <input
+                      value={episode.backupHlsLink || ""}
+                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "backupHlsLink", e.target.value)}
+                      placeholder="Episode backup HLS link"
+                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
+                    />
+                    <input
+                      value={episode.backupEmbedIframeLink || ""}
+                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "backupEmbedIframeLink", e.target.value)}
+                      placeholder="Episode backup iframe link"
+                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
+                    />
+                    <input
                       value={episode.quality || "HD"}
                       onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "quality", e.target.value)}
                       placeholder="Quality"
                       className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
+                    />
+                    <input
+                      type="datetime-local"
+                      value={episode.releaseAt ? new Date(episode.releaseAt).toISOString().slice(0, 16) : ""}
+                      onChange={(e) =>
+                        updateEpisodeField(seasonIndex, episodeIndex, "releaseAt", e.target.value ? new Date(e.target.value).toISOString() : "")
+                      }
+                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
+                    />
+                    <textarea
+                      value={subtitleLines(episode.subtitleTracks)}
+                      onChange={(e) => updateEpisodeSubtitles(seasonIndex, episodeIndex, e.target.value)}
+                      placeholder="Episode subtitles: lang|label|url|default"
+                      className="min-h-[70px] rounded-lg border border-border bg-black/20 px-3 py-2 text-sm md:col-span-2"
                     />
                     <button
                       type="button"

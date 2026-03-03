@@ -6,8 +6,18 @@ import { getContentBySlug, getSimilarContent } from "@/lib/content";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const content = await getContentBySlug(slug);
+  const canonical = `/series/watch/${slug}`;
   return {
-    title: content ? `Watch ${content.title}` : "Watch Series"
+    title: content ? `Watch ${content.title}` : "Watch Series",
+    description: content?.metaDescription || content?.description || "Watch series on WATCHMIRROR.",
+    alternates: { canonical },
+    openGraph: content
+      ? {
+          title: `Watch ${content.title}`,
+          description: content.metaDescription || content.description,
+          images: content.banner ? [content.banner] : undefined
+        }
+      : undefined
   };
 }
 

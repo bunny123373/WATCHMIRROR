@@ -2,6 +2,10 @@ import { connectDB } from "@/lib/db";
 import { ContentModel } from "@/lib/models/Content";
 import { Content } from "@/types/content";
 
+const visibilityQuery = {
+  $or: [{ publishAt: { $exists: false } }, { publishAt: null }, { publishAt: { $lte: new Date() } }]
+};
+
 export async function getHomeRows(): Promise<{
   trending: Content[];
   latest: Content[];
@@ -12,10 +16,10 @@ export async function getHomeRows(): Promise<{
   await connectDB();
 
   const [trending, latest, movies, series] = await Promise.all([
-    ContentModel.find({ $or: [{ popularity: { $gt: 100 } }, { rating: { $gt: 7.5 } }] }).sort({ popularity: -1 }).limit(16).lean<Content[]>(),
-    ContentModel.find({}).sort({ createdAt: -1 }).limit(16).lean<Content[]>(),
-    ContentModel.find({ type: "movie" }).sort({ createdAt: -1 }).limit(16).lean<Content[]>(),
-    ContentModel.find({ type: "series" }).sort({ createdAt: -1 }).limit(16).lean<Content[]>()
+    ContentModel.find({ $and: [visibilityQuery, { $or: [{ popularity: { $gt: 100 } }, { rating: { $gt: 7.5 } }] }] }).sort({ popularity: -1 }).limit(16).lean<Content[]>(),
+    ContentModel.find(visibilityQuery).sort({ createdAt: -1 }).limit(16).lean<Content[]>(),
+    ContentModel.find({ ...visibilityQuery, type: "movie" }).sort({ createdAt: -1 }).limit(16).lean<Content[]>(),
+    ContentModel.find({ ...visibilityQuery, type: "series" }).sort({ createdAt: -1 }).limit(16).lean<Content[]>()
   ]);
 
   const languageRows = await ContentModel.aggregate([
@@ -50,7 +54,7 @@ export async function getHomeRows(): Promise<{
 
 export async function getContentBySlug(slug: string): Promise<Content | null> {
   await connectDB();
-  const data = await ContentModel.findOne({ slug }).lean<Content | null>();
+  const data = await ContentModel.findOne({ slug, ...visibilityQuery }).lean<Content | null>();
   return data;
 }
 
@@ -58,6 +62,7 @@ export async function getSimilarContent(content: Content): Promise<Content[]> {
   await connectDB();
   const primary = await ContentModel.find({
     _id: { $ne: content._id },
+    ...visibilityQuery,
     type: content.type,
     $or: [{ tags: { $in: content.tags } }, { category: content.category }]
   })
@@ -72,6 +77,7 @@ export async function getSimilarContent(content: Content): Promise<Content[]> {
   const existingIds = primary.map((item) => item._id).filter(Boolean);
   const fallback = await ContentModel.find({
     _id: { $nin: [content._id, ...existingIds] },
+    ...visibilityQuery,
     type: content.type
   })
     .sort({ createdAt: -1, popularity: -1 })
@@ -83,7 +89,7 @@ export async function getSimilarContent(content: Content): Promise<Content[]> {
 
 export async function getAllContent(type?: "movie" | "series"): Promise<Content[]> {
   await connectDB();
-  const query = type ? { type } : {};
+  const query = type ? { ...visibilityQuery, type } : visibilityQuery;
   const data = await ContentModel.find(query).sort({ createdAt: -1 }).lean<Content[]>();
   return data;
 }

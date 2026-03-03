@@ -9,6 +9,9 @@ import ContinueHydrator from "@/components/common/ContinueHydrator";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://watchmirror.vercel.app"),
+  alternates: {
+    canonical: "/"
+  },
   title: {
     default: "WATCHMIRROR - Stream Without Limits.",
     template: "%s | WATCHMIRROR"

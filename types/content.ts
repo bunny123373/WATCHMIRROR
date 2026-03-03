@@ -11,6 +11,10 @@ export interface Episode {
   episodeTitle: string;
   hlsLink?: string;
   embedIframeLink?: string;
+  backupHlsLink?: string;
+  backupEmbedIframeLink?: string;
+  subtitleTracks?: SubtitleTrack[];
+  releaseAt?: string;
   quality?: string;
 }
 
@@ -40,9 +44,20 @@ export interface Content {
   metaDescription: string;
   hlsLink?: string;
   embedIframeLink?: string;
+  backupHlsLink?: string;
+  backupEmbedIframeLink?: string;
+  subtitleTracks?: SubtitleTrack[];
+  publishAt?: string;
   seasons?: Season[];
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface SubtitleTrack {
+  label: string;
+  lang: string;
+  url: string;
+  isDefault?: boolean;
 }
 
 export interface ContinueWatchingItem {

@@ -13,7 +13,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   return {
     title: content.metaTitle || content.title,
-    description: content.metaDescription || content.description
+    description: content.metaDescription || content.description,
+    alternates: {
+      canonical: `/series/${slug}`
+    },
+    openGraph: {
+      title: content.metaTitle || content.title,
+      description: content.metaDescription || content.description,
+      images: content.banner ? [content.banner] : undefined,
+      siteName: "WATCHMIRROR"
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: content.metaTitle || content.title,
+      description: content.metaDescription || content.description,
+      images: content.banner ? [content.banner] : undefined
+    }
   };
 }
 

@@ -1,10 +1,18 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import HLSPlayer from "@/components/players/HLSPlayer";
 import IframePlayer from "@/components/players/IframePlayer";
 import { usePlaybackTracker } from "@/hooks/usePlaybackTracker";
-import { ContentType } from "@/types/content";
+import { ContentType, SubtitleTrack } from "@/types/content";
+
+type SourceType = "hls" | "iframe";
+
+interface StreamingSource {
+  type: SourceType;
+  url: string;
+  label: string;
+}
 
 interface StreamingPlayerProps {
   type: ContentType;
@@ -13,12 +21,26 @@ interface StreamingPlayerProps {
   poster: string;
   hlsLink?: string;
   embedIframeLink?: string;
+  backupHlsLink?: string;
+  backupEmbedIframeLink?: string;
+  subtitleTracks?: SubtitleTrack[];
   seasonNumber?: number;
   episodeNumber?: number;
 }
 
 export default function StreamingPlayer(props: StreamingPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const subtitleTracks = (props.subtitleTracks || []).filter((track) => Boolean(track?.url));
+  const rawSources: StreamingSource[] = [
+    { type: "hls", url: props.hlsLink || "", label: "Primary HLS" },
+    { type: "hls", url: props.backupHlsLink || "", label: "Backup HLS" },
+    { type: "iframe", url: props.embedIframeLink || "", label: "Primary Embed" },
+    { type: "iframe", url: props.backupEmbedIframeLink || "", label: "Backup Embed" }
+  ];
+  const sources: StreamingSource[] = rawSources.filter((item) => item.url.trim().length > 0);
+
+  const [activeSourceIndex, setActiveSourceIndex] = useState(0);
+  const activeSource = sources[activeSourceIndex];
 
   usePlaybackTracker({
     videoRef,
@@ -32,17 +54,47 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
     }
   });
 
-  if (props.hlsLink) {
-    return <HLSPlayer src={props.hlsLink} videoRef={videoRef} />;
-  }
-
-  if (props.embedIframeLink) {
-    return <IframePlayer src={props.embedIframeLink} />;
+  if (!activeSource) {
+    return (
+      <div className="flex aspect-video items-center justify-center rounded-2xl border border-border bg-card text-sm text-muted">
+        Streaming not available
+      </div>
+    );
   }
 
   return (
-    <div className="flex aspect-video items-center justify-center rounded-2xl border border-border bg-card text-sm text-muted">
-      Streaming not available
+    <div className="space-y-3">
+      {activeSource.type === "hls" ? (
+        <HLSPlayer
+          src={activeSource.url}
+          subtitles={subtitleTracks}
+          videoRef={videoRef}
+          onFatal={() => {
+            if (activeSourceIndex < sources.length - 1) {
+              setActiveSourceIndex((prev) => prev + 1);
+            }
+          }}
+        />
+      ) : (
+        <IframePlayer src={activeSource.url} />
+      )}
+
+      {sources.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          {sources.map((source, index) => (
+            <button
+              key={`${source.type}-${source.label}-${index}`}
+              type="button"
+              onClick={() => setActiveSourceIndex(index)}
+              className={`rounded-lg border px-3 py-1.5 text-xs ${
+                index === activeSourceIndex ? "border-primary bg-primary/10 text-primary" : "border-border text-muted"
+              }`}
+            >
+              {source.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

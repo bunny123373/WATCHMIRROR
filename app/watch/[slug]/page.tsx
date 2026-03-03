@@ -6,8 +6,18 @@ import { getContentBySlug, getSimilarContent } from "@/lib/content";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const content = await getContentBySlug(slug);
+  const canonical = `/watch/${slug}`;
   return {
-    title: content ? `Watch ${content.title}` : "Watch"
+    title: content ? `Watch ${content.title}` : "Watch",
+    description: content?.metaDescription || content?.description || "Watch now on WATCHMIRROR.",
+    alternates: { canonical },
+    openGraph: content
+      ? {
+          title: `Watch ${content.title}`,
+          description: content.metaDescription || content.description,
+          images: content.banner ? [content.banner] : undefined
+        }
+      : undefined
   };
 }
 
@@ -31,6 +41,9 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ slu
         poster={content.poster}
         hlsLink={content.hlsLink}
         embedIframeLink={content.embedIframeLink}
+        backupHlsLink={content.backupHlsLink}
+        backupEmbedIframeLink={content.backupEmbedIframeLink}
+        subtitleTracks={content.subtitleTracks}
       />
       <ContentRow title="Related Movies" items={similar.filter((item) => item.type === "movie")} />
     </div>

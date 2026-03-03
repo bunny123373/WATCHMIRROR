@@ -9,12 +9,26 @@ const castSchema = new Schema(
   { _id: false }
 );
 
+const subtitleTrackSchema = new Schema(
+  {
+    label: { type: String, required: true },
+    lang: { type: String, required: true },
+    url: { type: String, required: true },
+    isDefault: { type: Boolean, default: false }
+  },
+  { _id: false }
+);
+
 const episodeSchema = new Schema(
   {
     episodeNumber: { type: Number, required: true },
     episodeTitle: { type: String, required: true },
     hlsLink: { type: String, default: "" },
     embedIframeLink: { type: String, default: "" },
+    backupHlsLink: { type: String, default: "" },
+    backupEmbedIframeLink: { type: String, default: "" },
+    subtitleTracks: { type: [subtitleTrackSchema], default: [] },
+    releaseAt: { type: Date, default: null },
     quality: { type: String, default: "" }
   },
   { _id: false }
@@ -49,6 +63,10 @@ const contentSchema = new Schema(
     metaDescription: { type: String, default: "" },
     hlsLink: { type: String, default: "" },
     embedIframeLink: { type: String, default: "" },
+    backupHlsLink: { type: String, default: "" },
+    backupEmbedIframeLink: { type: String, default: "" },
+    subtitleTracks: { type: [subtitleTrackSchema], default: [] },
+    publishAt: { type: Date, default: null },
     seasons: { type: [seasonSchema], default: [] }
   },
   { timestamps: true }

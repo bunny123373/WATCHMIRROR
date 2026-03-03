@@ -5,10 +5,26 @@ import StreamingPlayer from "@/components/players/StreamingPlayer";
 import { Content } from "@/types/content";
 
 export default function SeriesWatchClient({ content }: { content: Content }) {
-  const [seasonNumber, setSeasonNumber] = useState(content.seasons?.[0]?.seasonNumber || 1);
-  const [episodeNumber, setEpisodeNumber] = useState(content.seasons?.[0]?.episodes?.[0]?.episodeNumber || 1);
+  const now = Date.now();
+  const seasons = useMemo(
+    () =>
+      (content.seasons || [])
+        .map((season) => ({
+          ...season,
+          episodes: (season.episodes || []).filter((episode) => {
+            if (!episode.releaseAt) return true;
+            const ts = new Date(episode.releaseAt).getTime();
+            return Number.isFinite(ts) ? ts <= now : true;
+          })
+        }))
+        .filter((season) => season.episodes.length > 0),
+    [content.seasons, now]
+  );
 
-  const season = useMemo(() => content.seasons?.find((item) => item.seasonNumber === seasonNumber), [content.seasons, seasonNumber]);
+  const [seasonNumber, setSeasonNumber] = useState(seasons[0]?.seasonNumber || 1);
+  const [episodeNumber, setEpisodeNumber] = useState(seasons[0]?.episodes?.[0]?.episodeNumber || 1);
+
+  const season = useMemo(() => seasons.find((item) => item.seasonNumber === seasonNumber), [seasons, seasonNumber]);
   const episode = useMemo(
     () => season?.episodes.find((item) => item.episodeNumber === episodeNumber) || season?.episodes[0],
     [season, episodeNumber]
@@ -23,6 +39,9 @@ export default function SeriesWatchClient({ content }: { content: Content }) {
         poster={content.poster}
         hlsLink={episode?.hlsLink}
         embedIframeLink={episode?.embedIframeLink}
+        backupHlsLink={episode?.backupHlsLink}
+        backupEmbedIframeLink={episode?.backupEmbedIframeLink}
+        subtitleTracks={episode?.subtitleTracks}
         seasonNumber={seasonNumber}
         episodeNumber={episode?.episodeNumber}
       />
@@ -31,7 +50,7 @@ export default function SeriesWatchClient({ content }: { content: Content }) {
         <div className="glass rounded-2xl p-4">
           <h3 className="mb-3 text-sm font-semibold text-primary">Seasons</h3>
           <div className="space-y-2">
-            {(content.seasons || []).map((s) => (
+            {seasons.map((s) => (
               <button
                 key={s.seasonNumber}
                 onClick={() => {
