@@ -8,47 +8,30 @@ const visibilityQuery = {
 
 export async function getHomeRows(): Promise<{
   trending: Content[];
-  latest: Content[];
-  movies: Content[];
-  series: Content[];
-  languages: Record<string, Content[]>;
+  topRated: Content[];
+  popularMovies: Content[];
+  popularSeries: Content[];
+  recentlyAdded: Content[];
 }> {
   await connectDB();
 
-  const [trending, latest, movies, series] = await Promise.all([
-    ContentModel.find({ $and: [visibilityQuery, { $or: [{ popularity: { $gt: 100 } }, { rating: { $gt: 7.5 } }] }] }).sort({ popularity: -1 }).limit(16).lean<Content[]>(),
-    ContentModel.find(visibilityQuery).sort({ createdAt: -1 }).limit(16).lean<Content[]>(),
-    ContentModel.find({ ...visibilityQuery, type: "movie" }).sort({ createdAt: -1 }).limit(16).lean<Content[]>(),
-    ContentModel.find({ ...visibilityQuery, type: "series" }).sort({ createdAt: -1 }).limit(16).lean<Content[]>()
+  const [trending, topRated, popularMovies, popularSeries, recentlyAdded] = await Promise.all([
+    ContentModel.find({ ...visibilityQuery, $or: [{ popularity: { $gt: 100 } }, { rating: { $gt: 7.5 } }] })
+      .sort({ popularity: -1 })
+      .limit(16)
+      .lean<Content[]>(),
+    ContentModel.find(visibilityQuery).sort({ rating: -1 }).limit(16).lean<Content[]>(),
+    ContentModel.find({ ...visibilityQuery, type: "movie" }).sort({ popularity: -1 }).limit(16).lean<Content[]>(),
+    ContentModel.find({ ...visibilityQuery, type: "series" }).sort({ popularity: -1 }).limit(16).lean<Content[]>(),
+    ContentModel.find(visibilityQuery).sort({ createdAt: -1 }).limit(16).lean<Content[]>()
   ]);
-
-  const languageRows = await ContentModel.aggregate([
-    { $sort: { popularity: -1 } },
-    {
-      $group: {
-        _id: "$language",
-        items: { $push: "$$ROOT" }
-      }
-    },
-    {
-      $project: {
-        _id: 1,
-        items: { $slice: ["$items", 12] }
-      }
-    }
-  ]);
-
-  const languages = languageRows.reduce((acc: Record<string, Content[]>, row: { _id: string; items: Content[] }) => {
-    acc[row._id || "Other"] = row.items;
-    return acc;
-  }, {});
 
   return {
     trending,
-    latest,
-    movies,
-    series,
-    languages
+    topRated,
+    popularMovies,
+    popularSeries,
+    recentlyAdded
   };
 }
 

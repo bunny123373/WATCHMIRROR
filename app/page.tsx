@@ -11,12 +11,16 @@ export default async function HomePage() {
   const data = await getHomeRows();
   return (
     <div className="space-y-12">
-      <HeroBanner item={data.trending[0] || data.latest[0] || null} />
+      <HeroBanner item={data.trending[0] || null} />
 
       <TopTenRow items={data.trending} />
       <MyListRow />
       <ContinueWatchingRow />
-      <ContentRow title="Trending" items={data.trending} />
+      <ContentRow title="Trending Now" items={data.trending} />
+      <ContentRow title="Top Rated" items={data.topRated} />
+      <ContentRow title="Popular Movies" items={data.popularMovies} />
+      <ContentRow title="Popular Series" items={data.popularSeries} />
+      <ContentRow title="Recently Added" items={data.recentlyAdded} />
     </div>
   );
 }
