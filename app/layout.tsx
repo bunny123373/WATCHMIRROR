@@ -9,6 +9,7 @@ import ContinueHydrator from "@/components/common/ContinueHydrator";
 import MyListHydrator from "@/components/common/MyListHydrator";
 import ServiceWorkerRegister from "@/components/providers/sw-register";
 import ProfileGate from "@/components/providers/profile-gate";
+import TrailerHandler from "@/components/common/TrailerHandler";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://watchmirror.vercel.app"),
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body className="font-[var(--font-body)] antialiased">
         <ReduxProvider>
+          <TrailerHandler />
           <ContinueHydrator />
           <MyListHydrator />
           <ServiceWorkerRegister />

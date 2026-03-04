@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Clapperboard, Play, Star } from "lucide-react";
+import { Play, Star, Plus, Check, Clapperboard } from "lucide-react";
 import ContentRow from "@/components/common/ContentRow";
+import TrailerModal from "@/components/common/TrailerModal";
 import { getContentBySlug, getSimilarContent } from "@/lib/content";
+import { cookies } from "next/headers";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -42,133 +44,95 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
     return <div className="rounded-2xl border border-border p-6">Movie not found.</div>;
   }
 
+  const cookieStore = await cookies();
+  const myListData = cookieStore.get("myList")?.value || "[]";
+  const myList = JSON.parse(myListData);
+  const isInList = myList.some((item: any) => item.slug === content.slug && item.type === content.type);
+
   const similar = await getSimilarContent(content);
   const topTags = (content.tags || []).slice(0, 4);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Movie",
-    name: content.title,
-    description: content.description,
-    image: content.poster,
-    datePublished: `${content.year}-01-01`,
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: content.rating,
-      bestRating: 10
-    }
-  };
-
   return (
-    <div className="space-y-10">
-      <section className="relative min-h-[68vh] overflow-hidden rounded-2xl bg-black">
-        <Image
-          src={content.banner || content.poster}
-          alt={content.title}
-          fill
-          priority
-          className="object-cover opacity-75"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-black/35" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+    <div className="space-y-8">
+      <section className="relative -mx-4 -mt-6 h-[56.25vw] min-h-[280px] max-h-[80vh] w-[calc(100%+32px)] overflow-hidden sm:-mx-8 sm:w-[calc(100%+64px)] md:-mt-8">
+        <Image src={content.banner || content.poster} alt={content.title} fill priority className="object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
 
-        <div className="absolute bottom-0 left-0 right-0 p-5 md:p-10">
-          <div className="max-w-3xl">
-            <div className="mb-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
-              <span className="rounded bg-[#E50914] px-2.5 py-1 text-white">Movie</span>
-              <span className="inline-flex items-center gap-1 rounded bg-white/10 px-2.5 py-1 text-[#e5e5e5]">
-                <Star size={12} className="text-[#E50914]" />
-                {Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-24 md:px-8 md:pb-12 lg:px-16">
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-2 flex flex-wrap items-center gap-2 md:mb-3">
+              <span className="rounded bg-white/20 px-2 py-0.5 text-[10px] font-medium uppercase text-white backdrop-blur-sm md:text-xs">Movie</span>
+              <span className="flex items-center gap-1 rounded bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm md:text-xs">
+                <Star size={10} className="text-yellow-400 md:size-3" /> {Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}
               </span>
-              <span className="rounded bg-white/10 px-2.5 py-1 text-[#e5e5e5]">{content.year || "N/A"}</span>
-              <span className="rounded bg-white/10 px-2.5 py-1 text-[#e5e5e5]">{content.language || "N/A"}</span>
-              {content.quality && <span className="rounded bg-white/10 px-2.5 py-1 text-[#e5e5e5]">{content.quality}</span>}
+              <span className="rounded bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm md:text-xs">{content.year} · {content.language}</span>
+              {content.quality && <span className="rounded bg-red-600 px-1.5 py-0.5 text-[9px] font-bold text-white md:text-[10px]">{content.quality}</span>}
             </div>
 
-            <h1 className="font-[var(--font-heading)] text-4xl font-bold leading-tight text-white md:text-6xl">
-              {content.title}
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm text-[#d1d5db] md:text-base">{content.description}</p>
+            <h1 className="font-[var(--font-heading)] text-2xl leading-tight text-white md:text-3xl lg:text-4xl">{content.title}</h1>
+            <p className="mt-2 line-clamp-2 text-xs text-gray-300 md:mt-3 md:text-sm lg:text-base">{content.description}</p>
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href={`/watch/${content.slug}`} className="inline-flex items-center gap-2 rounded bg-white px-6 py-3 text-sm font-bold text-black hover:bg-[#e5e5e5]">
-                <Play size={16} fill="currentColor" /> Play
+            <div className="mt-4 flex flex-wrap gap-2 md:mt-5 md:gap-3">
+              <Link href={`/watch/${content.slug}`} className="inline-flex items-center gap-1.5 rounded bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-white/90 md:px-6 md:py-3 md:text-base">
+                <Play size={16} fill="black" className="md:size-5" /> Play
               </Link>
               {content.trailerEmbedUrl && (
-                <a href="#trailer" className="inline-flex items-center gap-2 rounded bg-[#6d6d6eb3] px-6 py-3 text-sm font-bold text-white hover:bg-[#808082b3]">
-                  <Clapperboard size={16} /> Trailer
-                </a>
+                <TrailerButton url={content.trailerEmbedUrl} />
               )}
+              <Link href={`/add?slug=${content.slug}&type=movie&title=${encodeURIComponent(content.title)}&poster=${encodeURIComponent(content.poster)}&year=${content.year}&rating=${content.rating}&quality=${content.quality}`} className="inline-flex items-center gap-1.5 rounded bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/30 md:px-4 md:py-3">
+                {isInList ? <Check size={16} /> : <Plus size={16} />}
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1fr,320px]">
-        <div className="space-y-5">
+      <section className="px-4 md:px-8">
+        <div className="mx-auto max-w-3xl space-y-6">
           <div>
             <h2 className="text-lg font-semibold text-white">Overview</h2>
-            <p className="mt-2 text-sm leading-6 text-[#c7c7c7]">{content.description}</p>
+            <p className="mt-2 text-sm leading-6 text-gray-400">{content.description}</p>
           </div>
 
-          <div>
-            <h2 className="text-lg font-semibold text-white">Cast</h2>
-            {content.cast.length > 0 ? (
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                {content.cast.slice(0, 8).map((actor) => (
-                  <div key={`${actor.name}-${actor.character}`} className="flex items-center gap-3 rounded-lg bg-[#1a1a1a] p-3">
-                    {actor.profileImage ? (
-                      <Image src={actor.profileImage} alt={actor.name} width={44} height={44} className="h-11 w-11 rounded-full object-cover" />
-                    ) : (
-                      <div className="h-11 w-11 rounded-full bg-[#2b2b2b]" />
-                    )}
-                    <div>
-                      <p className="text-sm font-medium text-white">{actor.name}</p>
-                      <p className="text-xs text-[#a7a7a7]">{actor.character || "Cast"}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-2 text-sm text-[#9a9a9a]">Cast details are not available for this title.</p>
-            )}
+          <div className="flex flex-wrap gap-2">
+            {topTags.map((tag) => (
+              <span key={tag} className="rounded-full bg-white/10 px-3 py-1 text-xs text-gray-300">{tag}</span>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+            <div>
+              <p className="text-gray-500">Year</p>
+              <p className="font-medium text-white">{content.year}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Language</p>
+              <p className="font-medium text-white">{content.language}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Rating</p>
+              <p className="font-medium text-white">{Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Category</p>
+              <p className="font-medium text-white">{content.category || "Movie"}</p>
+            </div>
           </div>
         </div>
-
-        <aside className="h-fit rounded-xl bg-[#181818] p-4">
-          <Image src={content.poster} alt={content.title} width={300} height={420} className="w-full rounded-lg object-cover" />
-          <div className="mt-4 space-y-2 text-sm text-[#c7c7c7]">
-            <p><span className="font-semibold text-white">Year:</span> {content.year || "N/A"}</p>
-            <p><span className="font-semibold text-white">Language:</span> {content.language || "N/A"}</p>
-            <p><span className="font-semibold text-white">Category:</span> {content.category || "Movie"}</p>
-            <p><span className="font-semibold text-white">Rating:</span> {Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}</p>
-          </div>
-          {topTags.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {topTags.map((tag) => (
-                <span key={tag} className="rounded-full bg-[#2b2b2b] px-2.5 py-1 text-xs text-[#e5e5e5]">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </aside>
       </section>
 
-      {content.trailerEmbedUrl && (
-        <section id="trailer" className="space-y-3">
-          <h2 className="text-xl font-semibold text-white">Trailer</h2>
-          <div className="overflow-hidden rounded-xl bg-black">
-            <div className="relative aspect-video">
-              <iframe src={content.trailerEmbedUrl} className="absolute inset-0 h-full w-full" allowFullScreen />
-            </div>
-          </div>
-        </section>
-      )}
-
-      <ContentRow title="Similar Movies" items={similar.filter((item) => item.type === "movie")} />
-
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <section className="px-4 md:px-8">
+        <ContentRow title="More Like This" items={similar.filter((item) => item.type === "movie")} />
+      </section>
     </div>
+  );
+}
+
+function TrailerButton({ url }: { url: string }) {
+  return (
+    <Link href={`#trailer`} scroll={false} onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent("openTrailer", { detail: url })); }} className="inline-flex items-center gap-1.5 rounded bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/30 md:px-4 md:py-3">
+      <Clapperboard size={16} /> Trailer
+    </Link>
   );
 }
