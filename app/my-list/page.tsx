@@ -15,7 +15,7 @@ export default function MyListPage() {
       {!items.length && (
         <div className="rounded-xl border border-[#2a2a2a] bg-[#181818] p-6 text-sm text-[#b3b3b3]">No saved titles yet.</div>
       )}
-      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid gap-4 grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {items.map((item) => {
           const href = item.type === "movie" ? `/movie/${item.slug}` : `/series/${item.slug}`;
           const hasValidPoster =

@@ -16,8 +16,6 @@ export default async function HomePage() {
   const categorySet = Array.from(
     new Set([...data.trending, ...data.latest].map((item) => item.category).filter(Boolean))
   ).slice(0, 8);
-  const spotlightGrid = [...data.trending, ...data.latest].slice(0, 6);
-
   return (
     <div className="space-y-12">
       <HeroBanner item={data.trending[0] || data.latest[0] || null} />
@@ -47,20 +45,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="font-[var(--font-heading)] text-2xl">Spotlight Grid</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {spotlightGrid.map((item) => (
-            <div key={`${item.type}-${item.slug}`} className="rounded-xl border border-[#2a2a2a] bg-[#181818] p-3">
-              <p className="line-clamp-1 font-semibold">{item.title}</p>
-              <p className="mt-1 text-xs text-[#b3b3b3]">
-                {item.year} | {item.language} | {Number.isFinite(item.rating) ? item.rating.toFixed(1) : "N/A"}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-      <EpisodeAlerts />
+
       <TopTenRow items={data.trending} />
       <MyListRow />
       <ContinueWatchingRow />
