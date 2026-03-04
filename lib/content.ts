@@ -76,3 +76,38 @@ export async function getAllContent(type?: "movie" | "series"): Promise<Content[
   const data = await ContentModel.find(query).sort({ createdAt: -1 }).lean<Content[]>();
   return data;
 }
+
+export async function getContentByGenre(genre: string, type?: "movie" | "series"): Promise<Content[]> {
+  await connectDB();
+  const genreLower = genre.toLowerCase();
+  const query = {
+    ...visibilityQuery,
+    ...(type && { type }),
+    $or: [
+      { category: { $regex: new RegExp(genre, "i") } },
+      { tags: { $in: [new RegExp(genre, "i")] } }
+    ]
+  };
+  const data = await ContentModel.find(query).sort({ popularity: -1 }).limit(20).lean<Content[]>();
+  return data;
+}
+
+export async function getGenres(): Promise<{ name: string; slug: string }[]> {
+  const genres = [
+    { name: "Action", slug: "action" },
+    { name: "Adventure", slug: "adventure" },
+    { name: "Animation", slug: "animation" },
+    { name: "Comedy", slug: "comedy" },
+    { name: "Crime", slug: "crime" },
+    { name: "Drama", slug: "drama" },
+    { name: "Fantasy", slug: "fantasy" },
+    { name: "Horror", slug: "horror" },
+    { name: "Mystery", slug: "mystery" },
+    { name: "Romance", slug: "romance" },
+    { name: "Sci-Fi", slug: "sci-fi" },
+    { name: "Thriller", slug: "thriller" },
+    { name: "War", slug: "war" },
+    { name: "Western", slug: "western" }
+  ];
+  return genres;
+}
