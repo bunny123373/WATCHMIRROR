@@ -1,14 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Info, Play, Plus, Star } from "lucide-react";
+import { Info, Play, Star } from "lucide-react";
 import { Content } from "@/types/content";
 
 export default function HeroBanner({ item }: { item: Content | null }) {
   if (!item) {
     return (
-      <section className="glass flex h-[60vh] min-h-[400px] items-center justify-center rounded-none">
+      <section className="flex h-[50vh] min-h-[300px] items-center justify-center bg-[#0a0a0a]">
         <div className="text-center">
-          <h1 className="font-[var(--font-heading)] text-5xl text-primary">WATCHMIRROR</h1>
+          <h1 className="font-[var(--font-heading)] text-4xl text-primary md:text-5xl">WATCHMIRROR</h1>
           <p className="mt-2 text-muted">Stream Without Limits.</p>
         </div>
       </section>
@@ -19,7 +19,7 @@ export default function HeroBanner({ item }: { item: Content | null }) {
   const watchHref = item.type === "movie" ? `/watch/${item.slug}` : `/series/watch/${item.slug}`;
 
   return (
-    <section className="relative -mx-4 -mt-6 h-[85vh] min-h-[500px] w-[calc(100%+32px)] md:-mx-8 md:-mt-8 md:w-[calc(100%+64px)] lg:-mt-8">
+    <section className="relative h-[56.25vw] min-h-[280px] max-h-[80vh] w-full overflow-hidden">
       <Image
         src={item.banner || item.poster}
         alt={item.title}
@@ -27,47 +27,48 @@ export default function HeroBanner({ item }: { item: Content | null }) {
         priority
         className="object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
-      <div className="absolute inset-0 flex flex-col justify-center px-4 py-20 md:px-16 lg:px-24">
-        <div className="max-w-2xl">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-black/40 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-              {item.type === "movie" ? "Movie" : "Web Series"}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#141414]/90 via-transparent to-transparent" />
+      
+      <div className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-20 md:px-8 md:pb-12 lg:px-16">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-2 flex flex-wrap items-center gap-2 md:mb-3">
+            <span className="rounded bg-white/20 px-2 py-0.5 text-[10px] font-medium uppercase text-white backdrop-blur-sm md:text-xs">
+              {item.type === "movie" ? "Movie" : "Series"}
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-black/40 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-              <Star size={12} className="text-yellow-400" /> {Number.isFinite(item.rating) ? item.rating.toFixed(1) : "N/A"}
+            <span className="flex items-center gap-1 rounded bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm md:text-xs">
+              <Star size={10} className="text-yellow-400 md:size-3" /> {Number.isFinite(item.rating) ? item.rating.toFixed(1) : "N/A"}
             </span>
-            <span className="rounded-full border border-white/30 bg-black/40 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+            <span className="rounded bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm md:text-xs">
               {item.year} · {item.language}
             </span>
             {item.quality && (
-              <span className="rounded border border-white/30 bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white">
+              <span className="rounded bg-red-600 px-1.5 py-0.5 text-[9px] font-bold text-white md:text-[10px]">
                 {item.quality}
               </span>
             )}
           </div>
           
-          <h1 className="font-[var(--font-heading)] text-4xl text-white md:text-5xl lg:text-6xl">
+          <h1 className="font-[var(--font-heading)] text-2xl leading-tight text-white md:text-3xl lg:text-4xl">
             {item.title}
           </h1>
           
-          <p className="mt-4 line-clamp-3 text-base text-gray-300 md:text-lg">
+          <p className="mt-2 line-clamp-2 text-xs text-gray-300 md:mt-3 md:text-sm lg:text-base">
             {item.description}
           </p>
           
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-4 flex flex-wrap gap-2 md:mt-5 md:gap-3">
             <Link
               href={watchHref}
-              className="inline-flex items-center gap-2 rounded bg-white px-6 py-3 text-base font-bold text-black transition hover:bg-white/90"
+              className="inline-flex items-center gap-1.5 rounded bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-white/90 md:px-6 md:py-3 md:text-base"
             >
-              <Play size={20} fill="black" /> Play
+              <Play size={16} fill="black" className="md:size-5" /> Play
             </Link>
             <Link
               href={detailsHref}
-              className="inline-flex items-center gap-2 rounded bg-white/20 px-6 py-3 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/30"
+              className="inline-flex items-center gap-1.5 rounded bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/30 md:px-6 md:py-3 md:text-base"
             >
-              <Info size={20} /> More Info
+              <Info size={16} className="md:size-5" /> More Info
             </Link>
           </div>
         </div>
