@@ -18,7 +18,7 @@ export default function ContentCard({ item }: { item: Content }) {
     typeof item.poster === "string" &&
     (item.poster.startsWith("/") || item.poster.startsWith("https://image.tmdb.org/"));
   const yearLabel = Number.isFinite(item.year) ? String(item.year) : "N/A";
-  const ratingPercent = Number.isFinite(item.rating) ? Math.round(item.rating * 10) : null;
+  const ratingLabel = Number.isFinite(item.rating) ? item.rating.toFixed(1) : null;
 
   const toggleList = () => {
     dispatch(
@@ -35,7 +35,7 @@ export default function ContentCard({ item }: { item: Content }) {
   };
 
   return (
-    <article className="group relative w-[150px] shrink-0 transition sm:w-[180px] md:w-[200px] lg:w-[220px]">
+    <article className="group relative w-[130px] shrink-0 transition sm:w-[160px] md:w-[180px] lg:w-[200px] xl:w-[230px]">
       <div className="relative overflow-hidden rounded-lg bg-[#0a0a0a] transition duration-300 group-hover:z-20 group-hover:scale-[1.04] group-hover:shadow-2xl">
         <Link href={detailsHref}>
           {hasValidPoster ? (
@@ -51,9 +51,9 @@ export default function ContentCard({ item }: { item: Content }) {
           )}
         </Link>
         
-        {ratingPercent !== null && (
+        {ratingLabel !== null && (
           <div className="absolute left-2 top-2 flex items-center gap-1 rounded bg-black/80 px-1.5 py-0.5">
-            <span className="text-[11px] font-bold text-[#00f0ff]">{ratingPercent}%</span>
+            <span className="text-[11px] font-bold text-[#00f0ff]">{ratingLabel}</span>
           </div>
         )}
 
