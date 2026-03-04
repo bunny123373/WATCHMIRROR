@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
-import { Play, Star, ChevronLeft } from "lucide-react";
+import { ChevronLeft, Star } from "lucide-react";
 import ContentRow from "@/components/common/ContentRow";
 import StreamingPlayer from "@/components/players/StreamingPlayer";
 import { getContentBySlug, getSimilarContent } from "@/lib/content";
@@ -21,59 +20,51 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ slu
   const content = await getContentBySlug(slug);
 
   if (!content || content.type !== "movie") {
-    return <div className="rounded-2xl border border-border p-6">Movie not found.</div>;
+    return <div className="p-4">Movie not found.</div>;
   }
 
   const similar = await getSimilarContent(content);
 
   return (
-    <div className="space-y-8 -mt-6">
-      <section className="relative w-full">
-        <StreamingPlayer
-          type="movie"
-          slug={content.slug}
-          title={content.title}
-          poster={content.poster}
-          hlsLink={content.hlsLink}
-          embedIframeLink={content.embedIframeLink}
-          backupHlsLink={content.backupHlsLink}
-          backupEmbedIframeLink={content.backupEmbedIframeLink}
-          subtitleTracks={content.subtitleTracks}
-        />
-      </section>
+    <div className="-mx-4 -mt-6 min-h-screen w-[calc(100%+32px)] bg-black sm:-mx-8 sm:w-[calc(100%+64px)]">
+      <div className="pb-6">
+        <section className="w-full">
+          <StreamingPlayer
+            type="movie"
+            slug={content.slug}
+            title={content.title}
+            poster={content.poster}
+            hlsLink={content.hlsLink}
+            embedIframeLink={content.embedIframeLink}
+            backupHlsLink={content.backupHlsLink}
+            backupEmbedIframeLink={content.backupEmbedIframeLink}
+            subtitleTracks={content.subtitleTracks}
+          />
+        </section>
 
-      <section className="px-4 md:px-8">
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Link href={`/movie/${content.slug}`} className="flex items-center gap-1 text-sm text-gray-400 hover:text-white">
-              <ChevronLeft size={16} /> Back to details
-            </Link>
-          </div>
+        <section className="px-4">
+          <Link href={`/movie/${content.slug}`} className="mb-3 inline-flex items-center gap-1 text-sm text-gray-400 hover:text-white">
+            <ChevronLeft size={16} /> Back
+          </Link>
           
-          <h1 className="font-[var(--font-heading)] text-2xl text-white md:text-3xl">{content.title}</h1>
+          <h1 className="font-[var(--font-heading)] text-xl text-white md:text-2xl">{content.title}</h1>
           
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-400 md:text-sm">
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-400">
             <span className="flex items-center gap-1">
-              <Star size={12} className="text-yellow-400" /> {Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}
+              <Star size={10} className="text-yellow-400" /> {Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}
             </span>
             <span>·</span>
             <span>{content.year}</span>
             <span>·</span>
             <span>{content.language}</span>
-            {content.quality && <><span>·</span><span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">{content.quality}</span></>}
+            {content.quality && <><span>·</span><span className="rounded bg-red-600 px-1 py-0.5 text-[9px] font-bold text-white">{content.quality}</span></>}
           </div>
+        </section>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href={`/movie/${content.slug}`} className="inline-flex items-center gap-2 rounded bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20">
-              Details
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="px-4 md:px-8">
-        <ContentRow title="More Like This" items={similar.filter((item) => item.type === "movie")} />
-      </section>
+        <section className="mt-6 px-4">
+          <ContentRow title="More Like This" items={similar.filter((item) => item.type === "movie")} />
+        </section>
+      </div>
     </div>
   );
 }
