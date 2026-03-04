@@ -3,29 +3,16 @@ import ContinueWatchingRow from "@/components/home/ContinueWatchingRow";
 import TopTenRow from "@/components/home/TopTenRow";
 import MyListRow from "@/components/home/MyListRow";
 import ContentRow from "@/components/common/ContentRow";
-import { getHomeRows, getContentByGenre, getContentByLanguage } from "@/lib/content";
+import { getHomeBrowseSections, getHomeRows } from "@/lib/content";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 180;
 
 const GENRES = ["Action", "Comedy", "Horror", "Thriller", "Romance", "Sci-Fi"];
 const LANGUAGES = ["English", "Telugu", "Hindi", "Tamil", "Korean", "Japanese", "Spanish"];
 
 export default async function HomePage() {
-  const data = await getHomeRows();
-  
-  const genreData = await Promise.all(
-    GENRES.map(async (genre) => ({
-      name: genre,
-      items: await getContentByGenre(genre)
-    }))
-  );
-
-  const languageData = await Promise.all(
-    LANGUAGES.map(async (lang) => ({
-      name: lang,
-      items: await getContentByLanguage(lang)
-    }))
-  );
+  const [data, browseData] = await Promise.all([getHomeRows(), getHomeBrowseSections(GENRES, LANGUAGES)]);
+  const { genreData, languageData } = browseData;
 
   return (
     <div className="space-y-10">

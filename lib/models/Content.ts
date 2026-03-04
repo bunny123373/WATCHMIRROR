@@ -72,4 +72,11 @@ const contentSchema = new Schema(
   { timestamps: true }
 );
 
+contentSchema.index({ type: 1, popularity: -1, createdAt: -1 });
+contentSchema.index({ type: 1, rating: -1 });
+contentSchema.index({ publishAt: 1, createdAt: -1 });
+contentSchema.index({ category: 1, type: 1, popularity: -1 });
+contentSchema.index({ language: 1, type: 1, popularity: -1 });
+contentSchema.index({ tags: 1, type: 1, popularity: -1 });
+
 export const ContentModel = models.Content || model("Content", contentSchema);

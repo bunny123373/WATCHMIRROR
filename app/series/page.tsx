@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import ContentRow from "@/components/common/ContentRow";
 import { getAllContent } from "@/lib/content";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 180;
 
 export const metadata: Metadata = {
   title: "TV Shows"
