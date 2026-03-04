@@ -111,3 +111,14 @@ export async function getGenres(): Promise<{ name: string; slug: string }[]> {
   ];
   return genres;
 }
+
+export async function getContentByLanguage(language: string, type?: "movie" | "series"): Promise<Content[]> {
+  await connectDB();
+  const query = {
+    ...visibilityQuery,
+    ...(type && { type }),
+    language: { $regex: new RegExp(`^${language}$`, "i") }
+  };
+  const data = await ContentModel.find(query).sort({ popularity: -1 }).limit(20).lean<Content[]>();
+  return data;
+}

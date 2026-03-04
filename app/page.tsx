@@ -3,11 +3,12 @@ import ContinueWatchingRow from "@/components/home/ContinueWatchingRow";
 import TopTenRow from "@/components/home/TopTenRow";
 import MyListRow from "@/components/home/MyListRow";
 import ContentRow from "@/components/common/ContentRow";
-import { getHomeRows, getContentByGenre } from "@/lib/content";
+import { getHomeRows, getContentByGenre, getContentByLanguage } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
 const GENRES = ["Action", "Comedy", "Horror", "Thriller", "Romance", "Sci-Fi"];
+const LANGUAGES = ["English", "Telugu", "Hindi", "Tamil", "Korean", "Japanese", "Spanish"];
 
 export default async function HomePage() {
   const data = await getHomeRows();
@@ -16,6 +17,13 @@ export default async function HomePage() {
     GENRES.map(async (genre) => ({
       name: genre,
       items: await getContentByGenre(genre)
+    }))
+  );
+
+  const languageData = await Promise.all(
+    LANGUAGES.map(async (lang) => ({
+      name: lang,
+      items: await getContentByLanguage(lang)
     }))
   );
 
@@ -36,6 +44,12 @@ export default async function HomePage() {
       {genreData.map((genre) => (
         genre.items.length > 0 && (
           <ContentRow key={genre.name} title={`${genre.name}`} items={genre.items} />
+        )
+      ))}
+
+      {languageData.map((lang) => (
+        lang.items.length > 0 && (
+          <ContentRow key={lang.name} title={`${lang.name} Movies`} items={lang.items} />
         )
       ))}
     </div>
