@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import TrailerModal from "@/components/common/TrailerModal";
 
-function TrailerHandlerInner() {
+export default function TrailerHandler() {
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -18,12 +17,4 @@ function TrailerHandlerInner() {
   if (!trailerUrl) return null;
 
   return <TrailerModal url={trailerUrl} isOpen={!!trailerUrl} onClose={() => setTrailerUrl(null)} />;
-}
-
-export default function TrailerHandler() {
-  return (
-    <Suspense fallback={null}>
-      <TrailerHandlerInner />
-    </Suspense>
-  );
 }

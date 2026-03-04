@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import ContentRow from "@/components/common/ContentRow";
 import { getContentByGenre, getGenres } from "@/lib/content";
 
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
   const genres = await getGenres();
   return genres.map((genre) => ({ genre: genre.slug }));

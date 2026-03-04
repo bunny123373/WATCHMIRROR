@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, Star, Plus, Check, Clapperboard } from "lucide-react";
+import { Play, Star, Clapperboard } from "lucide-react";
 import ContentRow from "@/components/common/ContentRow";
-import TrailerModal from "@/components/common/TrailerModal";
 import TrailerHandler from "@/components/common/TrailerHandler";
 import { getContentBySlug, getSimilarContent } from "@/lib/content";
-import { cookies } from "next/headers";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -45,11 +43,6 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
     return <div className="rounded-2xl border border-border p-6">Movie not found.</div>;
   }
 
-  const cookieStore = await cookies();
-  const myListData = cookieStore.get("myList")?.value || "[]";
-  const myList = JSON.parse(myListData);
-  const isInList = myList.some((item: any) => item.slug === content.slug && item.type === content.type);
-
   const similar = await getSimilarContent(content);
   const topTags = (content.tags || []).slice(0, 4);
 
@@ -82,9 +75,6 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               {content.trailerEmbedUrl && (
                 <TrailerButton url={content.trailerEmbedUrl} />
               )}
-              <Link href={`/add?slug=${content.slug}&type=movie&title=${encodeURIComponent(content.title)}&poster=${encodeURIComponent(content.poster)}&year=${content.year}&rating=${content.rating}&quality=${content.quality}`} className="inline-flex items-center gap-1.5 rounded bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/30 md:px-4 md:py-3">
-                {isInList ? <Check size={16} /> : <Plus size={16} />}
-              </Link>
             </div>
           </div>
         </div>
