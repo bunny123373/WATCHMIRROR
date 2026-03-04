@@ -1,4 +1,19 @@
+ "use client";
+
+import { useEffect, useState } from "react";
+
 export default function Loading() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShow(true), 1500);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  if (!show) {
+    return null;
+  }
+
   return (
     <div className="space-y-8">
       <div className="h-10 w-64 animate-pulse rounded-xl bg-card" />
