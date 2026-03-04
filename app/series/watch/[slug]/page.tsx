@@ -39,7 +39,7 @@ export default async function SeriesWatchPage({ params }: { params: Promise<{ sl
           <SeriesWatchClient content={content} />
         </section>
 
-        <section className="px-4">
+        <section className="mt-4 px-4">
           <Link href={`/series/${content.slug}`} className="mb-3 hidden items-center gap-1 text-sm text-gray-400 hover:text-white md:flex">
             <ArrowLeft size={16} /> Back to details
           </Link>
