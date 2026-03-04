@@ -27,7 +27,7 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ slu
 
   return (
     <div className="-mx-4 -mt-6 min-h-screen w-[calc(100%+32px)] bg-black sm:-mx-8 sm:w-[calc(100%+64px)]">
-      <div className="pb-6">
+      <div className="pb-6 pt-14 md:pt-4">
         <section className="w-full">
           <StreamingPlayer
             type="movie"
