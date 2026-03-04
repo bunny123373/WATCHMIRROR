@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import ContentRow from "@/components/common/ContentRow";
 import SeriesWatchClient from "@/components/series/SeriesWatchClient";
 import { getContentBySlug, getSimilarContent } from "@/lib/content";
@@ -28,13 +28,20 @@ export default async function SeriesWatchPage({ params }: { params: Promise<{ sl
   return (
     <div className="-mx-4 -mt-6 min-h-screen w-[calc(100%+32px)] bg-black sm:-mx-8 sm:w-[calc(100%+64px)]">
       <div className="pb-6 pt-14 md:pt-4">
+        <Link 
+          href={`/series/${content.slug}`}
+          className="fixed left-3 top-3 z-50 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 md:hidden"
+        >
+          <ArrowLeft size={20} />
+        </Link>
+
         <section className="w-full">
           <SeriesWatchClient content={content} />
         </section>
 
         <section className="px-4">
-          <Link href={`/series/${content.slug}`} className="mb-3 inline-flex items-center gap-1 text-sm text-gray-400 hover:text-white">
-            <ChevronLeft size={16} /> Back
+          <Link href={`/series/${content.slug}`} className="mb-3 hidden items-center gap-1 text-sm text-gray-400 hover:text-white md:flex">
+            <ArrowLeft size={16} /> Back to details
           </Link>
           
           <h1 className="font-[var(--font-heading)] text-xl text-white md:text-2xl">{content.title}</h1>
