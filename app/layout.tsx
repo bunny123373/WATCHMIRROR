@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className="font-[var(--font-body)]">
+      <body className="font-[var(--font-body)] antialiased">
         <ReduxProvider>
           <ContinueHydrator />
           <MyListHydrator />
@@ -49,7 +49,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <ProfileGate>
             <Navbar />
             <MobileSearchOverlay />
-            <main className="mx-auto min-h-screen max-w-[1600px] px-4 pb-28 pt-24 md:px-8 md:pb-10">{children}</main>
+            <main className="mx-auto min-h-screen max-w-[1600px] px-4 pb-28 pt-24 md:px-8 md:pb-10">
+              <div className="animate-fade-in">{children}</div>
+            </main>
             <Footer />
             <MobileBottomNav />
           </ProfileGate>
