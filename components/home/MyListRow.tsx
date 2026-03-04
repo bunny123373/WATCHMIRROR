@@ -2,44 +2,36 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Trash2 } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { removeMyList } from "@/store/slices/myListSlice";
+import { Play } from "lucide-react";
+import { useAppSelector } from "@/store/hooks";
 
 export default function MyListRow() {
-  const dispatch = useAppDispatch();
   const items = useAppSelector((state) => state.myList.items);
   if (!items.length) return null;
 
   return (
-    <section className="space-y-4">
-      <h2 className="font-[var(--font-heading)] text-2xl">My List</h2>
-      <div className="scrollbar-thin flex gap-4 overflow-x-auto pb-2">
+    <section className="space-y-3">
+      <h2 className="font-[var(--font-heading)] text-xl text-white md:text-2xl">My List</h2>
+      <div className="scrollbar-thin snap-x snap-mandatory flex gap-3 overflow-x-auto pb-4 scroll-smooth">
         {items.map((item) => {
           const href = item.type === "movie" ? `/movie/${item.slug}` : `/series/${item.slug}`;
           const hasValidPoster =
             typeof item.poster === "string" &&
             (item.poster.startsWith("/") || item.poster.startsWith("https://image.tmdb.org/"));
           return (
-            <div key={`${item.type}-${item.slug}`} className="w-[180px] shrink-0">
-              <Link href={href}>
-                <div className="overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#181818]">
-                  {hasValidPoster ? (
-                    <Image src={item.poster} alt={item.title} width={360} height={520} className="aspect-[2/3] w-full object-cover" />
-                  ) : (
-                    <div className="aspect-[2/3] w-full bg-[#12151D]" />
-                  )}
+            <Link key={`${item.type}-${item.slug}`} href={href} className="group relative w-[130px] shrink-0 snap-start transition sm:w-[150px] md:w-[170px] lg:w-[190px]">
+              <div className="relative overflow-hidden rounded-lg bg-[#0a0a0a] transition duration-300 group-hover:scale-105 group-hover:shadow-xl">
+                {hasValidPoster ? (
+                  <Image src={item.poster} alt={item.title} width={300} height={450} className="aspect-[2/3] w-full object-cover" />
+                ) : (
+                  <div className="aspect-[2/3] w-full bg-[#12151D]" />
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/40">
+                  <Play className="scale-0 text-white opacity-0 transition group-hover:scale-100 group-hover:opacity-100" size={32} fill="white" />
                 </div>
-                <p className="mt-2 line-clamp-1 text-sm font-semibold">{item.title}</p>
-              </Link>
-              <button
-                type="button"
-                onClick={() => dispatch(removeMyList({ slug: item.slug, type: item.type }))}
-                className="mt-1 inline-flex items-center gap-1 text-xs text-[#b3b3b3] hover:text-[#E50914]"
-              >
-                <Trash2 size={12} /> Remove
-              </button>
-            </div>
+              </div>
+              <p className="mt-2 line-clamp-1 text-xs font-medium text-white sm:text-sm">{item.title}</p>
+            </Link>
           );
         })}
       </div>
