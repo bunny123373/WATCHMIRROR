@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Clapperboard, Tv, Flame, Search, Bookmark } from "lucide-react";
+import { Home, Clapperboard, Tv, Flame, Search } from "lucide-react";
 import { useAppDispatch } from "@/store/hooks";
 import { setMobileSearchOpen } from "@/store/slices/uiSlice";
 
@@ -10,7 +10,6 @@ const navItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/movies", label: "Movies", icon: Clapperboard },
   { href: "/series", label: "Series", icon: Tv },
-  { href: "/my-list", label: "My List", icon: Bookmark },
   { href: "/trending", label: "Trending", icon: Flame }
 ];
 
@@ -20,7 +19,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav className="glass fixed inset-x-0 bottom-0 z-40 border-t border-border/80 p-2 md:hidden">
-      <ul className="grid grid-cols-6 gap-1">
+      <ul className="grid grid-cols-5 gap-1">
         {navItems.map((item) => {
           const ActiveIcon = item.icon;
           const active = pathname === item.href;

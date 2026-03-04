@@ -72,7 +72,7 @@ export default function ContentCard({ item }: { item: Content }) {
             </button>
           </div>
         </div>
-        <span className="absolute left-2 top-2 rounded bg-[#E50914] px-2 py-1 text-[10px] font-bold text-white">{item.quality}</span>
+
       </div>
 
       <div className="pointer-events-none absolute left-0 right-0 top-[calc(100%-10px)] hidden rounded-xl border border-[#2a2a2a] bg-[#181818] p-3 opacity-0 shadow-[0_18px_30px_rgba(0,0,0,0.55)] transition duration-300 group-hover:pointer-events-auto group-hover:opacity-100 md:block">
