@@ -99,6 +99,34 @@ export default function AdminPage() {
     return tmdbResults.filter((item) => item.mediaType === expected);
   }, [tmdbResults, mode]);
 
+  const analytics = useMemo(() => {
+    const total = items.length;
+    const movies = items.filter((item) => item.type === "movie").length;
+    const series = total - movies;
+    const avgRating = total ? (items.reduce((acc, item) => acc + (item.rating || 0), 0) / total).toFixed(1) : "0.0";
+    const scheduled = items.filter((item) => item.publishAt && new Date(item.publishAt).getTime() > Date.now()).length;
+
+    const languageCounts = items.reduce((acc: Record<string, number>, item) => {
+      const key = item.language || "Unknown";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const topLanguages = Object.entries(languageCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    const categoryCounts = items.reduce((acc: Record<string, number>, item) => {
+      const key = item.category || "Other";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const topCategories = Object.entries(categoryCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    return { total, movies, series, avgRating, scheduled, topLanguages, topCategories };
+  }, [items]);
+
   const applyMode = (nextMode: ContentType) => {
     setMode(nextMode);
     setPayload((prev) => ({
@@ -371,6 +399,54 @@ export default function AdminPage() {
   return (
     <div className="space-y-8">
       <h1 className="font-[var(--font-heading)] text-3xl">WATCHMIRROR Admin Panel</h1>
+
+      <section className="grid gap-3 md:grid-cols-5">
+        <div className="glass rounded-xl p-3">
+          <p className="text-xs uppercase tracking-wider text-muted">Total</p>
+          <p className="mt-1 text-2xl font-bold text-primary">{analytics.total}</p>
+        </div>
+        <div className="glass rounded-xl p-3">
+          <p className="text-xs uppercase tracking-wider text-muted">Movies</p>
+          <p className="mt-1 text-2xl font-bold text-primary">{analytics.movies}</p>
+        </div>
+        <div className="glass rounded-xl p-3">
+          <p className="text-xs uppercase tracking-wider text-muted">Series</p>
+          <p className="mt-1 text-2xl font-bold text-primary">{analytics.series}</p>
+        </div>
+        <div className="glass rounded-xl p-3">
+          <p className="text-xs uppercase tracking-wider text-muted">Avg Rating</p>
+          <p className="mt-1 text-2xl font-bold text-primary">{analytics.avgRating}</p>
+        </div>
+        <div className="glass rounded-xl p-3">
+          <p className="text-xs uppercase tracking-wider text-muted">Scheduled</p>
+          <p className="mt-1 text-2xl font-bold text-primary">{analytics.scheduled}</p>
+        </div>
+      </section>
+
+      <section className="grid gap-3 md:grid-cols-2">
+        <div className="glass rounded-xl p-4">
+          <h2 className="mb-2 text-sm font-semibold">Top Languages</h2>
+          <div className="space-y-2">
+            {analytics.topLanguages.map(([name, count]) => (
+              <div key={name} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
+                <span>{name}</span>
+                <span className="text-muted">{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="glass rounded-xl p-4">
+          <h2 className="mb-2 text-sm font-semibold">Top Categories</h2>
+          <div className="space-y-2">
+            {analytics.topCategories.map(([name, count]) => (
+              <div key={name} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
+                <span>{name}</span>
+                <span className="text-muted">{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="glass flex gap-2 rounded-2xl p-2">
         <button

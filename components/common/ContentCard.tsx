@@ -18,7 +18,8 @@ export default function ContentCard({ item }: { item: Content }) {
     typeof item.poster === "string" &&
     (item.poster.startsWith("/") || item.poster.startsWith("https://image.tmdb.org/"));
   const yearLabel = Number.isFinite(item.year) ? String(item.year) : "N/A";
-  const ratingLabel = Number.isFinite(item.rating) ? item.rating.toFixed(1) : "N/A";
+  const ratingPercent = Number.isFinite(item.rating) ? Math.round(item.rating * 10) : null;
+  const ratingLabel = ratingPercent !== null ? `${ratingPercent}%` : "N/A";
   const topTags = (item.tags || []).slice(0, 3).join(" | ");
 
   const toggleList = () => {
