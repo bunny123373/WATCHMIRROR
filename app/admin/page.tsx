@@ -2,7 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import Image from "next/image";
-import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Search, Trash2, X, Film, Tv, BarChart3, Clock, Star, Globe, Tag, Lock } from "lucide-react";
 import { Content, ContentType, Season, SubtitleTrack } from "@/types/content";
 
 const emptyPayload: Partial<Content> = {
@@ -82,6 +82,7 @@ export default function AdminPage() {
   const [status, setStatus] = useState("");
   const [contentSearch, setContentSearch] = useState("");
   const [contentPage, setContentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState<"browse" | "add" | "import">("browse");
   const itemsPerPage = 20;
 
   const slugPreview = useMemo(() => {
@@ -196,6 +197,7 @@ export default function AdminPage() {
       setSeasonsDraft(importedSeasons);
     }
     setLoading(false);
+    setActiveTab("add");
   };
 
   const startEdit = (item: Content) => {
@@ -208,6 +210,7 @@ export default function AdminPage() {
     setMovieSubtitlesInput(subtitleLines(item.subtitleTracks));
     setSeasonsDraft(item.seasons && item.seasons.length ? item.seasons : [createSeason(1)]);
     setStatus(`Editing: ${item.title}`);
+    setActiveTab("add");
   };
 
   const resetForm = () => {
@@ -386,6 +389,7 @@ export default function AdminPage() {
     setSeasonsDraft(item.seasons && item.seasons.length ? item.seasons : [createSeason(1)]);
     setEditingId(null);
     setStatus(`Duplicated: ${item.title}`);
+    setActiveTab("add");
   };
 
   const unlockAdmin = async () => {
@@ -410,378 +414,339 @@ export default function AdminPage() {
 
   if (!authorized) {
     return (
-      <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-6">
-        <h1 className="font-[var(--font-heading)] text-2xl">WATCHMIRROR Admin Panel</h1>
-        <p className="mt-2 text-sm text-muted">Enter admin key to access content manager.</p>
-        <input
-          type="password"
-          value={adminKey}
-          onChange={(e) => setAdminKey(e.target.value)}
-          className="mt-4 w-full rounded-xl border border-border bg-black/20 px-4 py-3 text-sm outline-none"
-          placeholder="Admin key"
-        />
-        <button
-          onClick={unlockAdmin}
-          className="mt-4 w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-black"
-        >
-          Unlock
-        </button>
-        {status && <p className="mt-2 text-xs text-muted">{status}</p>}
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="w-full max-w-md">
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
+              <Lock className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="font-[var(--font-heading)] text-3xl text-white">Admin Panel</h1>
+            <p className="mt-2 text-gray-400">Enter your admin key to continue</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <input
+              type="password"
+              value={adminKey}
+              onChange={(e) => setAdminKey(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && unlockAdmin()}
+              className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:border-primary focus:ring-1 focus:ring-primary"
+              placeholder="Enter admin key"
+              autoFocus
+            />
+            <button
+              onClick={unlockAdmin}
+              className="mt-4 w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-black transition hover:bg-primary/90"
+            >
+              Access Dashboard
+            </button>
+            {status && <p className="mt-3 text-center text-sm text-red-400">{status}</p>}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <h1 className="font-[var(--font-heading)] text-3xl">WATCHMIRROR Admin Panel</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="font-[var(--font-heading)] text-3xl text-white">Dashboard</h1>
+        <div className="flex gap-2">
+          {(["browse", "add", "import"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                activeTab === tab ? "bg-primary text-black" : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              {tab === "browse" && "Browse"}
+              {tab === "add" && (editingId ? "Edit Content" : "Add New")}
+              {tab === "import" && "TMDB Import"}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <section className="grid gap-3 md:grid-cols-5">
-        <div className="glass rounded-xl p-3">
-          <p className="text-xs uppercase tracking-wider text-muted">Total</p>
-          <p className="mt-1 text-2xl font-bold text-primary">{analytics.total}</p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-primary/20 p-2">
+              <Film className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-400">Total Content</p>
+              <p className="text-2xl font-bold text-white">{analytics.total}</p>
+            </div>
+          </div>
         </div>
-        <div className="glass rounded-xl p-3">
-          <p className="text-xs uppercase tracking-wider text-muted">Movies</p>
-          <p className="mt-1 text-2xl font-bold text-primary">{analytics.movies}</p>
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-blue-500/20 p-2">
+              <Film className="h-5 w-5 text-blue-400" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-400">Movies</p>
+              <p className="text-2xl font-bold text-white">{analytics.movies}</p>
+            </div>
+          </div>
         </div>
-        <div className="glass rounded-xl p-3">
-          <p className="text-xs uppercase tracking-wider text-muted">Series</p>
-          <p className="mt-1 text-2xl font-bold text-primary">{analytics.series}</p>
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-purple-500/20 p-2">
+              <Tv className="h-5 w-5 text-purple-400" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-400">Series</p>
+              <p className="text-2xl font-bold text-white">{analytics.series}</p>
+            </div>
+          </div>
         </div>
-        <div className="glass rounded-xl p-3">
-          <p className="text-xs uppercase tracking-wider text-muted">Avg Rating</p>
-          <p className="mt-1 text-2xl font-bold text-primary">{analytics.avgRating}</p>
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-yellow-500/20 p-2">
+              <Star className="h-5 w-5 text-yellow-400" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-400">Avg Rating</p>
+              <p className="text-2xl font-bold text-white">{analytics.avgRating}</p>
+            </div>
+          </div>
         </div>
-        <div className="glass rounded-xl p-3">
-          <p className="text-xs uppercase tracking-wider text-muted">Scheduled</p>
-          <p className="mt-1 text-2xl font-bold text-primary">{analytics.scheduled}</p>
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-green-500/20 p-2">
+              <Clock className="h-5 w-5 text-green-400" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-400">Scheduled</p>
+              <p className="text-2xl font-bold text-white">{analytics.scheduled}</p>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
 
-      <section className="grid gap-3 md:grid-cols-2">
-        <div className="glass rounded-xl p-4">
-          <h2 className="mb-2 text-sm font-semibold">Top Languages</h2>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Globe className="h-4 w-4 text-gray-400" />
+            <h3 className="text-sm font-medium text-white">Top Languages</h3>
+          </div>
           <div className="space-y-2">
             {analytics.topLanguages.map(([name, count]) => (
-              <div key={name} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
-                <span>{name}</span>
-                <span className="text-muted">{count}</span>
+              <div key={name} className="flex items-center justify-between rounded-lg bg-black/30 px-3 py-2">
+                <span className="text-sm text-gray-300">{name}</span>
+                <span className="text-sm font-medium text-gray-500">{count}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="glass rounded-xl p-4">
-          <h2 className="mb-2 text-sm font-semibold">Top Categories</h2>
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Tag className="h-4 w-4 text-gray-400" />
+            <h3 className="text-sm font-medium text-white">Top Categories</h3>
+          </div>
           <div className="space-y-2">
             {analytics.topCategories.map(([name, count]) => (
-              <div key={name} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
-                <span>{name}</span>
-                <span className="text-muted">{count}</span>
+              <div key={name} className="flex items-center justify-between rounded-lg bg-black/30 px-3 py-2">
+                <span className="text-sm text-gray-300">{name}</span>
+                <span className="text-sm font-medium text-gray-500">{count}</span>
               </div>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      <section className="glass flex gap-2 rounded-2xl p-2">
-        <button
-          type="button"
-          onClick={() => applyMode("movie")}
-          className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold ${mode === "movie" ? "bg-primary text-black" : "border border-border"}`}
-        >
-          Movies
-        </button>
-        <button
-          type="button"
-          onClick={() => applyMode("series")}
-          className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold ${mode === "series" ? "bg-primary text-black" : "border border-border"}`}
-        >
-          Series
-        </button>
-      </section>
-
-      <section className="glass rounded-2xl p-4">
-        <h2 className="mb-3 text-lg font-semibold">TMDB Auto Import ({mode === "movie" ? "Movies" : "Series"})</h2>
-        <div className="flex gap-2">
-          <input
-            value={tmdbQuery}
-            onChange={(e) => setTmdbQuery(e.target.value)}
-            placeholder={mode === "movie" ? "Search movie" : "Search series"}
-            className="flex-1 rounded-xl border border-border bg-black/20 px-4 py-2 text-sm"
-          />
-          <button onClick={searchTMDB} className="rounded-xl border border-border px-4 py-2 text-sm">
-            <Search size={16} />
-          </button>
-        </div>
-
-        <div className="mt-4 grid gap-2 md:grid-cols-2">
-          {searchResults.map((item) => (
-            <button
-              key={`${item.mediaType}-${item.id}`}
-              onClick={() => importTMDB(item.id, item.mediaType)}
-              className="flex gap-3 rounded-xl border border-border p-3 text-left hover:border-primary"
-            >
-              {item.poster ? (
-                <Image src={item.poster} alt={item.title} width={56} height={80} className="h-20 w-14 rounded-md object-cover" />
-              ) : (
-                <div className="h-20 w-14 rounded-md bg-black/30" />
-              )}
-              <div>
-                <p className="font-semibold">{item.title}</p>
-                <p className="text-xs text-muted">{item.mediaType.toUpperCase()} | {item.year || "-"}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-        {loading && <p className="mt-2 text-xs text-muted">Loading...</p>}
-      </section>
-
-      <form onSubmit={submitContent} className="glass grid gap-4 rounded-2xl p-4 md:grid-cols-2">
-        <input value={payload.title || ""} onChange={(e) => setPayload({ ...payload, title: e.target.value })} placeholder="Title" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" required />
-        <select value={mode} onChange={(e) => applyMode(e.target.value as "movie" | "series")} className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm">
-          <option value="movie">Movie</option>
-          <option value="series">Series</option>
-        </select>
-        <input value={payload.poster || ""} onChange={(e) => setPayload({ ...payload, poster: e.target.value })} placeholder="Poster URL" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" required />
-        <div className="relative h-48 w-32 overflow-hidden rounded-lg border border-border md:col-span-2 lg:col-span-1">
-          {payload.poster ? (
-            <Image src={payload.poster} alt="Poster preview" fill className="object-cover" />
-          ) : (
-            <div className="flex h-full items-center justify-center text-xs text-muted">Poster preview</div>
-          )}
-        </div>
-        <input value={payload.banner || ""} onChange={(e) => setPayload({ ...payload, banner: e.target.value })} placeholder="Banner URL" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" required />
-        <input value={String(payload.year || "")} onChange={(e) => setPayload({ ...payload, year: Number(e.target.value) })} placeholder="Year" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" required />
-        <input
-          type="datetime-local"
-          value={payload.publishAt ? new Date(payload.publishAt).toISOString().slice(0, 16) : ""}
-          onChange={(e) => setPayload({ ...payload, publishAt: e.target.value ? new Date(e.target.value).toISOString() : "" })}
-          className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm"
-        />
-        <input value={payload.language || ""} onChange={(e) => setPayload({ ...payload, language: e.target.value })} placeholder="Language" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-        <input value={payload.category || ""} onChange={(e) => setPayload({ ...payload, category: e.target.value })} placeholder="Category" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-        <input value={payload.quality || ""} onChange={(e) => setPayload({ ...payload, quality: e.target.value })} placeholder="Quality" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-        <input value={String(payload.rating || 0)} onChange={(e) => setPayload({ ...payload, rating: Number(e.target.value) })} placeholder="Rating" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-        <input value={String(payload.popularity || 0)} onChange={(e) => setPayload({ ...payload, popularity: Number(e.target.value) })} placeholder="Popularity" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-        {mode === "movie" ? (
-          <>
-            <input value={payload.hlsLink || ""} onChange={(e) => setPayload({ ...payload, hlsLink: e.target.value })} placeholder="HLS Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-            <input value={payload.embedIframeLink || ""} onChange={(e) => setPayload({ ...payload, embedIframeLink: e.target.value })} placeholder="Embed Iframe Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-            <input value={payload.backupHlsLink || ""} onChange={(e) => setPayload({ ...payload, backupHlsLink: e.target.value })} placeholder="Backup HLS Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-            <input value={payload.backupEmbedIframeLink || ""} onChange={(e) => setPayload({ ...payload, backupEmbedIframeLink: e.target.value })} placeholder="Backup Embed Link" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" />
-            <textarea
-              value={movieSubtitlesInput}
-              onChange={(e) => setMovieSubtitlesInput(e.target.value)}
-              placeholder="Subtitles: lang|label|url|default (one per line)"
-              className="min-h-[90px] rounded-xl border border-border bg-black/20 px-4 py-2 text-sm md:col-span-2"
-            />
-          </>
-        ) : (
-          <div className="space-y-3 md:col-span-2">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold">Seasons & Episodes</p>
-              <button type="button" onClick={addSeason} className="rounded-lg border border-border px-3 py-1 text-xs hover:border-primary">
-                Add Season
+      {activeTab === "browse" && (
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-2">
+              <button
+                onClick={() => applyMode("movie")}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${mode === "movie" ? "bg-primary text-black" : "bg-white/5 text-gray-400 hover:bg-white/10"}`}
+              >
+                Movies ({analytics.movies})
+              </button>
+              <button
+                onClick={() => applyMode("series")}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${mode === "series" ? "bg-primary text-black" : "bg-white/5 text-gray-400 hover:bg-white/10"}`}
+              >
+                Series ({analytics.series})
               </button>
             </div>
-            {seasonsDraft.map((season, seasonIndex) => (
-              <div key={`season-${seasonIndex}`} className="space-y-2 rounded-xl border border-border p-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min={1}
-                    value={season.seasonNumber}
-                    onChange={(e) => updateSeasonField(seasonIndex, Number(e.target.value) || season.seasonNumber)}
-                    className="w-24 rounded-lg border border-border bg-black/20 px-3 py-1 text-sm"
-                  />
-                  <button type="button" onClick={() => addEpisode(seasonIndex)} className="rounded-lg border border-border px-2 py-1 text-xs hover:border-primary">
-                    Add Episode
-                  </button>
-                  <button type="button" onClick={() => removeSeason(seasonIndex)} className="rounded-lg border border-border px-2 py-1 text-xs text-red-300 hover:border-red-400">
-                    Remove Season
-                  </button>
-                </div>
-                {season.episodes.map((episode, episodeIndex) => (
-                  <div key={`episode-${seasonIndex}-${episodeIndex}`} className="grid gap-2 rounded-lg border border-border/60 p-2 md:grid-cols-2">
-                    <input
-                      type="number"
-                      min={1}
-                      value={episode.episodeNumber}
-                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeNumber", e.target.value)}
-                      placeholder="Episode #"
-                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
-                    />
-                    <input
-                      value={episode.episodeTitle}
-                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeTitle", e.target.value)}
-                      placeholder="Episode title"
-                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
-                    />
-                    <input
-                      value={episode.hlsLink || ""}
-                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "hlsLink", e.target.value)}
-                      placeholder="Episode HLS link"
-                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
-                    />
-                    <input
-                      value={episode.embedIframeLink || ""}
-                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "embedIframeLink", e.target.value)}
-                      placeholder="Episode iframe link"
-                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
-                    />
-                    <input
-                      value={episode.backupHlsLink || ""}
-                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "backupHlsLink", e.target.value)}
-                      placeholder="Episode backup HLS link"
-                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
-                    />
-                    <input
-                      value={episode.backupEmbedIframeLink || ""}
-                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "backupEmbedIframeLink", e.target.value)}
-                      placeholder="Episode backup iframe link"
-                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
-                    />
-                    <input
-                      value={episode.quality || "HD"}
-                      onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "quality", e.target.value)}
-                      placeholder="Quality"
-                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="datetime-local"
-                      value={episode.releaseAt ? new Date(episode.releaseAt).toISOString().slice(0, 16) : ""}
-                      onChange={(e) =>
-                        updateEpisodeField(seasonIndex, episodeIndex, "releaseAt", e.target.value ? new Date(e.target.value).toISOString() : "")
-                      }
-                      className="rounded-lg border border-border bg-black/20 px-3 py-2 text-sm"
-                    />
-                    <textarea
-                      value={subtitleLines(episode.subtitleTracks)}
-                      onChange={(e) => updateEpisodeSubtitles(seasonIndex, episodeIndex, e.target.value)}
-                      placeholder="Episode subtitles: lang|label|url|default"
-                      className="min-h-[70px] rounded-lg border border-border bg-black/20 px-3 py-2 text-sm md:col-span-2"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeEpisode(seasonIndex, episodeIndex)}
-                      className="rounded-lg border border-border px-3 py-2 text-xs text-red-300 hover:border-red-400"
-                    >
-                      Remove Episode
-                    </button>
+            <input
+              value={contentSearch}
+              onChange={(e) => {
+                setContentSearch(e.target.value);
+                setContentPage(1);
+              }}
+              placeholder="Search content..."
+              className="rounded-lg border border-white/10 bg-black/30 px-4 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary"
+            />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {paginatedItems.map((item) => (
+              <div key={item._id || item.slug} className="group relative rounded-xl border border-white/10 bg-white/5 p-3 transition hover:border-white/20">
+                <div className="flex gap-3">
+                  {item.poster ? (
+                    <Image src={item.poster} alt={item.title} width={80} height={110} className="h-[110px] w-[80px] rounded-lg object-cover" />
+                  ) : (
+                    <div className="h-[110px] w-[80px] rounded-lg bg-black/30" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate font-medium text-white">{item.title}</p>
+                    <p className="mt-1 text-xs text-gray-400">{item.year} · {item.language} · {item.rating?.toFixed(1)}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        onClick={() => startEdit(item)}
+                        className="rounded bg-white/10 px-2 py-1 text-xs text-white hover:bg-white/20"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => duplicateContent(item)}
+                        className="rounded bg-white/10 px-2 py-1 text-xs text-white hover:bg-white/20"
+                      >
+                        Copy
+                      </button>
+                      <button
+                        onClick={() => deleteContent(item._id)}
+                        className="rounded bg-red-500/20 px-2 py-1 text-xs text-red-400 hover:bg-red-500/30"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                ))}
+                </div>
               </div>
             ))}
           </div>
-        )}
-        <input value={payload.trailerEmbedUrl || ""} onChange={(e) => setPayload({ ...payload, trailerEmbedUrl: e.target.value })} placeholder="Trailer Embed URL" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm md:col-span-2" />
-        <input
-          value={Array.isArray(payload.tags) ? payload.tags.join(", ") : ""}
-          onChange={(e) => setPayload({ ...payload, tags: e.target.value.split(",").map((item) => item.trim()).filter(Boolean) })}
-          placeholder="Tags (comma separated)"
-          className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm md:col-span-2"
-        />
-        <textarea value={payload.description || ""} onChange={(e) => setPayload({ ...payload, description: e.target.value })} placeholder="Description" className="min-h-[120px] rounded-xl border border-border bg-black/20 px-4 py-2 text-sm md:col-span-2" required />
 
-        <p className="text-xs text-muted md:col-span-2">Slug preview: {slugPreview || "-"}</p>
-
-        <div className="flex gap-2 md:col-span-2">
-          <button type="submit" className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black">
-            <Plus size={16} /> {editingId ? "Update" : "Save"} {mode === "movie" ? "Movie" : "Series"}
-          </button>
-          {editingId && (
-            <button
-              type="button"
-              onClick={() => {
-                resetForm();
-                setStatus("Edit cancelled.");
-              }}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm"
-            >
-              <X size={16} /> Cancel
-            </button>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => setContentPage((p) => Math.max(1, p - 1))}
+                disabled={contentPage === 1}
+                className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-sm text-white disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <span className="text-sm text-gray-400">Page {contentPage} of {totalPages}</span>
+              <button
+                onClick={() => setContentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={contentPage === totalPages}
+                className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-sm text-white disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           )}
         </div>
-        <p className="text-sm text-muted md:col-span-2">{status}</p>
-      </form>
+      )}
 
-      <section className="glass rounded-2xl p-4">
-        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold">{mode === "movie" ? "Movies" : "Series"} ({searchedItems.length})</h2>
-          <input
-            value={contentSearch}
-            onChange={(e) => {
-              setContentSearch(e.target.value);
-              setContentPage(1);
-            }}
-            placeholder="Search content..."
-            className="rounded-lg border border-border bg-black/20 px-3 py-1.5 text-sm sm:w-64"
-          />
-        </div>
-        <div className="grid gap-2 md:grid-cols-2">
-          {paginatedItems.map((item) => (
-            <div key={item._id || item.slug} className="flex gap-3 rounded-xl border border-border p-3">
-              {item.poster ? (
-                <Image src={item.poster} alt={item.title} width={56} height={80} className="h-20 w-14 shrink-0 rounded-md object-cover" />
-              ) : (
-                <div className="h-20 w-14 shrink-0 rounded-md bg-black/30" />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold">{item.title}</p>
-                <p className="text-xs text-muted">
-                  {item.year} | {item.language} | {item.rating?.toFixed(1) || "N/A"}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => startEdit(item)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs hover:border-primary"
-                  >
-                    <Pencil size={13} /> Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => duplicateContent(item)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs hover:border-primary"
-                  >
-                    Duplicate
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteContent(item._id)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs text-red-300 hover:border-red-400"
-                  >
-                    <Trash2 size={13} /> Delete
-                  </button>
-                </div>
-              </div>
+      {activeTab === "add" && (
+        <form onSubmit={submitContent} className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <input value={payload.title || ""} onChange={(e) => setPayload({ ...payload, title: e.target.value })} placeholder="Title *" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" required />
+            <div className="flex gap-2">
+              <select value={mode} onChange={(e) => applyMode(e.target.value as "movie" | "series")} className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white outline-none focus:border-primary">
+                <option value="movie">Movie</option>
+                <option value="series">Series</option>
+              </select>
+              <select value={payload.language || ""} onChange={(e) => setPayload({ ...payload, language: e.target.value })} className="flex-1 rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white outline-none focus:border-primary">
+                <option value="EN">English</option>
+                <option value="TE">Telugu</option>
+                <option value="HI">Hindi</option>
+                <option value="TA">Tamil</option>
+                <option value="ML">Malayalam</option>
+                <option value="KN">Kannada</option>
+                <option value="KO">Korean</option>
+                <option value="JA">Japanese</option>
+                <option value="ES">Spanish</option>
+              </select>
             </div>
-          ))}
-        </div>
-        {totalPages > 1 && (
-          <div className="mt-4 flex items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => setContentPage((p) => Math.max(1, p - 1))}
-              disabled={contentPage === 1}
-              className="rounded-lg border border-border px-3 py-1 text-xs disabled:opacity-50"
-            >
-              Prev
+            <input value={payload.poster || ""} onChange={(e) => setPayload({ ...payload, poster: e.target.value })} placeholder="Poster URL *" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" required />
+            <input value={payload.banner || ""} onChange={(e) => setPayload({ ...payload, banner: e.target.value })} placeholder="Banner URL" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
+            <input type="number" value={payload.year || ""} onChange={(e) => setPayload({ ...payload, year: Number(e.target.value) })} placeholder="Year" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
+            <input value={payload.category || ""} onChange={(e) => setPayload({ ...payload, category: e.target.value })} placeholder="Category" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
+            <input value={payload.rating?.toString() || "0"} onChange={(e) => setPayload({ ...payload, rating: Number(e.target.value) })} placeholder="Rating (0-10)" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
+            <input value={payload.quality || ""} onChange={(e) => setPayload({ ...payload, quality: e.target.value })} placeholder="Quality (HD/4K)" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
+          </div>
+
+          {mode === "movie" ? (
+            <div className="space-y-4">
+              <input value={payload.hlsLink || ""} onChange={(e) => setPayload({ ...payload, hlsLink: e.target.value })} placeholder="HLS Link" className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
+              <input value={payload.embedIframeLink || ""} onChange={(e) => setPayload({ ...payload, embedIframeLink: e.target.value })} placeholder="Embed Iframe Link" className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
+              <textarea value={movieSubtitlesInput} onChange={(e) => setMovieSubtitlesInput(e.target.value)} placeholder="Subtitles: lang|label|url|default (one per line)" className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary min-h-[80px]" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-white">Seasons & Episodes</p>
+                <button type="button" onClick={addSeason} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-black">+ Add Season</button>
+              </div>
+              {seasonsDraft.map((season, seasonIndex) => (
+                <div key={`season-${seasonIndex}`} className="rounded-lg border border-white/10 bg-black/20 p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <input type="number" min={1} value={season.seasonNumber} onChange={(e) => updateSeasonField(seasonIndex, Number(e.target.value) || season.seasonNumber)} className="w-20 rounded border border-white/10 bg-black/30 px-3 py-1.5 text-sm text-white" />
+                    <span className="text-sm text-gray-400">Season {seasonIndex + 1}</span>
+                    <button type="button" onClick={() => addEpisode(seasonIndex)} className="ml-auto rounded bg-white/10 px-2 py-1 text-xs text-white">+ Episode</button>
+                    {seasonsDraft.length > 1 && <button type="button" onClick={() => removeSeason(seasonIndex)} className="rounded bg-red-500/20 px-2 py-1 text-xs text-red-400">Remove</button>}
+                  </div>
+                  {season.episodes.map((episode, episodeIndex) => (
+                    <div key={`episode-${seasonIndex}-${episodeIndex}`} className="mb-2 grid gap-2 rounded bg-black/30 p-3 md:grid-cols-2">
+                      <input type="number" min={1} value={episode.episodeNumber} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeNumber", e.target.value)} placeholder="Ep #" className="rounded border border-white/10 bg-black/30 px-3 py-2 text-sm text-white" />
+                      <input value={episode.episodeTitle} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeTitle", e.target.value)} placeholder="Episode title" className="rounded border border-white/10 bg-black/30 px-3 py-2 text-sm text-white" />
+                      <input value={episode.hlsLink || ""} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "hlsLink", e.target.value)} placeholder="HLS Link" className="rounded border border-white/10 bg-black/30 px-3 py-2 text-sm text-white" />
+                      <input value={episode.embedIframeLink || ""} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "embedIframeLink", e.target.value)} placeholder="Iframe Link" className="rounded border border-white/10 bg-black/30 px-3 py-2 text-sm text-white" />
+                      {episodeIndex > 0 && <button type="button" onClick={() => removeEpisode(seasonIndex, episodeIndex)} className="col-span-2 rounded bg-red-500/20 py-1.5 text-xs text-red-400">Remove Episode</button>}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <textarea value={payload.description || ""} onChange={(e) => setPayload({ ...payload, description: e.target.value })} placeholder="Description" className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary min-h-[100px]" />
+
+          <div className="flex flex-wrap items-center gap-4">
+            <button type="submit" className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-black transition hover:bg-primary/90">
+              {editingId ? "Update Content" : "Save Content"}
             </button>
-            <span className="text-xs text-muted">
-              Page {contentPage} of {totalPages}
-            </span>
-            <button
-              type="button"
-              onClick={() => setContentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={contentPage === totalPages}
-              className="rounded-lg border border-border px-3 py-1 text-xs disabled:opacity-50"
-            >
-              Next
+            {editingId && (
+              <button type="button" onClick={() => { resetForm(); setStatus(""); }} className="rounded-xl border border-white/10 px-6 py-3 text-sm font-medium text-white">
+                Cancel
+              </button>
+            )}
+            <span className="text-sm text-gray-400">Slug: {slugPreview || "—"}</span>
+          </div>
+          {status && <p className="text-sm text-primary">{status}</p>}
+        </form>
+      )}
+
+      {activeTab === "import" && (
+        <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4">
+          <h2 className="text-lg font-medium text-white">TMDB Auto Import</h2>
+          <div className="flex gap-2">
+            <input value={tmdbQuery} onChange={(e) => setTmdbQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && searchTMDB()} placeholder={mode === "movie" ? "Search movie..." : "Search series..."} className="flex-1 rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
+            <button onClick={searchTMDB} disabled={loading} className="rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-black disabled:opacity-50">
+              {loading ? "Searching..." : "Search"}
             </button>
           </div>
-        )}
-      </section>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {searchResults.map((item) => (
+              <button key={`${item.mediaType}-${item.id}`} onClick={() => importTMDB(item.id, item.mediaType)} className="flex gap-3 rounded-lg border border-white/10 bg-black/30 p-3 text-left transition hover:border-primary">
+                {item.poster ? <Image src={item.poster} alt={item.title} width={60} height={80} className="h-20 w-14 rounded object-cover" /> : <div className="h-20 w-14 rounded bg-black/50" />}
+                <div>
+                  <p className="line-clamp-2 font-medium text-white">{item.title}</p>
+                  <p className="mt-1 text-xs text-gray-400">{item.mediaType.toUpperCase()} | {item.year || "—"}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
