@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, Star, Clapperboard } from "lucide-react";
+import { Play, Star } from "lucide-react";
 import ContentRow from "@/components/common/ContentRow";
-import TrailerHandler from "@/components/common/TrailerHandler";
 import { getContentBySlug, getSimilarContent } from "@/lib/content";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -45,7 +44,6 @@ export default async function SeriesDetailsPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-8">
-      <TrailerHandler />
       <section className="relative -mx-4 -mt-6 h-[56.25vw] min-h-[280px] max-h-[80vh] w-[calc(100%+32px)] overflow-hidden sm:-mx-8 sm:w-[calc(100%+64px)] md:-mt-8">
         <Image src={content.banner || content.poster} alt={content.title} fill priority className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
@@ -69,11 +67,6 @@ export default async function SeriesDetailsPage({ params }: { params: Promise<{ 
               <Link href={`/series/watch/${content.slug}`} className="inline-flex items-center gap-1.5 rounded bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-white/90 md:px-6 md:py-3 md:text-base">
                 <Play size={16} fill="black" className="md:size-5" /> Play
               </Link>
-              {content.trailerEmbedUrl && (
-                <Link href="#trailer" scroll={false} onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent("openTrailer", { detail: content.trailerEmbedUrl })); }} className="inline-flex items-center gap-1.5 rounded bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/30 md:px-4 md:py-3">
-                  <Clapperboard size={16} /> Trailer
-                </Link>
-              )}
             </div>
           </div>
         </div>

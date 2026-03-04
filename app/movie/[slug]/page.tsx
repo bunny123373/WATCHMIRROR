@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, Star, Clapperboard } from "lucide-react";
+import { Play, Star } from "lucide-react";
 import ContentRow from "@/components/common/ContentRow";
-import TrailerHandler from "@/components/common/TrailerHandler";
 import { getContentBySlug, getSimilarContent } from "@/lib/content";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -48,7 +47,6 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
 
   return (
     <div className="space-y-8">
-      <TrailerHandler />
       <section className="relative -mx-4 -mt-6 h-[56.25vw] min-h-[280px] max-h-[80vh] w-[calc(100%+32px)] overflow-hidden sm:-mx-8 sm:w-[calc(100%+64px)] md:-mt-8">
         <Image src={content.banner || content.poster} alt={content.title} fill priority className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
@@ -72,9 +70,6 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               <Link href={`/watch/${content.slug}`} className="inline-flex items-center gap-1.5 rounded bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-white/90 md:px-6 md:py-3 md:text-base">
                 <Play size={16} fill="black" className="md:size-5" /> Play
               </Link>
-              {content.trailerEmbedUrl && (
-                <TrailerButton url={content.trailerEmbedUrl} />
-              )}
             </div>
           </div>
         </div>
@@ -94,22 +89,10 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-            <div>
-              <p className="text-gray-500">Year</p>
-              <p className="font-medium text-white">{content.year}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Language</p>
-              <p className="font-medium text-white">{content.language}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Rating</p>
-              <p className="font-medium text-white">{Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Category</p>
-              <p className="font-medium text-white">{content.category || "Movie"}</p>
-            </div>
+            <div><p className="text-gray-500">Year</p><p className="font-medium text-white">{content.year}</p></div>
+            <div><p className="text-gray-500">Language</p><p className="font-medium text-white">{content.language}</p></div>
+            <div><p className="text-gray-500">Rating</p><p className="font-medium text-white">{Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}</p></div>
+            <div><p className="text-gray-500">Category</p><p className="font-medium text-white">{content.category || "Movie"}</p></div>
           </div>
         </div>
       </section>
@@ -118,13 +101,5 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
         <ContentRow title="More Like This" items={similar.filter((item) => item.type === "movie")} />
       </section>
     </div>
-  );
-}
-
-function TrailerButton({ url }: { url: string }) {
-  return (
-    <Link href={`#trailer`} scroll={false} onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent("openTrailer", { detail: url })); }} className="inline-flex items-center gap-1.5 rounded bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/30 md:px-4 md:py-3">
-      <Clapperboard size={16} /> Trailer
-    </Link>
   );
 }
