@@ -80,6 +80,9 @@ export default function AdminPage() {
   const [items, setItems] = useState<Content[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [status, setStatus] = useState("");
+  const [contentSearch, setContentSearch] = useState("");
+  const [contentPage, setContentPage] = useState(1);
+  const itemsPerPage = 20;
 
   const slugPreview = useMemo(() => {
     return (payload.title || "")
@@ -93,6 +96,24 @@ export default function AdminPage() {
   const filteredItems = useMemo(() => {
     return items.filter((item) => item.type === mode);
   }, [items, mode]);
+
+  const searchedItems = useMemo(() => {
+    if (!contentSearch.trim()) return filteredItems;
+    const term = contentSearch.toLowerCase();
+    return filteredItems.filter(
+      (item) =>
+        item.title.toLowerCase().includes(term) ||
+        item.language?.toLowerCase().includes(term) ||
+        item.category?.toLowerCase().includes(term)
+    );
+  }, [filteredItems, contentSearch]);
+
+  const paginatedItems = useMemo(() => {
+    const start = (contentPage - 1) * itemsPerPage;
+    return searchedItems.slice(start, start + itemsPerPage);
+  }, [searchedItems, contentPage]);
+
+  const totalPages = Math.ceil(searchedItems.length / itemsPerPage);
 
   const searchResults = useMemo(() => {
     const expected = mode === "movie" ? "movie" : "tv";
@@ -353,6 +374,20 @@ export default function AdminPage() {
     setStatus("Content deleted successfully.");
   };
 
+  const duplicateContent = (item: Content) => {
+    applyMode(item.type);
+    setPayload({
+      ...item,
+      title: `${item.title} (Copy)`,
+      _id: undefined,
+      slug: undefined
+    });
+    setMovieSubtitlesInput(subtitleLines(item.subtitleTracks));
+    setSeasonsDraft(item.seasons && item.seasons.length ? item.seasons : [createSeason(1)]);
+    setEditingId(null);
+    setStatus(`Duplicated: ${item.title}`);
+  };
+
   const unlockAdmin = async () => {
     setStatus("Validating key...");
     const res = await fetch("/api/admin/content", {
@@ -508,6 +543,13 @@ export default function AdminPage() {
           <option value="series">Series</option>
         </select>
         <input value={payload.poster || ""} onChange={(e) => setPayload({ ...payload, poster: e.target.value })} placeholder="Poster URL" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" required />
+        <div className="relative h-48 w-32 overflow-hidden rounded-lg border border-border md:col-span-2 lg:col-span-1">
+          {payload.poster ? (
+            <Image src={payload.poster} alt="Poster preview" fill className="object-cover" />
+          ) : (
+            <div className="flex h-full items-center justify-center text-xs text-muted">Poster preview</div>
+          )}
+        </div>
         <input value={payload.banner || ""} onChange={(e) => setPayload({ ...payload, banner: e.target.value })} placeholder="Banner URL" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" required />
         <input value={String(payload.year || "")} onChange={(e) => setPayload({ ...payload, year: Number(e.target.value) })} placeholder="Year" className="rounded-xl border border-border bg-black/20 px-4 py-2 text-sm" required />
         <input
@@ -664,27 +706,45 @@ export default function AdminPage() {
       </form>
 
       <section className="glass rounded-2xl p-4">
-        <h2 className="mb-3 text-lg font-semibold">{mode === "movie" ? "Recent Movies" : "Recent Series"}</h2>
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-lg font-semibold">{mode === "movie" ? "Movies" : "Series"} ({searchedItems.length})</h2>
+          <input
+            value={contentSearch}
+            onChange={(e) => {
+              setContentSearch(e.target.value);
+              setContentPage(1);
+            }}
+            placeholder="Search content..."
+            className="rounded-lg border border-border bg-black/20 px-3 py-1.5 text-sm sm:w-64"
+          />
+        </div>
         <div className="grid gap-2 md:grid-cols-2">
-          {filteredItems.slice(0, 20).map((item) => (
+          {paginatedItems.map((item) => (
             <div key={item._id || item.slug} className="flex gap-3 rounded-xl border border-border p-3">
               {item.poster ? (
-                <Image src={item.poster} alt={item.title} width={56} height={80} className="h-20 w-14 rounded-md object-cover" />
+                <Image src={item.poster} alt={item.title} width={56} height={80} className="h-20 w-14 shrink-0 rounded-md object-cover" />
               ) : (
-                <div className="h-20 w-14 rounded-md bg-black/30" />
+                <div className="h-20 w-14 shrink-0 rounded-md bg-black/30" />
               )}
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{item.title}</p>
                 <p className="text-xs text-muted">
-                  {item.type.toUpperCase()} | {item.year} | {item.language}
+                  {item.year} | {item.language} | {item.rating?.toFixed(1) || "N/A"}
                 </p>
-                <div className="mt-2 flex gap-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => startEdit(item)}
                     className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs hover:border-primary"
                   >
                     <Pencil size={13} /> Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => duplicateContent(item)}
+                    className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs hover:border-primary"
+                  >
+                    Duplicate
                   </button>
                   <button
                     type="button"
@@ -698,6 +758,29 @@ export default function AdminPage() {
             </div>
           ))}
         </div>
+        {totalPages > 1 && (
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setContentPage((p) => Math.max(1, p - 1))}
+              disabled={contentPage === 1}
+              className="rounded-lg border border-border px-3 py-1 text-xs disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <span className="text-xs text-muted">
+              Page {contentPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setContentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={contentPage === totalPages}
+              className="rounded-lg border border-border px-3 py-1 text-xs disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </section>
     </div>
   );
