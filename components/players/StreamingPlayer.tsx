@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import HLSPlayer from "@/components/players/HLSPlayer";
 import IframePlayer from "@/components/players/IframePlayer";
 import { usePlaybackTracker } from "@/hooks/usePlaybackTracker";
@@ -30,28 +30,47 @@ interface StreamingPlayerProps {
 
 export default function StreamingPlayer(props: StreamingPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const subtitleTracks = (props.subtitleTracks || []).filter((track) => Boolean(track?.url));
-  const rawSources: StreamingSource[] = [
-    { type: "hls", url: props.hlsLink || "", label: "Primary HLS" },
-    { type: "hls", url: props.backupHlsLink || "", label: "Backup HLS" },
-    { type: "iframe", url: props.embedIframeLink || "", label: "Primary Embed" },
-    { type: "iframe", url: props.backupEmbedIframeLink || "", label: "Backup Embed" }
-  ];
-  const sources: StreamingSource[] = rawSources.filter((item) => item.url.trim().length > 0);
+  const subtitleTracks = useMemo(
+    () => (props.subtitleTracks || []).filter((track) => Boolean(track?.url)),
+    [props.subtitleTracks]
+  );
+  const sources: StreamingSource[] = useMemo(() => {
+    const rawSources: StreamingSource[] = [
+      { type: "hls", url: props.hlsLink || "", label: "Primary HLS" },
+      { type: "hls", url: props.backupHlsLink || "", label: "Backup HLS" },
+      { type: "iframe", url: props.embedIframeLink || "", label: "Primary Embed" },
+      { type: "iframe", url: props.backupEmbedIframeLink || "", label: "Backup Embed" }
+    ];
+    return rawSources.filter((item) => item.url.trim().length > 0);
+  }, [props.hlsLink, props.backupHlsLink, props.embedIframeLink, props.backupEmbedIframeLink]);
 
   const [activeSourceIndex, setActiveSourceIndex] = useState(0);
   const activeSource = sources[activeSourceIndex];
-
-  usePlaybackTracker({
-    videoRef,
-    base: {
+  const trackerBase = useMemo(
+    () => ({
       slug: props.slug,
       type: props.type,
       title: props.title,
       poster: props.poster,
       seasonNumber: props.seasonNumber,
       episodeNumber: props.episodeNumber
+    }),
+    [props.slug, props.type, props.title, props.poster, props.seasonNumber, props.episodeNumber]
+  );
+
+  useEffect(() => {
+    if (activeSourceIndex >= sources.length) {
+      setActiveSourceIndex(0);
     }
+  }, [activeSourceIndex, sources.length]);
+
+  const handleFatal = useCallback(() => {
+    setActiveSourceIndex((prev) => (prev < sources.length - 1 ? prev + 1 : prev));
+  }, [sources.length]);
+
+  usePlaybackTracker({
+    videoRef,
+    base: trackerBase
   });
 
   if (!activeSource) {
@@ -69,11 +88,7 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
           src={activeSource.url}
           subtitles={subtitleTracks}
           videoRef={videoRef}
-          onFatal={() => {
-            if (activeSourceIndex < sources.length - 1) {
-              setActiveSourceIndex((prev) => prev + 1);
-            }
-          }}
+          onFatal={handleFatal}
         />
       ) : (
         <IframePlayer src={activeSource.url} />

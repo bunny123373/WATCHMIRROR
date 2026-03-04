@@ -22,25 +22,65 @@ export default function HLSPlayer({ src, subtitles = [], videoRef: controlledRef
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    if (!src) {
+      setError("Streaming source unavailable.");
+      setLoading(false);
+      return;
+    }
 
     let hls: Hls | null = null;
+    let recoveredNetwork = false;
+    let recoveredMedia = false;
+
+    setLoading(true);
+    setError(null);
 
     const onLoaded = () => {
       setLoading(false);
       onReady?.(video);
     };
+    const onWaiting = () => setLoading(true);
+    const onPlaying = () => setLoading(false);
+    const onVideoError = () => {
+      setLoading(false);
+      setError("Playback error. Please try another source.");
+      onFatal?.();
+    };
 
+    video.preload = "auto";
     video.addEventListener("loadeddata", onLoaded);
+    video.addEventListener("canplay", onLoaded);
+    video.addEventListener("waiting", onWaiting);
+    video.addEventListener("playing", onPlaying);
+    video.addEventListener("error", onVideoError);
 
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = src;
+      video.load();
     } else if (Hls.isSupported()) {
-      hls = new Hls();
+      hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 30,
+        maxBufferLength: 30,
+        maxMaxBufferLength: 60
+      });
       hls.loadSource(src);
       hls.attachMedia(video);
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (data.fatal) {
+          if (data.type === Hls.ErrorTypes.NETWORK_ERROR && !recoveredNetwork) {
+            recoveredNetwork = true;
+            hls?.startLoad();
+            return;
+          }
+          if (data.type === Hls.ErrorTypes.MEDIA_ERROR && !recoveredMedia) {
+            recoveredMedia = true;
+            hls?.recoverMediaError();
+            return;
+          }
           setError("Playback error. Please try another source.");
+          setLoading(false);
           onFatal?.();
         }
       });
@@ -51,6 +91,10 @@ export default function HLSPlayer({ src, subtitles = [], videoRef: controlledRef
 
     return () => {
       video.removeEventListener("loadeddata", onLoaded);
+      video.removeEventListener("canplay", onLoaded);
+      video.removeEventListener("waiting", onWaiting);
+      video.removeEventListener("playing", onPlaying);
+      video.removeEventListener("error", onVideoError);
       hls?.destroy();
     };
   }, [src, onReady, onFatal]);
