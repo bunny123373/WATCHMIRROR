@@ -45,12 +45,16 @@ export default async function SeriesWatchPage({ params }: { params: Promise<{ sl
           <span className="rounded bg-[#E50914] px-3 py-1 text-xs font-bold text-white">Series</span>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-[1fr,320px]">
+        <div className="grid gap-4 md:grid-cols-[1fr,320px] md:items-start">
           <SeriesWatchClient content={content} />
-          <aside className="rounded-xl border border-[#2a2a2a] bg-[#181818] p-4">
+          <aside className="rounded-xl border border-[#2a2a2a] bg-[#181818] p-4 md:sticky md:top-24">
             <Image src={content.poster} alt={content.title} width={280} height={400} className="w-full rounded-lg object-cover" />
             <p className="mt-3 text-sm text-[#d4d4d4]">{content.description}</p>
-            <p className="mt-2 text-xs text-[#b3b3b3]">{(content.seasons || []).length} seasons available</p>
+            <div className="mt-2 space-y-1 text-xs text-[#b3b3b3]">
+              <p><span className="text-white">Seasons:</span> {(content.seasons || []).length}</p>
+              <p><span className="text-white">Language:</span> {content.language || "N/A"}</p>
+              <p><span className="text-white">Year:</span> {content.year || "N/A"}</p>
+            </div>
           </aside>
         </div>
       </section>

@@ -23,8 +23,9 @@ export default function Navbar() {
   return (
     <header className="glass fixed inset-x-0 top-0 z-50 border-b border-border/80">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between px-4 md:h-16 md:px-8">
-        <Link href="/" className="font-[var(--font-heading)] text-lg tracking-widest text-primary md:text-xl">
-          WATCHMIRROR
+        <Link href="/" className="font-[var(--font-heading)] text-lg font-bold tracking-widest md:text-xl">
+          <span className="text-[#E50914]">WATCH</span>
+          <span className="text-white">MIRROR</span>
         </Link>
 
         <nav className="hidden items-center gap-4 lg:gap-6 md:flex">

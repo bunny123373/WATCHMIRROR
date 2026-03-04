@@ -35,8 +35,8 @@ export default function ContentCard({ item }: { item: Content }) {
   };
 
   return (
-    <article className="group relative w-[130px] shrink-0 transition sm:w-[160px] md:w-[180px] lg:w-[200px] xl:w-[230px]">
-      <div className="relative overflow-hidden rounded-lg bg-[#0a0a0a] transition duration-300 group-hover:z-20 group-hover:scale-[1.04] group-hover:shadow-2xl">
+    <article className="group relative w-[110px] shrink-0 transition sm:w-[130px] md:w-[160px] lg:w-[180px] xl:w-[200px]">
+      <div className="relative overflow-hidden rounded-lg bg-[#0a0a0a] transition duration-300 group-hover:scale-105 group-hover:shadow-xl">
         <Link href={detailsHref}>
           {hasValidPoster ? (
             <Image
@@ -52,31 +52,31 @@ export default function ContentCard({ item }: { item: Content }) {
         </Link>
         
         {ratingLabel !== null && (
-          <div className="absolute left-2 top-2 flex items-center gap-1 rounded bg-black/80 px-1.5 py-0.5">
-            <span className="text-[11px] font-bold text-[#00f0ff]">{ratingLabel}</span>
+          <div className="absolute left-1.5 top-1.5 rounded bg-black/80 px-1.5 py-0.5">
+            <span className="text-[10px] font-bold text-[#00f0ff]">{ratingLabel}</span>
           </div>
         )}
 
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-2.5 pt-16">
-          <div className="flex gap-1.5 opacity-0 transition group-hover:opacity-100">
-            <Link href={watchHref} className="flex-1 flex items-center justify-center gap-1 rounded bg-white py-1.5 text-[11px] font-bold text-black">
-              <Play size={12} /> Play
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-2 pt-12">
+          <div className="flex gap-1 opacity-0 transition group-hover:opacity-100">
+            <Link href={watchHref} className="flex-1 flex items-center justify-center gap-1 rounded bg-white py-1 text-[10px] font-bold text-black">
+              <Play size={10} /> Play
             </Link>
             <button
               type="button"
               onClick={toggleList}
-              className="flex items-center justify-center rounded border border-white/60 px-2 py-1.5 text-white"
+              className="flex items-center justify-center rounded border border-white/60 px-1.5 py-1 text-white"
             >
-              {isInList ? <Check size={12} /> : <Plus size={12} />}
+              {isInList ? <Check size={10} /> : <Plus size={10} />}
             </button>
           </div>
         </div>
       </div>
 
-      <div className="mt-2 px-1">
-        <h3 className="line-clamp-1 text-sm font-medium text-white group-hover:text-[#00f0ff]">{item.title}</h3>
-        <p className="mt-0.5 text-[11px] text-gray-400">
-          {yearLabel} · {item.type === "movie" ? "Movie" : "Series"}
+      <div className="mt-1.5 px-0.5">
+        <h3 className="line-clamp-1 text-xs font-medium text-white group-hover:text-[#00f0ff] sm:text-sm">{item.title}</h3>
+        <p className="mt-0.5 text-[10px] text-gray-400">
+          {yearLabel} | {item.type === "movie" ? "Movie" : "Series"}
         </p>
       </div>
     </article>

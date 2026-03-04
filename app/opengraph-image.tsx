@@ -28,11 +28,12 @@ export default function OpengraphImage() {
           style={{
             fontSize: 24,
             letterSpacing: 3,
-            color: "#f5c542",
+            fontWeight: 800,
             marginBottom: 16
           }}
         >
-          WATCHMIRROR
+          <span style={{ color: "#E50914" }}>WATCH</span>
+          <span style={{ color: "#FFFFFF" }}>MIRROR</span>
         </div>
         <div style={{ fontSize: 64, fontWeight: 700, lineHeight: 1.1, maxWidth: 900 }}>Stream Without Limits.</div>
         <div style={{ fontSize: 28, marginTop: 20, color: "#9ca3af" }}>Movies and Series in one place</div>

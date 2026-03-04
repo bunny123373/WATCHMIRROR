@@ -45,7 +45,7 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ slu
           <span className="rounded bg-[#E50914] px-3 py-1 text-xs font-bold text-white">Movie</span>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-[1fr,320px]">
+        <div className="grid gap-4 md:grid-cols-[1fr,320px] md:items-start">
           <StreamingPlayer
             type="movie"
             slug={content.slug}
@@ -57,15 +57,24 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ slu
             backupEmbedIframeLink={content.backupEmbedIframeLink}
             subtitleTracks={content.subtitleTracks}
           />
-          <aside className="rounded-xl border border-[#2a2a2a] bg-[#181818] p-4">
+          <aside className="rounded-xl border border-[#2a2a2a] bg-[#181818] p-4 md:sticky md:top-24">
             <Image src={content.poster} alt={content.title} width={280} height={400} className="w-full rounded-lg object-cover" />
             <p className="mt-3 text-sm text-[#d4d4d4]">{content.description}</p>
+            <div className="mt-3 space-y-1 text-xs text-[#b3b3b3]">
+              <p><span className="text-white">Year:</span> {content.year || "N/A"}</p>
+              <p><span className="text-white">Language:</span> {content.language || "N/A"}</p>
+              {content.quality && <p><span className="text-white">Quality:</span> {content.quality}</p>}
+            </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              {(content.tags || []).slice(0, 4).map((tag) => (
-                <span key={tag} className="rounded-full border border-[#3a3a3a] px-2 py-1 text-[11px] text-[#d4d4d4]">
-                  {tag}
-                </span>
-              ))}
+              {(content.tags || []).length > 0 ? (
+                (content.tags || []).slice(0, 4).map((tag) => (
+                  <span key={tag} className="rounded-full border border-[#3a3a3a] px-2 py-1 text-[11px] text-[#d4d4d4]">
+                    {tag}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-[#8f8f8f]">No genre tags</span>
+              )}
             </div>
           </aside>
         </div>

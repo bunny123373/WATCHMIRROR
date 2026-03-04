@@ -8,7 +8,10 @@ export default function HeroBanner({ item }: { item: Content | null }) {
     return (
       <section className="flex h-[50vh] min-h-[300px] items-center justify-center bg-[#0a0a0a]">
         <div className="text-center">
-          <h1 className="font-[var(--font-heading)] text-4xl text-primary md:text-5xl">WATCHMIRROR</h1>
+          <h1 className="font-[var(--font-heading)] text-4xl font-bold tracking-wider md:text-5xl">
+            <span className="text-[#E50914]">WATCH</span>
+            <span className="text-white">MIRROR</span>
+          </h1>
           <p className="mt-2 text-muted">Stream Without Limits.</p>
         </div>
       </section>
@@ -40,7 +43,7 @@ export default function HeroBanner({ item }: { item: Content | null }) {
               <Star size={10} className="text-yellow-400 md:size-3" /> {Number.isFinite(item.rating) ? item.rating.toFixed(1) : "N/A"}
             </span>
             <span className="rounded bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm md:text-xs">
-              {item.year} · {item.language}
+              {item.year} | {item.language}
             </span>
             {item.quality && (
               <span className="rounded bg-red-600 px-1.5 py-0.5 text-[9px] font-bold text-white md:text-[10px]">

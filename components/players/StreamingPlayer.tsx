@@ -80,12 +80,17 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
       )}
 
       {sources.length > 1 && (
-        <div className="flex flex-wrap gap-2 rounded-xl border border-[#2a2a2a] bg-[#181818] p-2">
+        <div className="space-y-2 rounded-xl border border-[#2a2a2a] bg-[#181818] p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#a3a3a3]">
+            Source: <span className="text-white">{activeSource.label}</span>
+          </p>
+          <div className="flex flex-wrap gap-2">
           {sources.map((source, index) => (
             <button
               key={`${source.type}-${source.label}-${index}`}
               type="button"
               onClick={() => setActiveSourceIndex(index)}
+              aria-pressed={index === activeSourceIndex}
               className={`rounded-md border px-3 py-1.5 text-xs ${
                 index === activeSourceIndex ? "border-[#E50914] bg-[#E50914] text-white" : "border-[#3a3a3a] text-[#d4d4d4]"
               }`}
@@ -93,6 +98,7 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
               {source.label}
             </button>
           ))}
+          </div>
         </div>
       )}
     </div>

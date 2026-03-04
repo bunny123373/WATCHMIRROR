@@ -49,7 +49,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <ProfileGate>
             <Navbar />
             <MobileSearchOverlay />
-            <main className="mx-auto min-h-screen max-w-[1600px] px-4 pb-28 pt-16 md:px-8 md:pb-10 md:pt-20">
+            <main className="mx-auto min-h-screen max-w-[1600px] px-3 pb-24 pt-14 sm:px-4 md:px-8 md:pb-10 md:pt-20">
               <div className="animate-fade-in">{children}</div>
             </main>
             <Footer />
