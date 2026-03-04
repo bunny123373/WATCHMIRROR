@@ -47,8 +47,8 @@ export default function SeriesWatchClient({ content }: { content: Content }) {
       />
 
       <div className="grid gap-4 md:grid-cols-[220px,1fr]">
-        <div className="glass rounded-2xl p-4">
-          <h3 className="mb-3 text-sm font-semibold text-primary">Seasons</h3>
+        <div className="rounded-xl bg-[#181818] p-4">
+          <h3 className="mb-3 text-sm font-semibold text-white">Seasons</h3>
           <div className="space-y-2">
             {seasons.map((s) => (
               <button
@@ -57,8 +57,10 @@ export default function SeriesWatchClient({ content }: { content: Content }) {
                   setSeasonNumber(s.seasonNumber);
                   setEpisodeNumber(s.episodes[0]?.episodeNumber || 1);
                 }}
-                className={`w-full rounded-xl border px-3 py-2 text-left text-sm ${
-                  s.seasonNumber === seasonNumber ? "border-primary text-primary" : "border-border text-muted"
+                className={`w-full rounded-lg border px-3 py-2 text-left text-sm ${
+                  s.seasonNumber === seasonNumber
+                    ? "border-[#E50914] bg-[#E50914]/15 text-white"
+                    : "border-[#2f2f2f] text-[#b3b3b3] hover:border-[#4a4a4a]"
                 }`}
               >
                 Season {s.seasonNumber}
@@ -67,19 +69,21 @@ export default function SeriesWatchClient({ content }: { content: Content }) {
           </div>
         </div>
 
-        <div className="glass rounded-2xl p-4">
-          <h3 className="mb-3 text-sm font-semibold text-primary">Episodes</h3>
+        <div className="rounded-xl bg-[#181818] p-4">
+          <h3 className="mb-3 text-sm font-semibold text-white">Episodes</h3>
           <div className="grid gap-2 sm:grid-cols-2">
             {(season?.episodes || []).map((ep) => (
               <button
                 key={ep.episodeNumber}
                 onClick={() => setEpisodeNumber(ep.episodeNumber)}
-                className={`rounded-xl border p-3 text-left ${
-                  ep.episodeNumber === episode?.episodeNumber ? "border-primary bg-primary/10" : "border-border"
+                className={`rounded-lg border p-3 text-left ${
+                  ep.episodeNumber === episode?.episodeNumber
+                    ? "border-[#E50914] bg-[#E50914]/15"
+                    : "border-[#2f2f2f] bg-[#141414] hover:border-[#4a4a4a]"
                 }`}
               >
-                <p className="text-xs text-muted">Episode {ep.episodeNumber}</p>
-                <p className="text-sm font-semibold">{ep.episodeTitle}</p>
+                <p className="text-xs text-[#9ca3af]">Episode {ep.episodeNumber}</p>
+                <p className="text-sm font-semibold text-white">{ep.episodeTitle}</p>
               </button>
             ))}
           </div>

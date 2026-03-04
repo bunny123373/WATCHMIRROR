@@ -11,8 +11,8 @@
   --accent: #ffffff;
   --text: #f5f5f1;
   --muted: #b3b3b3;
-  --font-heading: Cambria, "Times New Roman", Times, serif;
-  --font-body: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+  --font-body: "Helvetica Neue", "Segoe UI", Arial, sans-serif;
 }
 
 html {
@@ -20,7 +20,9 @@ html {
 }
 
 body {
-  background: linear-gradient(180deg, #141414 0%, #111111 60%, #0d0d0d 100%);
+  background:
+    radial-gradient(1100px 420px at 50% -180px, rgba(229, 9, 20, 0.2), transparent 70%),
+    linear-gradient(180deg, #141414 0%, #111111 60%, #0d0d0d 100%);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -58,4 +60,21 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.section-title::before {
+  content: "";
+  width: 4px;
+  height: 22px;
+  border-radius: 999px;
+  background: #e50914;
 }
