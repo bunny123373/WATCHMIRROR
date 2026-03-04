@@ -18,17 +18,20 @@ export default function MobileBottomNav() {
   const dispatch = useAppDispatch();
 
   return (
-    <nav className="glass fixed inset-x-0 bottom-0 z-40 border-t border-border/80 p-2 md:hidden">
-      <ul className="grid grid-cols-5 gap-1">
+    <nav className="glass fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/90 backdrop-blur-lg">
+      <ul className="flex justify-between px-2">
         {navItems.map((item) => {
           const ActiveIcon = item.icon;
           const active = pathname === item.href;
 
           return (
             <li key={item.href}>
-              <Link href={item.href} className={`flex flex-col items-center rounded-xl py-2 text-xs ${active ? "text-primary" : "text-muted"}`}>
-                <ActiveIcon size={16} />
-                {item.label}
+              <Link
+                href={item.href}
+                className={`flex flex-col items-center gap-1 px-3 py-2 transition ${active ? "text-primary" : "text-gray-400"}`}
+              >
+                <ActiveIcon size={20} />
+                <span className="text-[10px] font-medium">{item.label}</span>
               </Link>
             </li>
           );
@@ -36,10 +39,10 @@ export default function MobileBottomNav() {
         <li>
           <button
             onClick={() => dispatch(setMobileSearchOpen(true))}
-            className="flex w-full flex-col items-center rounded-xl py-2 text-xs text-muted"
+            className="flex flex-col items-center gap-1 px-3 py-2 text-gray-400 transition hover:text-white"
           >
-            <Search size={16} />
-            Search
+            <Search size={20} />
+            <span className="text-[10px] font-medium">Search</span>
           </button>
         </li>
       </ul>
