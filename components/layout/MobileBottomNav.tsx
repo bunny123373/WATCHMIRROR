@@ -18,7 +18,7 @@ export default function MobileBottomNav() {
   const dispatch = useAppDispatch();
 
   return (
-    <nav className="glass fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/90 backdrop-blur-lg">
+    <nav className="glass fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/90 backdrop-blur-lg md:hidden">
       <ul className="flex justify-between px-2">
         {navItems.map((item) => {
           const ActiveIcon = item.icon;
