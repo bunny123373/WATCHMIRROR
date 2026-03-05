@@ -574,57 +574,6 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-4 backdrop-blur-sm lg:p-5">
-          <div className="mb-3 flex items-center gap-2 lg:mb-4 lg:gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 lg:h-9 lg:w-9">
-              <Globe className="h-4 w-4 text-blue-400 lg:h-5 lg:w-5" />
-            </div>
-            <h3 className="text-xs font-semibold text-white lg:text-sm">Top Languages</h3>
-          </div>
-          <div className="space-y-1.5 lg:space-y-2">
-            {analytics.topLanguages.length > 0 ? analytics.topLanguages.map(([name, count], idx) => (
-              <div key={name} className="group flex items-center justify-between rounded-lg bg-black/30 px-3 py-2 transition-colors hover:bg-black/50 lg:rounded-xl lg:px-4 lg:py-3">
-                <div className="flex items-center gap-2 lg:gap-3">
-                  <span className="flex h-5 w-5 items-center justify-center rounded bg-white/10 text-[10px] font-medium text-gray-400 lg:h-6 lg:w-6 lg:text-xs">{idx + 1}</span>
-                  <span className="text-xs font-medium text-gray-200 lg:text-sm">{name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-1 w-10 overflow-hidden rounded-full bg-white/10 lg:h-1.5 lg:w-16">
-                    <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${(count / analytics.total) * 100}%` }} />
-                  </div>
-                  <span className="min-w-[1.5rem] text-right text-xs font-semibold text-gray-400 lg:min-w-[2rem]">{count}</span>
-                </div>
-              </div>
-            )) : <p className="text-xs text-gray-500 lg:text-sm">No data available</p>}
-          </div>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-4 backdrop-blur-sm lg:p-5">
-          <div className="mb-3 flex items-center gap-2 lg:mb-4 lg:gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/20 lg:h-9 lg:w-9">
-              <Tag className="h-4 w-4 text-purple-400 lg:h-5 lg:w-5" />
-            </div>
-            <h3 className="text-xs font-semibold text-white lg:text-sm">Top Categories</h3>
-          </div>
-          <div className="space-y-1.5 lg:space-y-2">
-            {analytics.topCategories.length > 0 ? analytics.topCategories.map(([name, count], idx) => (
-              <div key={name} className="group flex items-center justify-between rounded-lg bg-black/30 px-3 py-2 transition-colors hover:bg-black/50 lg:rounded-xl lg:px-4 lg:py-3">
-                <div className="flex items-center gap-2 lg:gap-3">
-                  <span className="flex h-5 w-5 items-center justify-center rounded bg-white/10 text-[10px] font-medium text-gray-400 lg:h-6 lg:w-6 lg:text-xs">{idx + 1}</span>
-                  <span className="text-xs font-medium text-gray-200 lg:text-sm">{name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-1 w-10 overflow-hidden rounded-full bg-white/10 lg:h-1.5 lg:w-16">
-                    <div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${(count / analytics.total) * 100}%` }} />
-                  </div>
-                  <span className="min-w-[1.5rem] text-right text-xs font-semibold text-gray-400 lg:min-w-[2rem]">{count}</span>
-                </div>
-              </div>
-            )) : <p className="text-xs text-gray-500 lg:text-sm">No data available</p>}
-          </div>
-        </div>
-      </div>
-
       {activeTab === "browse" && (
         <div className="space-y-6">
           <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
