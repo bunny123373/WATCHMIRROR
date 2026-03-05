@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Pencil, Plus, Search, Trash2, X, Film, Tv, BarChart3, Clock, Star, Globe, Tag, Lock, ChevronRight, LayoutGrid, List, Grid3X3, Calendar, Sparkles, Database, AlertCircle } from "lucide-react";
@@ -68,13 +68,16 @@ const createSeason = (seasonNumber: number): Season => ({
   episodes: [createEpisode(1)]
 });
 
+const ADMIN_STORAGE_KEY = "watchmirror_admin_key";
+const ADMIN_SESSION_DURATION = 60 * 60 * 1000; // 1 hour
+
 export default function AdminPage() {
   const [mode, setMode] = useState<ContentType>("movie");
   const [adminKey, setAdminKey] = useState("");
   const [authorized, setAuthorized] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [tmdbQuery, setTmdbQuery] = useState("");
   const [tmdbResults, setTmdbResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
   const [payload, setPayload] = useState<Partial<Content>>(emptyPayload);
   const [seasonsDraft, setSeasonsDraft] = useState<Season[]>([createSeason(1)]);
   const [movieSubtitlesInput, setMovieSubtitlesInput] = useState("");
@@ -85,6 +88,40 @@ export default function AdminPage() {
   const [contentPage, setContentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<"browse" | "add" | "import">("browse");
   const itemsPerPage = 20;
+
+  useEffect(() => {
+    const stored = localStorage.getItem(ADMIN_STORAGE_KEY);
+    if (stored) {
+      try {
+        const { key, expiry } = JSON.parse(stored);
+        if (expiry && Date.now() < expiry) {
+          setAdminKey(key);
+          setAuthorized(true);
+          loadContent(key);
+        } else {
+          localStorage.removeItem(ADMIN_STORAGE_KEY);
+          setLoading(false);
+        }
+      } catch {
+        localStorage.removeItem(ADMIN_STORAGE_KEY);
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadContent = async (key?: string) => {
+    setLoading(true);
+    const res = await fetch("/api/admin/content", {
+      method: "GET",
+      headers: { "x-admin-key": key || adminKey }
+    });
+    if (!res.ok) { setLoading(false); return; }
+    const data = await res.json();
+    setItems(Array.isArray(data.items) ? data.items : []);
+    setLoading(false);
+  };
 
   const slugPreview = useMemo(() => {
     return (payload.title || "")
@@ -156,22 +193,6 @@ export default function AdminPage() {
       ...prev,
       type: nextMode
     }));
-  };
-
-  const loadContent = async () => {
-    const res = await fetch("/api/admin/content", {
-      method: "GET",
-      headers: {
-        "x-admin-key": adminKey
-      }
-    });
-
-    if (!res.ok) {
-      return;
-    }
-
-    const data = await res.json();
-    setItems(Array.isArray(data.items) ? data.items : []);
   };
 
   const searchTMDB = async () => {
@@ -408,6 +429,10 @@ export default function AdminPage() {
       return;
     }
 
+    localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify({
+      key: adminKey,
+      expiry: Date.now() + ADMIN_SESSION_DURATION
+    }));
     setAuthorized(true);
     setStatus("");
     await loadContent();
