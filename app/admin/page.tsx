@@ -489,12 +489,12 @@ export default function AdminPage() {
           <h1 className="font-[var(--font-heading)] text-3xl font-bold text-white">Dashboard</h1>
           <p className="mt-1 text-sm text-gray-500">Manage your content library</p>
         </div>
-        <div className="flex gap-1 rounded-xl bg-white/5 p-1">
+        <div className="flex gap-1 overflow-x-auto rounded-xl bg-white/5 p-1">
           {(["browse", "add", "import"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
                 activeTab === tab 
                   ? "bg-red-600 text-white shadow-lg shadow-red-600/30" 
                   : "text-gray-400 hover:text-white hover:bg-white/5"
@@ -511,116 +511,116 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
-          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-red-600/20 blur-2xl transition-all group-hover:bg-red-600/30" />
-          <div className="relative flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-700 shadow-lg shadow-red-600/30">
-              <Database className="h-6 w-6 text-white" />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+          <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-red-600/20 blur-xl transition-all group-hover:bg-red-600/30 lg:-right-8 lg:-top-8 lg:h-24 lg:w-24" />
+          <div className="relative flex items-center gap-3 lg:gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-700 shadow-lg shadow-red-600/30 lg:h-12 lg:w-12">
+              <Database className="h-5 w-5 text-white lg:h-6 lg:w-6" />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Content</p>
-              <p className="text-3xl font-bold text-white">{analytics.total}</p>
+              <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider lg:text-xs">Total</p>
+              <p className="text-2xl font-bold text-white lg:text-3xl">{analytics.total}</p>
             </div>
           </div>
         </div>
-        <Link href="/admin/movies" className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
-          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-500/20 blur-2xl transition-all group-hover:bg-blue-500/30" />
-          <div className="relative flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-600/30">
-              <Film className="h-6 w-6 text-white" />
+        <Link href="/admin/movies" className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+          <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-blue-500/20 blur-xl transition-all group-hover:bg-blue-500/30 lg:-right-8 lg:-top-8 lg:h-24 lg:w-24" />
+          <div className="relative flex items-center gap-3 lg:gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-600/30 lg:h-12 lg:w-12">
+              <Film className="h-5 w-5 text-white lg:h-6 lg:w-6" />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Movies</p>
-              <p className="text-3xl font-bold text-white">{analytics.movies}</p>
+              <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider lg:text-xs">Movies</p>
+              <p className="text-2xl font-bold text-white lg:text-3xl">{analytics.movies}</p>
             </div>
           </div>
         </Link>
-        <Link href="/admin/series" className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
-          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-purple-500/20 blur-2xl transition-all group-hover:bg-purple-500/30" />
-          <div className="relative flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-600/30">
-              <Tv className="h-6 w-6 text-white" />
+        <Link href="/admin/series" className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+          <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-purple-500/20 blur-xl transition-all group-hover:bg-purple-500/30 lg:-right-8 lg:-top-8 lg:h-24 lg:w-24" />
+          <div className="relative flex items-center gap-3 lg:gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-600/30 lg:h-12 lg:w-12">
+              <Tv className="h-5 w-5 text-white lg:h-6 lg:w-6" />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Series</p>
-              <p className="text-3xl font-bold text-white">{analytics.series}</p>
+              <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider lg:text-xs">Series</p>
+              <p className="text-2xl font-bold text-white lg:text-3xl">{analytics.series}</p>
             </div>
           </div>
         </Link>
-        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
-          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-yellow-500/20 blur-2xl transition-all group-hover:bg-yellow-500/30" />
-          <div className="relative flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-lg shadow-yellow-600/30">
-              <Star className="h-6 w-6 text-white" />
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+          <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-yellow-500/20 blur-xl transition-all group-hover:bg-yellow-500/30 lg:-right-8 lg:-top-8 lg:h-24 lg:w-24" />
+          <div className="relative flex items-center gap-3 lg:gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-lg shadow-yellow-600/30 lg:h-12 lg:w-12">
+              <Star className="h-5 w-5 text-white lg:h-6 lg:w-6" />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Rating</p>
-              <p className="text-3xl font-bold text-white">{analytics.avgRating}</p>
+              <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider lg:text-xs">Rating</p>
+              <p className="text-2xl font-bold text-white lg:text-3xl">{analytics.avgRating}</p>
             </div>
           </div>
         </div>
-        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
-          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-green-500/20 blur-2xl transition-all group-hover:bg-green-500/30" />
-          <div className="relative flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-600/30">
-              <Clock className="h-6 w-6 text-white" />
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+          <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-green-500/20 blur-xl transition-all group-hover:bg-green-500/30 lg:-right-8 lg:-top-8 lg:h-24 lg:w-24" />
+          <div className="relative flex items-center gap-3 lg:gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-600/30 lg:h-12 lg:w-12">
+              <Clock className="h-5 w-5 text-white lg:h-6 lg:w-6" />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Scheduled</p>
-              <p className="text-3xl font-bold text-white">{analytics.scheduled}</p>
+              <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider lg:text-xs">Scheduled</p>
+              <p className="text-2xl font-bold text-white lg:text-3xl">{analytics.scheduled}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-5 backdrop-blur-sm">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/20">
-              <Globe className="h-5 w-5 text-blue-400" />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-4 backdrop-blur-sm lg:p-5">
+          <div className="mb-3 flex items-center gap-2 lg:mb-4 lg:gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 lg:h-9 lg:w-9">
+              <Globe className="h-4 w-4 text-blue-400 lg:h-5 lg:w-5" />
             </div>
-            <h3 className="text-sm font-semibold text-white">Top Languages</h3>
+            <h3 className="text-xs font-semibold text-white lg:text-sm">Top Languages</h3>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5 lg:space-y-2">
             {analytics.topLanguages.length > 0 ? analytics.topLanguages.map(([name, count], idx) => (
-              <div key={name} className="group flex items-center justify-between rounded-xl bg-black/30 px-4 py-3 transition-colors hover:bg-black/50">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-white/10 text-xs font-medium text-gray-400">{idx + 1}</span>
-                  <span className="text-sm font-medium text-gray-200">{name}</span>
+              <div key={name} className="group flex items-center justify-between rounded-lg bg-black/30 px-3 py-2 transition-colors hover:bg-black/50 lg:rounded-xl lg:px-4 lg:py-3">
+                <div className="flex items-center gap-2 lg:gap-3">
+                  <span className="flex h-5 w-5 items-center justify-center rounded bg-white/10 text-[10px] font-medium text-gray-400 lg:h-6 lg:w-6 lg:text-xs">{idx + 1}</span>
+                  <span className="text-xs font-medium text-gray-200 lg:text-sm">{name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10">
+                  <div className="h-1 w-10 overflow-hidden rounded-full bg-white/10 lg:h-1.5 lg:w-16">
                     <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${(count / analytics.total) * 100}%` }} />
                   </div>
-                  <span className="min-w-[2rem] text-right text-sm font-semibold text-gray-400">{count}</span>
+                  <span className="min-w-[1.5rem] text-right text-xs font-semibold text-gray-400 lg:min-w-[2rem]">{count}</span>
                 </div>
               </div>
-            )) : <p className="text-sm text-gray-500">No data available</p>}
+            )) : <p className="text-xs text-gray-500 lg:text-sm">No data available</p>}
           </div>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-5 backdrop-blur-sm">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/20">
-              <Tag className="h-5 w-5 text-purple-400" />
+        <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-4 backdrop-blur-sm lg:p-5">
+          <div className="mb-3 flex items-center gap-2 lg:mb-4 lg:gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/20 lg:h-9 lg:w-9">
+              <Tag className="h-4 w-4 text-purple-400 lg:h-5 lg:w-5" />
             </div>
-            <h3 className="text-sm font-semibold text-white">Top Categories</h3>
+            <h3 className="text-xs font-semibold text-white lg:text-sm">Top Categories</h3>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5 lg:space-y-2">
             {analytics.topCategories.length > 0 ? analytics.topCategories.map(([name, count], idx) => (
-              <div key={name} className="group flex items-center justify-between rounded-xl bg-black/30 px-4 py-3 transition-colors hover:bg-black/50">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-white/10 text-xs font-medium text-gray-400">{idx + 1}</span>
-                  <span className="text-sm font-medium text-gray-200">{name}</span>
+              <div key={name} className="group flex items-center justify-between rounded-lg bg-black/30 px-3 py-2 transition-colors hover:bg-black/50 lg:rounded-xl lg:px-4 lg:py-3">
+                <div className="flex items-center gap-2 lg:gap-3">
+                  <span className="flex h-5 w-5 items-center justify-center rounded bg-white/10 text-[10px] font-medium text-gray-400 lg:h-6 lg:w-6 lg:text-xs">{idx + 1}</span>
+                  <span className="text-xs font-medium text-gray-200 lg:text-sm">{name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10">
+                  <div className="h-1 w-10 overflow-hidden rounded-full bg-white/10 lg:h-1.5 lg:w-16">
                     <div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${(count / analytics.total) * 100}%` }} />
                   </div>
-                  <span className="min-w-[2rem] text-right text-sm font-semibold text-gray-400">{count}</span>
+                  <span className="min-w-[1.5rem] text-right text-xs font-semibold text-gray-400 lg:min-w-[2rem]">{count}</span>
                 </div>
               </div>
-            )) : <p className="text-sm text-gray-500">No data available</p>}
+            )) : <p className="text-xs text-gray-500 lg:text-sm">No data available</p>}
           </div>
         </div>
       </div>
