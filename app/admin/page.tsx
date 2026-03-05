@@ -2,7 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import Image from "next/image";
-import { Pencil, Plus, Search, Trash2, X, Film, Tv, BarChart3, Clock, Star, Globe, Tag, Lock } from "lucide-react";
+import { Pencil, Plus, Search, Trash2, X, Film, Tv, BarChart3, Clock, Star, Globe, Tag, Lock, ChevronRight, LayoutGrid, List, Grid3X3, Calendar, Sparkles, Database, AlertCircle } from "lucide-react";
 import { Content, ContentType, Season, SubtitleTrack } from "@/types/content";
 
 const emptyPayload: Partial<Content> = {
@@ -414,32 +414,42 @@ export default function AdminPage() {
 
   if (!authorized) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex min-h-[80vh] items-center justify-center">
         <div className="w-full max-w-md">
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-              <Lock className="h-8 w-8 text-primary" />
+          <div className="mb-10 text-center">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-red-600 to-red-800 shadow-2xl shadow-red-900/50">
+              <Lock className="h-10 w-10 text-white" />
             </div>
-            <h1 className="font-[var(--font-heading)] text-3xl text-white">Admin Panel</h1>
-            <p className="mt-2 text-gray-400">Enter your admin key to continue</p>
+            <h1 className="font-[var(--font-heading)] text-4xl font-bold text-white">Admin Portal</h1>
+            <p className="mt-3 text-gray-400">Enter your credentials to access the dashboard</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-            <input
-              type="password"
-              value={adminKey}
-              onChange={(e) => setAdminKey(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && unlockAdmin()}
-              className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:border-primary focus:ring-1 focus:ring-primary"
-              placeholder="Enter admin key"
-              autoFocus
-            />
+          <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/80 p-8 shadow-2xl backdrop-blur-xl">
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-xs font-medium text-gray-400 uppercase tracking-wider">Admin Key</label>
+              <input
+                type="password"
+                value={adminKey}
+                onChange={(e) => setAdminKey(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && unlockAdmin()}
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-5 py-4 text-base text-white placeholder:text-gray-600 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                placeholder="Enter your admin key"
+                autoFocus
+              />
+              </div>
             <button
               onClick={unlockAdmin}
-              className="mt-4 w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-black transition hover:bg-primary/90"
+              className="mt-2 w-full rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 text-base font-bold text-white transition-all hover:from-red-500 hover:to-red-600 hover:shadow-lg hover:shadow-red-600/25"
             >
               Access Dashboard
             </button>
-            {status && <p className="mt-3 text-center text-sm text-red-400">{status}</p>}
+            </div>
+            {status && (
+              <div className="mt-5 flex items-center gap-2 rounded-xl bg-red-500/10 p-3 text-sm text-red-400">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                {status}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -447,197 +457,259 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="font-[var(--font-heading)] text-3xl text-white">Dashboard</h1>
-        <div className="flex gap-2">
+        <div>
+          <h1 className="font-[var(--font-heading)] text-3xl font-bold text-white">Dashboard</h1>
+          <p className="mt-1 text-sm text-gray-500">Manage your content library</p>
+        </div>
+        <div className="flex gap-1 rounded-xl bg-white/5 p-1">
           {(["browse", "add", "import"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                activeTab === tab ? "bg-primary text-black" : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+              className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
+                activeTab === tab 
+                  ? "bg-red-600 text-white shadow-lg shadow-red-600/30" 
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
               }`}
             >
+              {tab === "browse" && <LayoutGrid className="h-4 w-4" />}
+              {tab === "add" && <Plus className="h-4 w-4" />}
+              {tab === "import" && <Sparkles className="h-4 w-4" />}
               {tab === "browse" && "Browse"}
-              {tab === "add" && (editingId ? "Edit Content" : "Add New")}
-              {tab === "import" && "TMDB Import"}
+              {tab === "add" && (editingId ? "Edit" : "Add New")}
+              {tab === "import" && "Import"}
             </button>
           ))}
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary/20 p-2">
-              <Film className="h-5 w-5 text-primary" />
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-red-600/20 blur-2xl transition-all group-hover:bg-red-600/30" />
+          <div className="relative flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-700 shadow-lg shadow-red-600/30">
+              <Database className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-400">Total Content</p>
-              <p className="text-2xl font-bold text-white">{analytics.total}</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Content</p>
+              <p className="text-3xl font-bold text-white">{analytics.total}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-blue-500/20 p-2">
-              <Film className="h-5 w-5 text-blue-400" />
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-500/20 blur-2xl transition-all group-hover:bg-blue-500/30" />
+          <div className="relative flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-600/30">
+              <Film className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-400">Movies</p>
-              <p className="text-2xl font-bold text-white">{analytics.movies}</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Movies</p>
+              <p className="text-3xl font-bold text-white">{analytics.movies}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-purple-500/20 p-2">
-              <Tv className="h-5 w-5 text-purple-400" />
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-purple-500/20 blur-2xl transition-all group-hover:bg-purple-500/30" />
+          <div className="relative flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-600/30">
+              <Tv className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-400">Series</p>
-              <p className="text-2xl font-bold text-white">{analytics.series}</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Series</p>
+              <p className="text-3xl font-bold text-white">{analytics.series}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-yellow-500/20 p-2">
-              <Star className="h-5 w-5 text-yellow-400" />
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-yellow-500/20 blur-2xl transition-all group-hover:bg-yellow-500/30" />
+          <div className="relative flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-lg shadow-yellow-600/30">
+              <Star className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-400">Avg Rating</p>
-              <p className="text-2xl font-bold text-white">{analytics.avgRating}</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Rating</p>
+              <p className="text-3xl font-bold text-white">{analytics.avgRating}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-green-500/20 p-2">
-              <Clock className="h-5 w-5 text-green-400" />
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-green-500/20 blur-2xl transition-all group-hover:bg-green-500/30" />
+          <div className="relative flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-600/30">
+              <Clock className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-400">Scheduled</p>
-              <p className="text-2xl font-bold text-white">{analytics.scheduled}</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Scheduled</p>
+              <p className="text-3xl font-bold text-white">{analytics.scheduled}</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <Globe className="h-4 w-4 text-gray-400" />
-            <h3 className="text-sm font-medium text-white">Top Languages</h3>
+        <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-5 backdrop-blur-sm">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/20">
+              <Globe className="h-5 w-5 text-blue-400" />
+            </div>
+            <h3 className="text-sm font-semibold text-white">Top Languages</h3>
           </div>
           <div className="space-y-2">
-            {analytics.topLanguages.map(([name, count]) => (
-              <div key={name} className="flex items-center justify-between rounded-lg bg-black/30 px-3 py-2">
-                <span className="text-sm text-gray-300">{name}</span>
-                <span className="text-sm font-medium text-gray-500">{count}</span>
+            {analytics.topLanguages.length > 0 ? analytics.topLanguages.map(([name, count], idx) => (
+              <div key={name} className="group flex items-center justify-between rounded-xl bg-black/30 px-4 py-3 transition-colors hover:bg-black/50">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-white/10 text-xs font-medium text-gray-400">{idx + 1}</span>
+                  <span className="text-sm font-medium text-gray-200">{name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10">
+                    <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${(count / analytics.total) * 100}%` }} />
+                  </div>
+                  <span className="min-w-[2rem] text-right text-sm font-semibold text-gray-400">{count}</span>
+                </div>
               </div>
-            ))}
+            )) : <p className="text-sm text-gray-500">No data available</p>}
           </div>
         </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <Tag className="h-4 w-4 text-gray-400" />
-            <h3 className="text-sm font-medium text-white">Top Categories</h3>
+        <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-5 backdrop-blur-sm">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/20">
+              <Tag className="h-5 w-5 text-purple-400" />
+            </div>
+            <h3 className="text-sm font-semibold text-white">Top Categories</h3>
           </div>
           <div className="space-y-2">
-            {analytics.topCategories.map(([name, count]) => (
-              <div key={name} className="flex items-center justify-between rounded-lg bg-black/30 px-3 py-2">
-                <span className="text-sm text-gray-300">{name}</span>
-                <span className="text-sm font-medium text-gray-500">{count}</span>
+            {analytics.topCategories.length > 0 ? analytics.topCategories.map(([name, count], idx) => (
+              <div key={name} className="group flex items-center justify-between rounded-xl bg-black/30 px-4 py-3 transition-colors hover:bg-black/50">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-white/10 text-xs font-medium text-gray-400">{idx + 1}</span>
+                  <span className="text-sm font-medium text-gray-200">{name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10">
+                    <div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${(count / analytics.total) * 100}%` }} />
+                  </div>
+                  <span className="min-w-[2rem] text-right text-sm font-semibold text-gray-400">{count}</span>
+                </div>
               </div>
-            ))}
+            )) : <p className="text-sm text-gray-500">No data available</p>}
           </div>
         </div>
       </div>
 
       {activeTab === "browse" && (
-        <div className="space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-6">
+          <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-2">
               <button
                 onClick={() => applyMode("movie")}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${mode === "movie" ? "bg-primary text-black" : "bg-white/5 text-gray-400 hover:bg-white/10"}`}
+                className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-all ${
+                  mode === "movie" 
+                    ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-600/30" 
+                    : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+                }`}
               >
+                <Film className="h-4 w-4" />
                 Movies ({analytics.movies})
               </button>
               <button
                 onClick={() => applyMode("series")}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${mode === "series" ? "bg-primary text-black" : "bg-white/5 text-gray-400 hover:bg-white/10"}`}
+                className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-all ${
+                  mode === "series" 
+                    ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-600/30" 
+                    : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+                }`}
               >
+                <Tv className="h-4 w-4" />
                 Series ({analytics.series})
               </button>
             </div>
-            <input
-              value={contentSearch}
-              onChange={(e) => {
-                setContentSearch(e.target.value);
-                setContentPage(1);
-              }}
-              placeholder="Search content..."
-              className="rounded-lg border border-white/10 bg-black/30 px-4 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary"
-            />
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              <input
+                value={contentSearch}
+                onChange={(e) => {
+                  setContentSearch(e.target.value);
+                  setContentPage(1);
+                }}
+                placeholder="Search content..."
+                className="w-full rounded-xl border border-white/10 bg-black/40 pl-11 pr-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20 sm:w-72"
+              />
+            </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {paginatedItems.map((item) => (
-              <div key={item._id || item.slug} className="group relative rounded-xl border border-white/10 bg-white/5 p-3 transition hover:border-white/20">
-                <div className="flex gap-3">
+              <div key={item._id || item.slug} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#1a1a1a]/50 transition-all hover:border-white/30 hover:shadow-2xl hover:shadow-black/50">
+                <div className="flex gap-4 p-4">
                   {item.poster ? (
-                    <Image src={item.poster} alt={item.title} width={80} height={110} className="h-[110px] w-[80px] rounded-lg object-cover" />
+                    <Image src={item.poster} alt={item.title} width={80} height={120} className="h-[120px] w-[80px] rounded-xl object-cover shadow-lg" />
                   ) : (
-                    <div className="h-[110px] w-[80px] rounded-lg bg-black/30" />
+                    <div className="flex h-[120px] w-[80px] items-center justify-center rounded-xl bg-black/40">
+                      <Film className="h-8 w-8 text-gray-600" />
+                    </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate font-medium text-white">{item.title}</p>
-                    <p className="mt-1 text-xs text-gray-400">{item.year} · {item.language} · {item.rating?.toFixed(1)}</p>
-                    <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="flex flex-1 flex-col">
+                    <p className="truncate font-semibold text-white">{item.title}</p>
+                    <p className="mt-1 text-xs text-gray-500">{item.year} · {item.language} · {item.rating?.toFixed(1)} ★</p>
+                    <div className="mt-auto flex flex-wrap gap-2 pt-3">
                       <button
                         onClick={() => startEdit(item)}
-                        className="rounded bg-white/10 px-2 py-1 text-xs text-white hover:bg-white/20"
+                        className="flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/20"
                       >
+                        <Pencil className="h-3 w-3" />
                         Edit
                       </button>
                       <button
                         onClick={() => duplicateContent(item)}
-                        className="rounded bg-white/10 px-2 py-1 text-xs text-white hover:bg-white/20"
+                        className="flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/20"
                       >
+                        <Plus className="h-3 w-3" />
                         Copy
                       </button>
                       <button
                         onClick={() => deleteContent(item._id)}
-                        className="rounded bg-red-500/20 px-2 py-1 text-xs text-red-400 hover:bg-red-500/30"
+                        className="flex items-center gap-1 rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/20"
                       >
-                        Delete
+                        <Trash2 className="h-3 w-3" />
                       </button>
                     </div>
                   </div>
                 </div>
+                {item.publishAt && new Date(item.publishAt).getTime() > Date.now() && (
+                  <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-yellow-500/20 px-2.5 py-1 text-xs font-medium text-yellow-400">
+                    <Clock className="h-3 w-3" />
+                    Scheduled
+                  </div>
+                )}
               </div>
             ))}
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-3">
               <button
                 onClick={() => setContentPage((p) => Math.max(1, p - 1))}
                 disabled={contentPage === 1}
-                className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-sm text-white disabled:opacity-50"
+                className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30"
               >
-                Prev
+                <ChevronRight className="h-4 w-4 rotate-180" />
+                Previous
               </button>
-              <span className="text-sm text-gray-400">Page {contentPage} of {totalPages}</span>
+              <div className="flex items-center gap-1 rounded-xl bg-white/5 px-4 py-2 text-sm font-medium text-gray-300">
+                <span className="text-white">{contentPage}</span>
+                <span className="text-gray-500">/</span>
+                <span>{totalPages}</span>
+              </div>
               <button
                 onClick={() => setContentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={contentPage === totalPages}
-                className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-sm text-white disabled:opacity-50"
+                className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30"
               >
                 Next
+                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           )}
@@ -645,106 +717,228 @@ export default function AdminPage() {
       )}
 
       {activeTab === "add" && (
-        <form onSubmit={submitContent} className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <input value={payload.title || ""} onChange={(e) => setPayload({ ...payload, title: e.target.value })} placeholder="Title *" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" required />
-            <div className="flex gap-2">
-              <select value={mode} onChange={(e) => applyMode(e.target.value as "movie" | "series")} className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white outline-none focus:border-primary">
-                <option value="movie">Movie</option>
-                <option value="series">Series</option>
-              </select>
-              <select value={payload.language || ""} onChange={(e) => setPayload({ ...payload, language: e.target.value })} className="flex-1 rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white outline-none focus:border-primary">
-                <option value="EN">English</option>
-                <option value="TE">Telugu</option>
-                <option value="HI">Hindi</option>
-                <option value="TA">Tamil</option>
-                <option value="ML">Malayalam</option>
-                <option value="KN">Kannada</option>
-                <option value="KO">Korean</option>
-                <option value="JA">Japanese</option>
-                <option value="ES">Spanish</option>
-              </select>
+        <form onSubmit={submitContent} className="space-y-6 rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+          <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-red-600 to-red-700">
+              {editingId ? <Pencil className="h-5 w-5 text-white" /> : <Plus className="h-5 w-5 text-white" />}
             </div>
-            <input value={payload.poster || ""} onChange={(e) => setPayload({ ...payload, poster: e.target.value })} placeholder="Poster URL *" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" required />
-            <input value={payload.banner || ""} onChange={(e) => setPayload({ ...payload, banner: e.target.value })} placeholder="Banner URL" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
-            <input type="number" value={payload.year || ""} onChange={(e) => setPayload({ ...payload, year: Number(e.target.value) })} placeholder="Year" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
-            <input value={payload.category || ""} onChange={(e) => setPayload({ ...payload, category: e.target.value })} placeholder="Category" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
-            <input value={payload.rating?.toString() || "0"} onChange={(e) => setPayload({ ...payload, rating: Number(e.target.value) })} placeholder="Rating (0-10)" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
-            <input value={payload.quality || ""} onChange={(e) => setPayload({ ...payload, quality: e.target.value })} placeholder="Quality (HD/4K)" className="rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
+            <div>
+              <h2 className="text-lg font-semibold text-white">{editingId ? "Edit Content" : "Add New Content"}</h2>
+              <p className="text-sm text-gray-500">{editingId ? "Update the content details below" : "Fill in the details to add new content"}</p>
+            </div>
+          </div>
+          
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Title *</label>
+              <input value={payload.title || ""} onChange={(e) => setPayload({ ...payload, title: e.target.value })} placeholder="Enter title" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" required />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Type</label>
+                <select value={mode} onChange={(e) => applyMode(e.target.value as "movie" | "series")} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition-all focus:border-red-500">
+                  <option value="movie">Movie</option>
+                  <option value="series">Series</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Language</label>
+                <select value={payload.language || ""} onChange={(e) => setPayload({ ...payload, language: e.target.value })} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition-all focus:border-red-500">
+                  <option value="EN">English</option>
+                  <option value="TE">Telugu</option>
+                  <option value="HI">Hindi</option>
+                  <option value="TA">Tamil</option>
+                  <option value="ML">Malayalam</option>
+                  <option value="KN">Kannada</option>
+                  <option value="KO">Korean</option>
+                  <option value="JA">Japanese</option>
+                  <option value="ES">Spanish</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Poster URL *</label>
+              <input value={payload.poster || ""} onChange={(e) => setPayload({ ...payload, poster: e.target.value })} placeholder="https://..." className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" required />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Banner URL</label>
+              <input value={payload.banner || ""} onChange={(e) => setPayload({ ...payload, banner: e.target.value })} placeholder="https://..." className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Year</label>
+                <input type="number" value={payload.year || ""} onChange={(e) => setPayload({ ...payload, year: Number(e.target.value) })} placeholder="2024" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Category</label>
+                <input value={payload.category || ""} onChange={(e) => setPayload({ ...payload, category: e.target.value })} placeholder="Latest" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Rating</label>
+                <input value={payload.rating?.toString() || "0"} onChange={(e) => setPayload({ ...payload, rating: Number(e.target.value) })} placeholder="0-10" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Quality</label>
+                <input value={payload.quality || ""} onChange={(e) => setPayload({ ...payload, quality: e.target.value })} placeholder="HD / 4K" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
+              </div>
+            </div>
           </div>
 
           {mode === "movie" ? (
-            <div className="space-y-4">
-              <input value={payload.hlsLink || ""} onChange={(e) => setPayload({ ...payload, hlsLink: e.target.value })} placeholder="HLS Link" className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
-              <input value={payload.embedIframeLink || ""} onChange={(e) => setPayload({ ...payload, embedIframeLink: e.target.value })} placeholder="Embed Iframe Link" className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
-              <textarea value={movieSubtitlesInput} onChange={(e) => setMovieSubtitlesInput(e.target.value)} placeholder="Subtitles: lang|label|url|default (one per line)" className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary min-h-[80px]" />
+            <div className="space-y-4 rounded-xl border border-white/10 bg-black/20 p-5">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+                <Film className="h-4 w-4 text-red-500" />
+                Movie Sources
+              </h3>
+              <div className="grid gap-4">
+                <input value={payload.hlsLink || ""} onChange={(e) => setPayload({ ...payload, hlsLink: e.target.value })} placeholder="HLS Link (.m3u8)" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
+                <input value={payload.embedIframeLink || ""} onChange={(e) => setPayload({ ...payload, embedIframeLink: e.target.value })} placeholder="Embed Iframe Link" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Subtitles</label>
+                  <textarea value={movieSubtitlesInput} onChange={(e) => setMovieSubtitlesInput(e.target.value)} placeholder="lang|label|url|default (one per line)&#10;en|English|https://...|default&#10;te|Telugu|https://..." className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20 min-h-[100px]" />
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 rounded-xl border border-white/10 bg-black/20 p-5">
               <div className="flex items-center justify-between">
-                <p className="font-medium text-white">Seasons & Episodes</p>
-                <button type="button" onClick={addSeason} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-black">+ Add Season</button>
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <Tv className="h-4 w-4 text-red-500" />
+                  Seasons & Episodes
+                </h3>
+                <button type="button" onClick={addSeason} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-xs font-bold text-white transition-all hover:from-red-500 hover:to-red-600">
+                  <Plus className="h-3 w-3" />
+                  Add Season
+                </button>
               </div>
               {seasonsDraft.map((season, seasonIndex) => (
-                <div key={`season-${seasonIndex}`} className="rounded-lg border border-white/10 bg-black/20 p-4">
-                  <div className="mb-3 flex items-center gap-2">
-                    <input type="number" min={1} value={season.seasonNumber} onChange={(e) => updateSeasonField(seasonIndex, Number(e.target.value) || season.seasonNumber)} className="w-20 rounded border border-white/10 bg-black/30 px-3 py-1.5 text-sm text-white" />
-                    <span className="text-sm text-gray-400">Season {seasonIndex + 1}</span>
-                    <button type="button" onClick={() => addEpisode(seasonIndex)} className="ml-auto rounded bg-white/10 px-2 py-1 text-xs text-white">+ Episode</button>
-                    {seasonsDraft.length > 1 && <button type="button" onClick={() => removeSeason(seasonIndex)} className="rounded bg-red-500/20 px-2 py-1 text-xs text-red-400">Remove</button>}
-                  </div>
-                  {season.episodes.map((episode, episodeIndex) => (
-                    <div key={`episode-${seasonIndex}-${episodeIndex}`} className="mb-2 grid gap-2 rounded bg-black/30 p-3 md:grid-cols-2">
-                      <input type="number" min={1} value={episode.episodeNumber} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeNumber", e.target.value)} placeholder="Ep #" className="rounded border border-white/10 bg-black/30 px-3 py-2 text-sm text-white" />
-                      <input value={episode.episodeTitle} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeTitle", e.target.value)} placeholder="Episode title" className="rounded border border-white/10 bg-black/30 px-3 py-2 text-sm text-white" />
-                      <input value={episode.hlsLink || ""} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "hlsLink", e.target.value)} placeholder="HLS Link" className="rounded border border-white/10 bg-black/30 px-3 py-2 text-sm text-white" />
-                      <input value={episode.embedIframeLink || ""} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "embedIframeLink", e.target.value)} placeholder="Iframe Link" className="rounded border border-white/10 bg-black/30 px-3 py-2 text-sm text-white" />
-                      {episodeIndex > 0 && <button type="button" onClick={() => removeEpisode(seasonIndex, episodeIndex)} className="col-span-2 rounded bg-red-500/20 py-1.5 text-xs text-red-400">Remove Episode</button>}
+                <div key={`season-${seasonIndex}`} className="overflow-hidden rounded-xl border border-white/10 bg-black/30">
+                  <div className="flex items-center gap-3 bg-white/5 p-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-400">Season</span>
+                      <input type="number" min={1} value={season.seasonNumber} onChange={(e) => updateSeasonField(seasonIndex, Number(e.target.value) || season.seasonNumber)} className="w-16 rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-center text-sm text-white" />
                     </div>
-                  ))}
+                    <span className="text-sm text-gray-500">{season.episodes.length} episode{season.episodes.length !== 1 ? 's' : ''}</span>
+                    <div className="ml-auto flex gap-2">
+                      <button type="button" onClick={() => addEpisode(seasonIndex)} className="rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20">+ Episode</button>
+                      {seasonsDraft.length > 1 && <button type="button" onClick={() => removeSeason(seasonIndex)} className="rounded-lg bg-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/30">Remove</button>}
+                    </div>
+                  </div>
+                  <div className="max-h-[300px] overflow-y-auto p-3 space-y-2">
+                    {season.episodes.map((episode, episodeIndex) => (
+                      <div key={`episode-${seasonIndex}-${episodeIndex}`} className="grid gap-2 rounded-lg bg-black/40 p-3 md:grid-cols-2">
+                        <input type="number" min={1} value={episode.episodeNumber} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeNumber", e.target.value)} placeholder="Ep #" className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white" />
+                        <input value={episode.episodeTitle} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeTitle", e.target.value)} placeholder="Episode title" className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white" />
+                        <input value={episode.hlsLink || ""} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "hlsLink", e.target.value)} placeholder="HLS Link" className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white" />
+                        <input value={episode.embedIframeLink || ""} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "embedIframeLink", e.target.value)} placeholder="Iframe Link" className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white" />
+                        {episodeIndex > 0 && <button type="button" onClick={() => removeEpisode(seasonIndex, episodeIndex)} className="col-span-2 rounded-lg bg-red-500/20 py-2 text-xs text-red-400 hover:bg-red-500/30">Remove Episode</button>}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
-          <textarea value={payload.description || ""} onChange={(e) => setPayload({ ...payload, description: e.target.value })} placeholder="Description" className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary min-h-[100px]" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Description</label>
+            <textarea value={payload.description || ""} onChange={(e) => setPayload({ ...payload, description: e.target.value })} placeholder="Enter content description..." className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20 min-h-[120px]" />
+          </div>
 
-          <div className="flex flex-wrap items-center gap-4">
-            <button type="submit" className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-black transition hover:bg-primary/90">
+          <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-white/10">
+            <button type="submit" className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-8 py-3 text-sm font-bold text-white transition-all hover:from-red-500 hover:to-red-600 hover:shadow-lg hover:shadow-red-600/25">
               {editingId ? "Update Content" : "Save Content"}
             </button>
             {editingId && (
-              <button type="button" onClick={() => { resetForm(); setStatus(""); }} className="rounded-xl border border-white/10 px-6 py-3 text-sm font-medium text-white">
+              <button type="button" onClick={() => { resetForm(); setStatus(""); }} className="rounded-xl border border-white/10 px-6 py-3 text-sm font-medium text-gray-300 transition-all hover:border-white/20 hover:text-white">
                 Cancel
               </button>
             )}
-            <span className="text-sm text-gray-400">Slug: {slugPreview || "—"}</span>
+            <span className="ml-auto text-sm text-gray-500">Slug: <span className="font-mono text-gray-400">{slugPreview || "—"}</span></span>
           </div>
-          {status && <p className="text-sm text-primary">{status}</p>}
+          {status && (
+            <div className={`flex items-center gap-2 rounded-xl p-3 text-sm ${status.includes('success') || status.includes('updated') || status.includes('saved') ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+              {status.includes('success') || status.includes('updated') || status.includes('saved') ? <Star className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+              {status}
+            </div>
+          )}
         </form>
       )}
 
       {activeTab === "import" && (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4">
-          <h2 className="text-lg font-medium text-white">TMDB Auto Import</h2>
-          <div className="flex gap-2">
-            <input value={tmdbQuery} onChange={(e) => setTmdbQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && searchTMDB()} placeholder={mode === "movie" ? "Search movie..." : "Search series..."} className="flex-1 rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-primary" />
-            <button onClick={searchTMDB} disabled={loading} className="rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-black disabled:opacity-50">
-              {loading ? "Searching..." : "Search"}
+        <div className="space-y-6 rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+          <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-purple-600 to-purple-700">
+              <Sparkles className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white">TMDB Auto Import</h2>
+              <p className="text-sm text-gray-500">Search and import content from The Movie Database</p>
+            </div>
+          </div>
+          
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+              <input value={tmdbQuery} onChange={(e) => setTmdbQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && searchTMDB()} placeholder={mode === "movie" ? "Search for movies..." : "Search for series..."} className="w-full rounded-xl border border-white/10 bg-black/40 pl-12 pr-4 py-3.5 text-base text-white placeholder:text-gray-500 outline-none transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20" />
+            </div>
+            <button onClick={searchTMDB} disabled={loading} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-3.5 text-base font-bold text-white transition-all hover:from-purple-500 hover:to-purple-600 hover:shadow-lg hover:shadow-purple-600/25 disabled:cursor-not-allowed disabled:opacity-50">
+              {loading ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <Search className="h-4 w-4" />
+                  Search
+                </>
+              )}
             </button>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {searchResults.map((item) => (
-              <button key={`${item.mediaType}-${item.id}`} onClick={() => importTMDB(item.id, item.mediaType)} className="flex gap-3 rounded-lg border border-white/10 bg-black/30 p-3 text-left transition hover:border-primary">
-                {item.poster ? <Image src={item.poster} alt={item.title} width={60} height={80} className="h-20 w-14 rounded object-cover" /> : <div className="h-20 w-14 rounded bg-black/50" />}
-                <div>
-                  <p className="line-clamp-2 font-medium text-white">{item.title}</p>
-                  <p className="mt-1 text-xs text-gray-400">{item.mediaType.toUpperCase()} | {item.year || "—"}</p>
-                </div>
-              </button>
-            ))}
-          </div>
+          {searchResults.length > 0 && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {searchResults.map((item) => (
+                <button key={`${item.mediaType}-${item.id}`} onClick={() => importTMDB(item.id, item.mediaType)} className="group flex gap-4 rounded-xl border border-white/10 bg-black/30 p-3 text-left transition-all hover:border-purple-500 hover:bg-purple-500/10 hover:shadow-lg hover:shadow-purple-500/20">
+                  {item.poster ? (
+                    <Image src={item.poster} alt={item.title} width={70} height={100} className="h-[100px] w-[70px] rounded-lg object-cover" />
+                  ) : (
+                    <div className="flex h-[100px] w-[70px] items-center justify-center rounded-lg bg-black/50">
+                      <Film className="h-8 w-8 text-gray-600" />
+                    </div>
+                  )}
+                  <div className="flex flex-1 flex-col justify-center">
+                    <p className="line-clamp-2 font-semibold text-white transition-colors group-hover:text-purple-400">{item.title}</p>
+                    <p className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+                      <span className="rounded bg-white/10 px-2 py-0.5 text-gray-300">{item.mediaType.toUpperCase()}</span>
+                      {item.year || "—"}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+          
+          {!loading && tmdbQuery && searchResults.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Film className="h-16 w-16 text-gray-700" />
+              <p className="mt-4 text-lg font-medium text-gray-400">No results found</p>
+              <p className="text-sm text-gray-600">Try searching with different keywords</p>
+            </div>
+          )}
+          
+          {!tmdbQuery && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-purple-500/20">
+                <Sparkles className="h-10 w-10 text-purple-400" />
+              </div>
+              <p className="text-lg font-medium text-gray-400">Search TMDB Database</p>
+              <p className="mt-1 text-sm text-gray-600">Enter a movie or series name to import details automatically</p>
+            </div>
+          )}
         </div>
       )}
     </div>
