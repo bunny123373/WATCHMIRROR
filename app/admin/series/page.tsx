@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -52,6 +52,9 @@ const subtitleLines = (tracks?: SubtitleTrack[]) =>
     .map((track) => `${track.lang}|${track.label}|${track.url}${track.isDefault ? "|default" : ""}`)
     .join("\n");
 
+const ADMIN_STORAGE_KEY = "watchmirror_admin_key";
+const ADMIN_SESSION_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+
 export default function AdminSeriesPage() {
   const router = useRouter();
   const [adminKey, setAdminKey] = useState("");
@@ -66,11 +69,29 @@ export default function AdminSeriesPage() {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const itemsPerPage = 20;
 
-  const loadContent = async () => {
+  useEffect(() => {
+    const stored = localStorage.getItem(ADMIN_STORAGE_KEY);
+    if (stored) {
+      try {
+        const { key, expiry } = JSON.parse(stored);
+        if (expiry && Date.now() < expiry) {
+          setAdminKey(key);
+          setAuthorized(true);
+          loadContent(key);
+        } else {
+          localStorage.removeItem(ADMIN_STORAGE_KEY);
+        }
+      } catch {
+        localStorage.removeItem(ADMIN_STORAGE_KEY);
+      }
+    }
+  }, []);
+
+  const loadContent = async (key?: string) => {
     setLoading(true);
     const res = await fetch("/api/admin/content", {
       method: "GET",
-      headers: { "x-admin-key": adminKey }
+      headers: { "x-admin-key": key || adminKey }
     });
     if (!res.ok) { setLoading(false); return; }
     const data = await res.json();
@@ -89,6 +110,10 @@ export default function AdminSeriesPage() {
       setAuthorized(false);
       return;
     }
+    localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify({
+      key: adminKey,
+      expiry: Date.now() + ADMIN_SESSION_DURATION
+    }));
     setAuthorized(true);
     setStatus("");
     await loadContent();
