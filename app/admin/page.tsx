@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Pencil, Plus, Search, Trash2, X, Film, Tv, BarChart3, Clock, Star, Globe, Tag, Lock, ChevronRight, LayoutGrid, List, Grid3X3, Calendar, Sparkles, Database, AlertCircle } from "lucide-react";
 import { Content, ContentType, Season, SubtitleTrack } from "@/types/content";
 
@@ -498,7 +499,7 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
-        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+        <Link href="/admin/movies" className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
           <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-500/20 blur-2xl transition-all group-hover:bg-blue-500/30" />
           <div className="relative flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-600/30">
@@ -509,8 +510,8 @@ export default function AdminPage() {
               <p className="text-3xl font-bold text-white">{analytics.movies}</p>
             </div>
           </div>
-        </div>
-        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
+        </Link>
+        <Link href="/admin/series" className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
           <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-purple-500/20 blur-2xl transition-all group-hover:bg-purple-500/30" />
           <div className="relative flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-600/30">
@@ -521,7 +522,7 @@ export default function AdminPage() {
               <p className="text-3xl font-bold text-white">{analytics.series}</p>
             </div>
           </div>
-        </div>
+        </Link>
         <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
           <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-yellow-500/20 blur-2xl transition-all group-hover:bg-yellow-500/30" />
           <div className="relative flex items-center gap-4">
