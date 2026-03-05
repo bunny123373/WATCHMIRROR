@@ -14,6 +14,7 @@ const emptyPayload: Partial<Content> = {
   description: "",
   year: new Date().getFullYear(),
   language: "EN",
+  audioLanguages: [],
   category: "Latest",
   quality: "HD",
   rating: 0,
@@ -728,7 +729,41 @@ export default function AdminPage() {
                   <option value="KO">Korean</option>
                   <option value="JA">Japanese</option>
                   <option value="ES">Spanish</option>
+                  <option value="TH">Thai</option>
+                  <option value="ZH">Chinese</option>
                 </select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Audio Languages</label>
+              <div className="flex flex-wrap gap-2">
+                {["EN", "TE", "HI", "TA", "ML", "KN", "KO", "JA", "ES", "TH", "ZH"].map((lang) => {
+                  const langNames: Record<string, string> = {
+                    EN: "English", TE: "Telugu", HI: "Hindi", TA: "Tamil", ML: "Malayalam",
+                    KN: "Kannada", KO: "Korean", JA: "Japanese", ES: "Spanish", TH: "Thai", ZH: "Chinese"
+                  };
+                  const isSelected = (payload.audioLanguages || []).includes(lang);
+                  return (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => {
+                        const current = payload.audioLanguages || [];
+                        const updated = isSelected
+                          ? current.filter((l) => l !== lang)
+                          : [...current, lang];
+                        setPayload({ ...payload, audioLanguages: updated });
+                      }}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                        isSelected
+                          ? "bg-red-600 text-white"
+                          : "bg-white/10 text-gray-400 hover:bg-white/20"
+                      }`}
+                    >
+                      {langNames[lang]}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="space-y-1.5">

@@ -33,6 +33,7 @@ export interface Content {
   description: string;
   year: number;
   language: string;
+  audioLanguages: string[];
   category: string;
   quality: string;
   rating: number;
