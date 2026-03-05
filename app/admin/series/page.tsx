@@ -57,7 +57,7 @@ export default function AdminSeriesPage() {
   const [adminKey, setAdminKey] = useState("");
   const [authorized, setAuthorized] = useState(false);
   const [items, setItems] = useState<Content[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
   const [contentSearch, setContentSearch] = useState("");
   const [contentPage, setContentPage] = useState(1);
@@ -67,13 +67,15 @@ export default function AdminSeriesPage() {
   const itemsPerPage = 20;
 
   const loadContent = async () => {
+    setLoading(true);
     const res = await fetch("/api/admin/content", {
       method: "GET",
       headers: { "x-admin-key": adminKey }
     });
-    if (!res.ok) return;
+    if (!res.ok) { setLoading(false); return; }
     const data = await res.json();
     setItems(Array.isArray(data.items) ? data.items : []);
+    setLoading(false);
   };
 
   const unlockAdmin = async () => {
@@ -313,8 +315,24 @@ export default function AdminSeriesPage() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-white/10">
-        <table className="w-full">
+      {loading ? (
+        <div className="overflow-hidden rounded-2xl border border-white/10">
+          <div className="animate-pulse space-y-4 p-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <div className="h-4 w-4 rounded bg-white/10" />
+                <div className="h-16 w-12 rounded bg-white/10" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-1/3 rounded bg-white/10" />
+                  <div className="h-3 w-1/4 rounded bg-white/10" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-white/10">
+          <table className="w-full">
           <thead>
             <tr className="border-b border-white/10 bg-white/5">
               <th className="p-4 text-left">
@@ -406,6 +424,7 @@ export default function AdminSeriesPage() {
           </div>
         )}
       </div>
+      )}
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3">
