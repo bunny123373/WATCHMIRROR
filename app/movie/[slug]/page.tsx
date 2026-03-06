@@ -95,11 +95,11 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
             <div><p className="text-gray-500">Category</p><p className="font-medium text-white">{content.category || "Movie"}</p></div>
           </div>
           
-          {content.audioLanguages && content.audioLanguages.length > 0 && (
+          {(content.audioLanguages && content.audioLanguages.length > 0) && (
             <div>
               <p className="text-sm text-gray-500">Audio Languages</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {content.audioLanguages.map((lang) => {
+                {content.audioLanguages.map((lang: string) => {
                   const langNames: Record<string, string> = {
                     EN: "English", TE: "Telugu", HI: "Hindi", TA: "Tamil", ML: "Malayalam",
                     KN: "Kannada", KO: "Korean", JA: "Japanese", ES: "Spanish", TH: "Thai", ZH: "Chinese"
