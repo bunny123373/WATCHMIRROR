@@ -52,6 +52,7 @@ const contentSchema = new Schema(
     description: { type: String, required: true },
     year: { type: Number, required: true },
     language: { type: String, default: "English" },
+    audioLanguages: { type: [String], default: [] },
     category: { type: String, default: "General" },
     quality: { type: String, default: "HD" },
     rating: { type: Number, default: 0 },
