@@ -79,6 +79,25 @@ export default async function SeriesDetailsPage({ params }: { params: Promise<{ 
             <p className="mt-2 text-sm leading-6 text-gray-400">{content.description}</p>
           </div>
 
+          {content.audioLanguages && content.audioLanguages.length > 0 && (
+            <div>
+              <p className="text-sm font-medium text-white">Audio Languages</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {content.audioLanguages.map((lang) => {
+                  const langNames: Record<string, string> = {
+                    EN: "English", TE: "Telugu", HI: "Hindi", TA: "Tamil", ML: "Malayalam",
+                    KN: "Kannada", KO: "Korean", JA: "Japanese", ES: "Spanish", TH: "Thai", ZH: "Chinese"
+                  };
+                  return (
+                    <span key={lang} className="rounded-full bg-red-600/20 px-3 py-1 text-xs text-red-400 border border-red-600/30">
+                      {langNames[lang] || lang}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-2">
             {topTags.map((tag) => (
               <span key={tag} className="rounded-full bg-white/10 px-3 py-1 text-xs text-gray-300">{tag}</span>
@@ -91,25 +110,6 @@ export default async function SeriesDetailsPage({ params }: { params: Promise<{ 
             <div><p className="text-gray-500">Rating</p><p className="font-medium text-white">{Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}</p></div>
             <div><p className="text-gray-500">Seasons</p><p className="font-medium text-white">{seasonsCount}</p></div>
           </div>
-
-          {content.audioLanguages && content.audioLanguages.length > 0 && (
-            <div>
-              <p className="text-sm text-gray-500">Audio Languages</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {content.audioLanguages.map((lang) => {
-                  const langNames: Record<string, string> = {
-                    EN: "English", TE: "Telugu", HI: "Hindi", TA: "Tamil", ML: "Malayalam",
-                    KN: "Kannada", KO: "Korean", JA: "Japanese", ES: "Spanish", TH: "Thai", ZH: "Chinese"
-                  };
-                  return (
-                    <span key={lang} className="rounded-full bg-white/10 px-3 py-1 text-xs text-gray-300">
-                      {langNames[lang] || lang}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {seasonsCount > 0 && (
             <div>
