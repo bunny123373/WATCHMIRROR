@@ -31,7 +31,7 @@ export default function MobileBottomNav() {
                 className={`flex flex-col items-center justify-center gap-0.5 px-3 py-3 transition-all ${
                   active 
                     ? "text-red-600" 
-                    : "text-gray-500 hover:text-white"
+                    : "text-gray-500"
                 }`}
               >
                 <div className={`relative ${active ? "scale-110" : ""}`}>
@@ -50,7 +50,7 @@ export default function MobileBottomNav() {
         <li>
           <button
             onClick={() => dispatch(setMobileSearchOpen(true))}
-            className="flex flex-col items-center justify-center gap-0.5 px-3 py-3 text-gray-500 transition-all hover:scale-110 hover:text-white"
+            className="flex flex-col items-center justify-center gap-0.5 px-3 py-3 text-gray-500 transition-all"
           >
             <Search size={22} strokeWidth={2} />
             <span className="text-[10px] font-semibold text-gray-500">Search</span>
