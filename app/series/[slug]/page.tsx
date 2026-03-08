@@ -64,8 +64,8 @@ export default async function SeriesDetailsPage({ params }: { params: Promise<{ 
             <p className="mt-2 line-clamp-2 text-xs text-gray-300 md:mt-3 md:text-sm lg:text-base">{content.description}</p>
 
             <div className="mt-4 flex flex-wrap justify-center gap-2 md:mt-5 md:gap-3">
-              <Link href={`/series/watch/${content.slug}`} className="inline-flex w-[90px] items-center justify-center gap-1 rounded bg-white px-3 py-2 text-sm font-bold text-black transition hover:bg-white/90 sm:w-[120px] sm:px-6 sm:py-3 sm:text-base md:w-[160px] md:px-8 md:py-3">
-                <Play size={16} fill="black" className="sm:size-20" /> <span className="sm:hidden">Play</span>
+              <Link href={`/series/watch/${content.slug}`} className="inline-flex min-w-[160px] items-center justify-center gap-2 rounded bg-white px-8 py-3 text-base font-bold text-black transition hover:bg-white/90">
+                <Play size={22} fill="black" /> Play
               </Link>
             </div>
           </div>
