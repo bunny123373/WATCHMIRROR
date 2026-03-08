@@ -67,6 +67,7 @@ const contentSchema = new Schema(
     backupHlsLink: { type: String, default: "" },
     backupEmbedIframeLink: { type: String, default: "" },
     subtitleTracks: { type: [subtitleTrackSchema], default: [] },
+    downloadLink: { type: String, default: "" },
     publishAt: { type: Date, default: null },
     seasons: { type: [seasonSchema], default: [] }
   },

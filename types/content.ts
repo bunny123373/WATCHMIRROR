@@ -48,6 +48,7 @@ export interface Content {
   backupHlsLink?: string;
   backupEmbedIframeLink?: string;
   subtitleTracks?: SubtitleTrack[];
+  downloadLink?: string;
   publishAt?: string;
   seasons?: Season[];
   createdAt?: string;

@@ -27,6 +27,7 @@ const emptyPayload: Partial<Content> = {
   backupHlsLink: "",
   backupEmbedIframeLink: "",
   subtitleTracks: [],
+  downloadLink: "",
   publishAt: "",
   seasons: []
 };
@@ -805,6 +806,7 @@ export default function AdminPage() {
               <div className="grid gap-4">
                 <input value={payload.hlsLink || ""} onChange={(e) => setPayload({ ...payload, hlsLink: e.target.value })} placeholder="HLS Link (.m3u8)" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
                 <input value={payload.embedIframeLink || ""} onChange={(e) => setPayload({ ...payload, embedIframeLink: e.target.value })} placeholder="Embed Iframe Link" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
+                <input value={payload.downloadLink || ""} onChange={(e) => setPayload({ ...payload, downloadLink: e.target.value })} placeholder="Download Link (Google Drive, OneDrive, etc.)" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Subtitles</label>
                   <textarea value={movieSubtitlesInput} onChange={(e) => setMovieSubtitlesInput(e.target.value)} placeholder="lang|label|url|default (one per line)&#10;en|English|https://...|default&#10;te|Telugu|https://..." className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20 min-h-[100px]" />
