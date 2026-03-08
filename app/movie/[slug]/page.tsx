@@ -66,12 +66,12 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
             <h1 className="font-[var(--font-heading)] text-2xl leading-tight text-white md:text-3xl lg:text-4xl">{content.title}</h1>
             <p className="mt-2 line-clamp-2 text-xs text-gray-300 md:mt-3 md:text-sm lg:text-base">{content.description}</p>
 
-            <div className="mt-4 flex flex-wrap gap-2 md:mt-5 md:gap-3">
-              <Link href={`/watch/${content.slug}`} className="inline-flex min-w-[140px] items-center justify-center gap-1.5 rounded bg-white px-6 py-3 text-base font-bold text-black transition hover:bg-white/90">
-                <Play size={20} fill="black" /> Play
+            <div className="mt-4 flex flex-wrap justify-center gap-2 md:mt-5 md:gap-3">
+              <Link href={`/watch/${content.slug}`} className="inline-flex min-w-[160px] items-center justify-center gap-2 rounded bg-white px-8 py-3 text-base font-bold text-black transition hover:bg-white/90">
+                <Play size={22} fill="black" /> Play
               </Link>
               {content.downloadLink && (
-                <a href={content.downloadLink} target="_blank" rel="noopener noreferrer" className="inline-flex min-w-[140px] items-center justify-center gap-1.5 rounded border border-white/20 bg-white/10 px-6 py-3 text-base font-medium text-white transition hover:bg-white/20">
+                <a href={content.downloadLink} target="_blank" rel="noopener noreferrer" className="inline-flex min-w-[160px] items-center justify-center gap-2 rounded border border-white/20 bg-white/10 px-8 py-3 text-base font-medium text-white transition hover:bg-white/20">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                   Download
                 </a>
