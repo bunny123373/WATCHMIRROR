@@ -67,13 +67,13 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
             <p className="mt-2 line-clamp-2 text-xs text-gray-300 md:mt-3 md:text-sm lg:text-base">{content.description}</p>
 
             <div className="mt-4 flex flex-wrap justify-center gap-2 md:mt-5 md:gap-3">
-              <Link href={`/watch/${content.slug}`} className="inline-flex min-w-[160px] items-center justify-center gap-2 rounded bg-white px-8 py-3 text-base font-bold text-black transition hover:bg-white/90">
-                <Play size={22} fill="black" /> Play
+              <Link href={`/watch/${content.slug}`} className="inline-flex w-[90px] items-center justify-center gap-1 rounded bg-white px-3 py-2 text-sm font-bold text-black transition hover:bg-white/90 sm:w-[120px] sm:px-6 sm:py-3 sm:text-base md:w-[160px] md:px-8 md:py-3">
+                <Play size={16} fill="black" className="sm:size-20" /> <span className="sm:hidden">Play</span>
               </Link>
               {content.downloadLink && (
-                <a href={content.downloadLink} target="_blank" rel="noopener noreferrer" className="inline-flex min-w-[160px] items-center justify-center gap-2 rounded border border-white/20 bg-white/10 px-8 py-3 text-base font-medium text-white transition hover:bg-white/20">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                  Download
+                <a href={content.downloadLink} target="_blank" rel="noopener noreferrer" className="inline-flex w-[90px] items-center justify-center gap-1 rounded border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/20 sm:w-[120px] sm:px-6 sm:py-3 sm:text-base md:w-[160px] md:px-8 md:py-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                  <span className="sm:hidden">Download</span>
                 </a>
               )}
             </div>
