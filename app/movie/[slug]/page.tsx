@@ -66,7 +66,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
             <h1 className="font-[var(--font-heading)] text-2xl leading-tight text-white md:text-3xl lg:text-4xl">{content.title}</h1>
             <p className="mt-2 line-clamp-2 text-xs text-gray-300 md:mt-3 md:text-sm lg:text-base">{content.description}</p>
 
-            <div className="mt-8 flex flex-col gap-2 md:mt-10 md:flex-row md:justify-center md:gap-3">
+            <div className="mt-12 flex flex-col gap-2 md:mt-10 md:flex-row md:justify-center md:gap-3">
               <Link href={`/watch/${content.slug}`} className="flex w-full items-center justify-center gap-2 rounded bg-white px-8 py-3 text-base font-bold text-black transition hover:bg-white/90 md:min-w-[160px] md:w-auto">
                 <Play size={22} fill="black" /> Play
               </Link>
