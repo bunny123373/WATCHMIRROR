@@ -8,7 +8,6 @@ import MobileSearchOverlay from "@/components/layout/MobileSearchOverlay";
 import ContinueHydrator from "@/components/common/ContinueHydrator";
 import MyListHydrator from "@/components/common/MyListHydrator";
 import ServiceWorkerRegister from "@/components/providers/sw-register";
-import ProfileGate from "@/components/providers/profile-gate";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://watchmirror.vercel.app"),
@@ -46,15 +45,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <ContinueHydrator />
           <MyListHydrator />
           <ServiceWorkerRegister />
-          <ProfileGate>
-            <Navbar />
-            <MobileSearchOverlay />
-            <main className="mx-auto min-h-screen max-w-[1600px] px-3 pb-24 pt-14 sm:px-4 md:px-8 md:pb-10 md:pt-20">
-              {children}
-            </main>
-            <Footer />
-            <MobileBottomNav />
-          </ProfileGate>
+          <Navbar />
+          <MobileSearchOverlay />
+          <main className="mx-auto min-h-screen max-w-[1600px] px-3 pb-24 pt-14 sm:px-4 md:px-8 md:pb-10 md:pt-20">
+            {children}
+          </main>
+          <Footer />
+          <MobileBottomNav />
         </ReduxProvider>
       </body>
     </html>
