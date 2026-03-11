@@ -45,7 +45,7 @@ export default function ContentCard({ item }: { item: Content }) {
               width={400}
               height={560}
               sizes="(max-width: 640px) 110px, (max-width: 768px) 130px, (max-width: 1024px) 160px, (max-width: 1280px) 180px, 200px"
-              className="aspect-[2/3] w-full object-cover"
+              className="aspect-[2/3] w-full object-cover bg-[#1a1a1a]"
             />
           ) : (
             <div className="aspect-[2/3] w-full bg-[#12151D]" />

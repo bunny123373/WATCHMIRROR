@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s | WATCHMIRROR"
   },
   icons: {
-    icon: "/favicon.svg"
+    icon: "/favicon1.png"
   },
   manifest: "/manifest.webmanifest",
   description: "WATCHMIRROR is a premium OTT movie and web series streaming platform.",

@@ -12,7 +12,7 @@ export default function MyListRow() {
   return (
     <section className="space-y-3">
       <h2 className="font-[var(--font-heading)] text-xl text-white md:text-2xl">My List</h2>
-      <div className="scrollbar-thin snap-x snap-mandatory flex gap-3 overflow-x-auto pb-4 scroll-smooth">
+      <div className="scrollbar-thin snap-x snap-mandatory flex gap-3 overflow-x-auto pb-4 scroll-smooth will-change-transform">
         {items.map((item) => {
           const href = item.type === "movie" ? `/movie/${item.slug}` : `/series/${item.slug}`;
           const hasValidPoster =
@@ -22,7 +22,7 @@ export default function MyListRow() {
             <Link key={`${item.type}-${item.slug}`} href={href} className="group relative w-[130px] shrink-0 snap-start transition sm:w-[150px] md:w-[170px] lg:w-[190px]">
               <div className="relative overflow-hidden rounded-lg bg-[#0a0a0a] transition duration-300 group-hover:scale-105 group-hover:shadow-xl">
                 {hasValidPoster ? (
-                  <Image src={item.poster} alt={item.title} width={300} height={450} className="aspect-[2/3] w-full object-cover" />
+                  <Image src={item.poster} alt={item.title} width={300} height={450} className="aspect-[2/3] w-full object-cover bg-[#1a1a1a]" />
                 ) : (
                   <div className="aspect-[2/3] w-full bg-[#12151D]" />
                 )}

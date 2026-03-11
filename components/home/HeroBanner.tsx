@@ -28,7 +28,7 @@ export default function HeroBanner({ item }: { item: Content | null }) {
         alt={item.title}
         fill
         priority
-        className="object-cover"
+        className="object-cover bg-[#0a0a0a]"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-black/30" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#141414]/90 via-transparent to-transparent" />
