@@ -1,13 +1,1 @@
-<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-  <g fill="none" stroke="#E50914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <g>
-      <line x1="11.8942" y1="11.85" x2="17.9471" y2="36.15" />
-      <line x1="24" y1="11.85" x2="17.9471" y2="36.15" />
-    </g>
-    <g>
-      <line x1="24" y1="11.85" x2="30.0529" y2="36.15" />
-      <line x1="36.1058" y1="11.85" x2="30.0529" y2="36.15" />
-    </g>
-  </g>
-  <circle cx="24" cy="24" r="21.5" fill="none" stroke="#E50914" stroke-width="2" />
-</svg>
+<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <defs> <style>.c{fill:none;stroke:#ffffff;stroke-linecap:round;stroke-linejoin:round;}</style> </defs> <g id="a"> <g> <g> <line class="c" x1="11.8942" y1="11.85" x2="17.9471" y2="36.15"></line> <line class="c" x1="24" y1="11.85" x2="17.9471" y2="36.15"></line> </g> <g> <line class="c" x1="24" y1="11.85" x2="30.0529" y2="36.15"></line> <line class="c" x1="36.1058" y1="11.85" x2="30.0529" y2="36.15"></line> </g> </g> </g> <g id="b"> <circle class="c" cx="24" cy="24" r="21.5"></circle> </g> </g></svg>
