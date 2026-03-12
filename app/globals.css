@@ -93,11 +93,16 @@ main {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
-  transition: opacity 0s, visibility 0s !important;
+  scale: 1 !important;
+  filter: blur(0) !important;
+  transform: none !important;
+  transition: none !important;
 }
 
-.media-default-skin--video .media-overlay {
+.media-default-skin--video .media-controls:not([data-visible]) {
   opacity: 1 !important;
-  visibility: visible !important;
-  transition: opacity 0s, visibility 0s !important;
+  scale: 1 !important;
+  filter: blur(0) !important;
+  pointer-events: auto !important;
+  transition: none !important;
 }
