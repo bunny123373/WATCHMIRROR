@@ -87,42 +87,17 @@ main {
 
 .media-default-skin--video {
   touch-action: manipulation;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
 }
 
-.media-default-skin--video .media-controls,
-.media-default-skin--video .media-controls[data-visible],
-.media-default-skin--video .media-overlay,
-.media-default-skin--video .media-buffering-indicator,
-.media-default-skin--video .media-button,
-.media-default-skin--video .media-slider {
-  display: flex !important;
+.media-default-skin--video .media-controls {
   opacity: 1 !important;
   visibility: visible !important;
-  scale: 1 !important;
-  filter: blur(0) !important;
   pointer-events: auto !important;
-  transition: none !important;
-  animation: none !important;
+  transition: opacity 0s, visibility 0s !important;
 }
 
-@media all and (hover: none) {
-  .media-default-skin--video .media-controls,
-  .media-default-skin--video .media-overlay {
-    display: flex !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    transition: none !important;
-  }
-}
-
-@supports (-webkit-touch-callout: none) {
-  .media-default-skin--video .media-controls {
-    display: flex !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
+.media-default-skin--video .media-overlay {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: opacity 0s, visibility 0s !important;
 }
