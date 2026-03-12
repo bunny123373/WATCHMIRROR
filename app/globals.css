@@ -90,28 +90,10 @@ main {
 }
 
 .media-default-skin--video .media-controls,
-.media-default-skin--video .media-overlay,
-.media-default-skin--video .media-buffering-indicator {
-  display: flex !important;
+.media-default-skin--video .media-controls[data-visible] {
   opacity: 1 !important;
-  visibility: visible !important;
+  scale: 1 !important;
+  filter: blur(0) !important;
   pointer-events: auto !important;
-}
-
-.media-default-skin--video .media-button,
-.media-default-skin--video .media-slider,
-.media-default-skin--video .media-time {
-  display: flex !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-@media (hover: none) and (pointer: coarse) {
-  .media-default-skin--video .media-controls,
-  .media-default-skin--video .media-overlay {
-    display: flex !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-  }
+  transition-delay: 0ms !important;
 }
