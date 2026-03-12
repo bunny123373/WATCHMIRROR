@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import VideoPlayer from "@/components/players/VideoPlayer";
+import { VideoPlayer } from "@/components/players/VideoPlayer";
 import IframePlayer from "@/components/players/IframePlayer";
 import { usePlaybackTracker } from "@/hooks/usePlaybackTracker";
 import { ContentType, SubtitleTrack } from "@/types/content";

@@ -1,6 +1,4 @@
-"use client";
-
-import { createPlayer, Poster } from "@videojs/react";
+import { createPlayer } from "@videojs/react";
 import { VideoSkin, Video, videoFeatures } from "@videojs/react/video";
 import "@videojs/react/video/skin.css";
 
@@ -11,12 +9,11 @@ interface VideoPlayerProps {
   poster?: string;
 }
 
-export default function VideoPlayer({ src, poster }: VideoPlayerProps) {
+export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   return (
     <Player.Provider>
       <VideoSkin>
         <Video src={src} playsInline />
-        {poster && <Poster src={poster} />}
       </VideoSkin>
     </Player.Provider>
   );
