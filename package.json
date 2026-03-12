@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.1",
+    "@videojs/react": "^10.0.0-beta.3",
     "clsx": "^2.1.1",
     "framer-motion": "^12.6.2",
     "hls.js": "^1.5.20",
@@ -18,7 +19,8 @@
     "next": "^16.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-redux": "^9.2.0"
+    "react-redux": "^9.2.0",
+    "video.js": "^8.23.7"
   },
   "devDependencies": {
     "@types/node": "^22.13.13",

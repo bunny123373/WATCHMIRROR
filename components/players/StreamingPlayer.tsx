@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import HLSPlayer from "@/components/players/HLSPlayer";
+import VideoPlayer from "@/components/players/VideoPlayer";
 import IframePlayer from "@/components/players/IframePlayer";
 import { usePlaybackTracker } from "@/hooks/usePlaybackTracker";
 import { ContentType, SubtitleTrack } from "@/types/content";
@@ -84,11 +84,9 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
   return (
     <div className="space-y-3">
       {activeSource.type === "hls" ? (
-        <HLSPlayer
+        <VideoPlayer
           src={activeSource.url}
-          subtitles={subtitleTracks}
-          videoRef={videoRef}
-          onFatal={handleFatal}
+          poster={props.poster}
         />
       ) : (
         <IframePlayer src={activeSource.url} />
