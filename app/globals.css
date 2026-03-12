@@ -84,3 +84,26 @@ main {
   border-radius: 999px;
   background: #e50914;
 }
+
+.video-js {
+  touch-action: manipulation;
+}
+
+.media-default-skin--video .media-controls {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.media-default-skin--video:hover .media-controls,
+.media-default-skin--video.vjs-playing .media-controls,
+.media-default-skin--video.vjs-paused .media-controls {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .media-default-skin--video .media-controls {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+}
