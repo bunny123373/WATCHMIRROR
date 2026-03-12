@@ -86,7 +86,6 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
       {activeSource.type === "hls" ? (
         <VideoPlayer
           src={activeSource.url}
-          poster={props.poster}
         />
       ) : (
         <IframePlayer src={activeSource.url} />

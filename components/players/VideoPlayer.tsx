@@ -6,10 +6,9 @@ const Player = createPlayer({ features: videoFeatures });
 
 interface VideoPlayerProps {
   src: string;
-  poster?: string;
 }
 
-export function VideoPlayer({ src, poster }: VideoPlayerProps) {
+export function VideoPlayer({ src }: VideoPlayerProps) {
   return (
     <Player.Provider>
       <VideoSkin>
