@@ -1,7 +1,7 @@
 "use client";
 
 import { createPlayer } from "@videojs/react";
-import { Video, MinimalVideoSkin, videoFeatures } from "@videojs/react/video";
+import { Video, videoFeatures } from "@videojs/react/video";
 import "@videojs/react/video/skin.css";
 import { useState } from "react";
 
@@ -26,16 +26,13 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
     >
       <div className="absolute inset-0">
         <Player.Provider>
-          <MinimalVideoSkin>
-            <Video 
-              src={hasStarted ? src : undefined} 
-              poster={poster}
-              playsInline
-              autoPlay={hasStarted}
-              className="!w-full !h-full"
-              onPlay={() => setHasStarted(true)}
-            />
-          </MinimalVideoSkin>
+          <Video 
+            src={hasStarted ? src : undefined} 
+            poster={poster}
+            playsInline
+            autoPlay={hasStarted}
+            className="w-full h-full"
+          />
         </Player.Provider>
       </div>
       
