@@ -1,11 +1,7 @@
 "use client";
 
-import { createPlayer } from "@videojs/react";
-import { Video, VideoSkin, videoFeatures } from "@videojs/react/video";
-import "@videojs/react/video/skin.css";
+import MuxPlayer from "@mux/mux-player-react";
 import { useState } from "react";
-
-const Player = createPlayer({ features: videoFeatures });
 
 interface VideoPlayerProps {
   src: string;
@@ -24,17 +20,15 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
         minHeight: '200px'
       }}
     >
-      <Player.Provider>
-        <VideoSkin>
-          <Video 
-            src={hasStarted ? src : undefined} 
-            poster={poster}
-            playsInline
-            autoPlay={hasStarted}
-            className="w-full h-full"
-          />
-        </VideoSkin>
-      </Player.Provider>
+      <MuxPlayer
+        src={hasStarted ? src : undefined}
+        poster={poster}
+        streamType="on-demand"
+        playsInline
+        autoPlay={hasStarted}
+        className="w-full h-full"
+        onPlay={() => setHasStarted(true)}
+      />
       
       {!hasStarted && (
         <div 
