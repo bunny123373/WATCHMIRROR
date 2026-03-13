@@ -1,24 +1,30 @@
 "use client";
 
-import { createPlayer } from "@videojs/react";
+import { createPlayer, Poster } from "@videojs/react";
 import { VideoSkin, Video, videoFeatures } from "@videojs/react/video";
 import "@videojs/react/video/skin.css";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
 const Player = createPlayer({ features: videoFeatures });
 
 interface VideoPlayerProps {
   src: string;
+  poster?: string;
 }
 
-export function VideoPlayer({ src }: VideoPlayerProps) {
+export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const handleTap = () => {
+      if (!hasStarted) {
+        setHasStarted(true);
+      }
+      
       const videoEl = container.querySelector("video");
       if (!videoEl) return;
 
@@ -40,13 +46,14 @@ export function VideoPlayer({ src }: VideoPlayerProps) {
       container.removeEventListener("click", handleTap);
       container.removeEventListener("touchend", handleTap);
     };
-  }, []);
+  }, [hasStarted]);
 
   return (
     <div ref={containerRef}>
       <Player.Provider>
         <VideoSkin>
-          <Video src={src} playsInline />
+          <Video src={src} playsInline={false} autoPlay={hasStarted} />
+          {poster && <Poster src={poster} />}
         </VideoSkin>
       </Player.Provider>
     </div>
