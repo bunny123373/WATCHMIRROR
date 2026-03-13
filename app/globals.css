@@ -85,27 +85,17 @@ main {
   background: #e50914;
 }
 
-.video-js {
+.media-minimal-skin--video {
   width: 100% !important;
   height: 100% !important;
   touch-action: manipulation;
 }
 
-.video-js .vjs-control-bar {
+.media-minimal-skin--video .media-controls {
   opacity: 1 !important;
   visibility: visible !important;
 }
 
-.video-js.vjs-playing .vjs-control-bar {
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.video-js.vjs-paused .vjs-control-bar {
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.video-js .vjs-big-play-button {
+.media-minimal-skin--video .media-overlay {
   display: none !important;
 }
