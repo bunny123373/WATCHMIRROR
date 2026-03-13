@@ -89,6 +89,7 @@ main {
   width: 100% !important;
   height: 100% !important;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .media-minimal-skin--video .media-controls {
@@ -98,4 +99,34 @@ main {
 
 .media-minimal-skin--video .media-overlay {
   display: none !important;
+}
+
+.media-minimal-skin--video .media-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.media-minimal-skin--video .media-slider {
+  height: 44px;
+}
+
+@media (max-width: 640px) {
+  .media-minimal-skin--video .media-controls {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px;
+  }
+  
+  .media-minimal-skin--video .media-button-group {
+    gap: 4px;
+  }
+  
+  .media-minimal-skin--video .media-time-controls {
+    width: 100%;
+    order: -1;
+  }
+  
+  .media-minimal-skin--video .media-time {
+    font-size: 12px;
+  }
 }

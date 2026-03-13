@@ -17,19 +17,27 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
 
   return (
     <div 
-      className="relative w-full aspect-video overflow-hidden rounded-xl bg-black"
+      className="relative w-full overflow-hidden rounded-lg bg-black sm:rounded-xl"
+      style={{ 
+        aspectRatio: '16/9',
+        maxHeight: '70vh',
+        minHeight: '200px'
+      }}
       onClick={() => !hasStarted && setHasStarted(true)}
     >
-      <Player.Provider>
-        <MinimalVideoSkin>
-          <Video 
-            src={hasStarted ? src : undefined} 
-            poster={poster}
-            playsInline
-            autoPlay={hasStarted}
-          />
-        </MinimalVideoSkin>
-      </Player.Provider>
+      <div className="absolute inset-0">
+        <Player.Provider>
+          <MinimalVideoSkin>
+            <Video 
+              src={hasStarted ? src : undefined} 
+              poster={poster}
+              playsInline
+              autoPlay={hasStarted}
+              className="!w-full !h-full"
+            />
+          </MinimalVideoSkin>
+        </Player.Provider>
+      </div>
     </div>
   );
 }
