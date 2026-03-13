@@ -3,7 +3,7 @@
 import { createPlayer, Poster } from "@videojs/react";
 import { VideoSkin, Video, videoFeatures } from "@videojs/react/video";
 import "@videojs/react/video/skin.css";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 
 const Player = createPlayer({ features: videoFeatures });
 
@@ -16,34 +16,58 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hasStarted, setHasStarted] = useState(false);
 
+  const handleFullscreen = useCallback(async () => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (!hasStarted) {
+      setHasStarted(true);
+    }
+
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        if (screen.orientation && (screen.orientation as ScreenOrientation & { unlock?: () => void }).unlock) {
+          (screen.orientation as ScreenOrientation & { unlock?: () => void }).unlock?.();
+        }
+      } else {
+        const orientation = screen.orientation as ScreenOrientation & { lock?: (orientation: string) => Promise<void> };
+        if (orientation && typeof orientation.lock === "function") {
+          await orientation.lock("landscape").catch(() => {});
+        }
+        await container.requestFullscreen();
+      }
+    } catch (e) {
+      console.error("Fullscreen error:", e);
+    }
+  }, [hasStarted]);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const handleTap = () => {
-      if (!hasStarted) {
-        setHasStarted(true);
-      }
-      
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        container.requestFullscreen();
-        const orientation = screen.orientation as ScreenOrientation & { lock?: (orientation: string) => Promise<void> };
-        if (orientation && typeof orientation.lock === "function") {
-          orientation.lock("landscape").catch(() => {});
+    container.addEventListener("click", handleFullscreen);
+    container.addEventListener("touchend", handleFullscreen);
+
+    return () => {
+      container.removeEventListener("click", handleFullscreen);
+      container.removeEventListener("touchend", handleFullscreen);
+    };
+  }, [handleFullscreen]);
+
+  useEffect(() => {
+    const handleChange = () => {
+      if (!document.fullscreenElement) {
+        const orientation = screen.orientation as ScreenOrientation & { unlock?: () => void };
+        if (orientation && typeof orientation.unlock === "function") {
+          orientation.unlock?.();
         }
       }
     };
 
-    container.addEventListener("click", handleTap);
-    container.addEventListener("touchend", handleTap);
-
-    return () => {
-      container.removeEventListener("click", handleTap);
-      container.removeEventListener("touchend", handleTap);
-    };
-  }, [hasStarted]);
+    document.addEventListener("fullscreenchange", handleChange);
+    return () => document.removeEventListener("fullscreenchange", handleChange);
+  }, []);
 
   return (
     <div 
