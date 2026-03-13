@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mux/mux-player": "^3.11.5",
     "@mux/mux-player-react": "^3.11.5",
     "@reduxjs/toolkit": "^2.6.1",
     "@videojs/react": "^10.0.0-beta.3",

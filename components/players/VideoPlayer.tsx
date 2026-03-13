@@ -1,7 +1,8 @@
 "use client";
 
-import MuxPlayer from "@mux/mux-player-react";
-import { useState } from "react";
+import "@mux/mux-player/dist/themes/default";
+import "@mux/mux-player/dist/themes/minimal";
+import { useState, useRef, useEffect } from "react";
 
 interface VideoPlayerProps {
   src: string;
@@ -10,29 +11,30 @@ interface VideoPlayerProps {
 
 export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const [hasStarted, setHasStarted] = useState(false);
+  const playerRef = useRef<HTMLMediaElement>(null);
+
+  const isMuxUrl = (url: string) => {
+    return url.includes('mux.com') || url.includes('stream.mux.com') || url.includes('mux.net');
+  };
 
   const getMuxPlaybackId = (url: string) => {
     const patterns = [
       /mux\.com\/([^\/?]+)/,
-      /stream\.mux\.com\/([^\/?]+)\//,
+      /stream\.mux\.com\/([^\/?]+)/,
       /mux\.net\/([^\/?]+)/
     ];
     
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match && match[1]) {
-        return match[1];
+        return match[1].replace('.m3u8', '');
       }
     }
     return null;
   };
 
-  const isMuxUrl = (url: string) => {
-    return url.includes('mux.com') || url.includes('stream.mux.com') || url.includes('mux.net');
-  };
-
-  const playbackId = getMuxPlaybackId(src);
   const isMux = isMuxUrl(src);
+  const playbackId = getMuxPlaybackId(src);
 
   return (
     <div 
@@ -63,16 +65,14 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
         </div>
       ) : (
         isMux && playbackId ? (
-          <MuxPlayer
-            playbackId={playbackId}
-            metadata={{
-              video_title: 'Video',
-            }}
-            streamType="on-demand"
-            playsInline
+          <mux-player
+            ref={playerRef as any}
+            playback-id={playbackId}
+            stream-type="on-demand"
+            poster={poster}
             autoPlay
+            accent-color="#E50914"
             className="w-full h-full"
-            accentColor="#E50914"
           />
         ) : (
           <video
