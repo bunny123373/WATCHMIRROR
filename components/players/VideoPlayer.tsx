@@ -25,9 +25,6 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
         setHasStarted(true);
       }
       
-      const videoEl = container.querySelector("video");
-      if (!videoEl) return;
-
       if (document.fullscreenElement) {
         document.exitFullscreen();
       } else {
@@ -49,11 +46,15 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   }, [hasStarted]);
 
   return (
-    <div ref={containerRef}>
+    <div 
+      ref={containerRef} 
+      className="relative w-full aspect-video overflow-hidden rounded-xl"
+      style={{ maxHeight: '70vh' }}
+    >
       <Player.Provider>
         <VideoSkin>
-          <Video src={src} playsInline={false} autoPlay={hasStarted} />
-          {poster && <Poster src={poster} />}
+          <Video src={src} playsInline={false} autoPlay={hasStarted} className="w-full h-full" />
+          {poster && <Poster src={poster} className="w-full h-full object-cover" />}
         </VideoSkin>
       </Player.Provider>
     </div>
