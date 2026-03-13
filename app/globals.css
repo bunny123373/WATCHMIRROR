@@ -84,3 +84,28 @@ main {
   border-radius: 999px;
   background: #e50914;
 }
+
+.media-default-skin--video {
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: manipulation;
+}
+
+.media-default-skin--video .media-controls {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+}
+
+.media-default-skin--video .media-button {
+  min-width: 44px !important;
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-default-skin--video .media-icon {
+  width: 24px !important;
+  height: 24px !important;
+}
