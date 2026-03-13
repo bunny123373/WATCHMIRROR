@@ -1,6 +1,5 @@
 "use client";
 
-import MuxPlayer from "@mux/mux-player-react";
 import { useState } from "react";
 
 interface VideoPlayerProps {
@@ -20,22 +19,30 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
         minHeight: '200px'
       }}
     >
-      <MuxPlayer
-        src={hasStarted ? src : undefined}
-        poster={poster}
-        streamType="on-demand"
-        playsInline
-        autoPlay={hasStarted}
-        className="w-full h-full"
-        onPlay={() => setHasStarted(true)}
-      />
+      {hasStarted && (
+        <video
+          src={src}
+          poster={poster}
+          controls
+          playsInline
+          autoPlay
+          className="w-full h-full"
+        />
+      )}
       
       {!hasStarted && (
         <div 
-          className="absolute inset-0 flex items-center justify-center cursor-pointer z-10"
+          className="absolute inset-0 flex items-center justify-center cursor-pointer z-10 bg-black"
           onClick={() => setHasStarted(true)}
         >
-          <div className="w-24 h-24 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition transform hover:scale-105">
+          {poster && (
+            <img 
+              src={poster} 
+              alt="Poster" 
+              className="absolute inset-0 w-full h-full object-cover opacity-50"
+            />
+          )}
+          <div className="relative w-24 h-24 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition transform hover:scale-105">
             <svg className="w-12 h-12 text-black ml-1" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z"/>
             </svg>
