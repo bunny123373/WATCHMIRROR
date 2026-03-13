@@ -44,8 +44,8 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
           className="absolute inset-0 flex items-center justify-center cursor-pointer z-10"
           onClick={() => setHasStarted(true)}
         >
-          <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition">
-            <svg className="w-10 h-10 text-black ml-1" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-24 h-24 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition transform hover:scale-105">
+            <svg className="w-12 h-12 text-black ml-1" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z"/>
             </svg>
           </div>
