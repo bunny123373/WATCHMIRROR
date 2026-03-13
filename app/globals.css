@@ -85,24 +85,27 @@ main {
   background: #e50914;
 }
 
-.media-default-skin--video {
+.video-js {
+  width: 100% !important;
+  height: 100% !important;
   touch-action: manipulation;
 }
 
-.media-default-skin--video .media-controls {
+.video-js .vjs-control-bar {
   opacity: 1 !important;
   visibility: visible !important;
-  pointer-events: auto !important;
-  scale: 1 !important;
-  filter: blur(0) !important;
-  transform: none !important;
-  transition: none !important;
 }
 
-.media-default-skin--video .media-controls:not([data-visible]) {
+.video-js.vjs-playing .vjs-control-bar {
   opacity: 1 !important;
-  scale: 1 !important;
-  filter: blur(0) !important;
-  pointer-events: auto !important;
-  transition: none !important;
+  visibility: visible !important;
+}
+
+.video-js.vjs-paused .vjs-control-bar {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.video-js .vjs-big-play-button {
+  display: none !important;
 }
