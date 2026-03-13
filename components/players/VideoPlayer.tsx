@@ -1,8 +1,6 @@
 "use client";
 
-import "@mux/mux-player/dist/themes/default";
-import "@mux/mux-player/dist/themes/minimal";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 
 interface VideoPlayerProps {
   src: string;
@@ -11,7 +9,6 @@ interface VideoPlayerProps {
 
 export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const [hasStarted, setHasStarted] = useState(false);
-  const playerRef = useRef<HTMLMediaElement>(null);
 
   const isMuxUrl = (url: string) => {
     return url.includes('mux.com') || url.includes('stream.mux.com') || url.includes('mux.net');
@@ -35,6 +32,10 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
 
   const isMux = isMuxUrl(src);
   const playbackId = getMuxPlaybackId(src);
+
+  const MuxPlayerComponent = isMux && playbackId 
+    ? require("@mux/mux-player").default 
+    : null;
 
   return (
     <div 
@@ -64,14 +65,13 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
           </div>
         </div>
       ) : (
-        isMux && playbackId ? (
-          <mux-player
-            ref={playerRef as any}
-            playback-id={playbackId}
-            stream-type="on-demand"
+        isMux && playbackId && MuxPlayerComponent ? (
+          <MuxPlayerComponent
+            playbackId={playbackId}
+            streamType="on-demand"
             poster={poster}
             autoPlay
-            accent-color="#E50914"
+            accentColor="#E50914"
             className="w-full h-full"
           />
         ) : (
