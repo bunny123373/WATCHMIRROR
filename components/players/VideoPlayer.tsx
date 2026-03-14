@@ -13,8 +13,10 @@ type PlayerType = "native" | "vidstack" | "mux";
 export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const [hasStarted, setHasStarted] = useState(false);
   const [playerType, setPlayerType] = useState<PlayerType>("native");
+  const [showDropdown, setShowDropdown] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isHLS = src?.includes('.m3u8') || src?.includes('mux.com') || src?.includes('stream.mux');
   const isMux = src?.includes('mux.com') || src?.includes('stream.mux') || src?.includes('mux.net');
@@ -58,18 +60,21 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
     };
   }, [hasStarted, src, isHLS, playerType]);
 
-  const PlayerButton = ({ type, label }: { type: PlayerType; label: string }) => (
-    <button
-      onClick={() => setPlayerType(type)}
-      className={`px-3 py-1.5 rounded text-xs font-medium transition ${
-        playerType === type 
-          ? "bg-red-600 text-white" 
-          : "bg-white/10 text-gray-300 hover:bg-white/20"
-      }`}
-    >
-      {label}
-    </button>
-  );
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const playerOptions = [
+    { type: "native" as PlayerType, label: "Native", available: true },
+    { type: "mux" as PlayerType, label: "Mux", available: isMux },
+    { type: "vidstack" as PlayerType, label: "Vidstack", available: !isHLS },
+  ].filter(opt => opt.available);
 
   return (
     <div className="w-full bg-black">
@@ -90,11 +95,33 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
           </div>
         ) : (
           <>
-            {/* Player Selection Buttons */}
-            <div className="absolute top-2 right-2 z-20 flex gap-1">
-              <PlayerButton type="native" label="Native" />
-              {isMux && <PlayerButton type="mux" label="Mux" />}
-              {!isHLS && <PlayerButton type="vidstack" label="Vidstack" />}
+            {/* Player Dropdown */}
+            <div ref={dropdownRef} className="absolute top-2 right-2 z-20">
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="flex items-center gap-1 rounded bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20"
+              >
+                <span>{playerType.charAt(0).toUpperCase() + playerType.slice(1)}</span>
+                <svg className={`h-3 w-3 transition ${showDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {showDropdown && (
+                <div className="absolute right-0 top-full mt-1 w-28 rounded bg-[#1a1a1a] border border-white/10 py-1 shadow-lg">
+                  {playerOptions.map((opt) => (
+                    <button
+                      key={opt.type}
+                      onClick={() => { setPlayerType(opt.type); setShowDropdown(false); }}
+                      className={`w-full px-3 py-2 text-left text-xs hover:bg-white/10 ${
+                        playerType === opt.type ? 'text-red-500' : 'text-white'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Native Player with HLS */}
@@ -120,16 +147,14 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
 
             {/* Vidstack Player */}
             {playerType === "vidstack" && !isHLS && (
-              <div className="h-full w-full">
-                <video
-                  src={src}
-                  poster={poster}
-                  controls
-                  playsInline
-                  autoPlay
-                  className="h-full w-full"
-                />
-              </div>
+              <video
+                src={src}
+                poster={poster}
+                controls
+                playsInline
+                autoPlay
+                className="h-full w-full"
+              />
             )}
           </>
         )}
