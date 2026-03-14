@@ -16,7 +16,7 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-10">
-      <HeroBanner item={data.trending[0] || null} />
+      <HeroBanner item={data.recentlyAdded[0] || data.trending[0] || null} />
 
       <TopTenRow items={data.trending} />
       <MyListRow />
