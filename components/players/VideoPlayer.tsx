@@ -2,6 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
+import { MediaPlayer, MediaProvider } from "@vidstack/react";
+import { DefaultVideoLayout, defaultLayoutIcons } from "@vidstack/react/player/layouts/default";
+import "@vidstack/react/player/styles/base.css";
+import "@vidstack/react/player/styles/default/theme.css";
+import "@vidstack/react/player/styles/default/layouts/video.css";
 
 interface VideoPlayerProps {
   src: string;
@@ -16,6 +21,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const vidstackRef = useRef<any>(null);
 
   const isHLS = src?.includes('.m3u8') || src?.includes('mux.com') || src?.includes('stream.mux');
   const isMux = src?.includes('mux.com') || src?.includes('stream.mux') || src?.includes('mux.net');
@@ -130,14 +136,16 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
 
         {/* Vidstack Player */}
         {playerType === "vidstack" && !isHLS && (
-          <video
+          <MediaPlayer
+            ref={vidstackRef}
             src={src}
             poster={poster}
-            controls
-            playsInline
-            autoPlay
+            autoplay
             className="h-full w-full"
-          />
+          >
+            <MediaProvider />
+            <DefaultVideoLayout thumbnails={poster} icons={defaultLayoutIcons} />
+          </MediaPlayer>
         )}
       </div>
     </div>
