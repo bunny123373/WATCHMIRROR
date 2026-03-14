@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { VideoPlayer } from "@/components/players/VideoPlayer";
 import IframePlayer from "@/components/players/IframePlayer";
-import { ContentType } from "@/types/content";
+import { ContentType, SubtitleTrack } from "@/types/content";
 
 type SourceType = "hls" | "iframe";
 
@@ -22,6 +22,7 @@ interface StreamingPlayerProps {
   embedIframeLink?: string;
   backupHlsLink?: string;
   backupEmbedIframeLink?: string;
+  subtitleTracks?: SubtitleTrack[];
 }
 
 export default function StreamingPlayer(props: StreamingPlayerProps) {

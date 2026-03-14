@@ -16,9 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: content.metaTitle || content.title,
     description: content.metaDescription || content.description,
-    alternates: {
-      canonical: `/movie/${slug}`
-    },
+    alternates: { canonical: `/movie/${slug}` },
     openGraph: {
       title: content.metaTitle || content.title,
       description: content.metaDescription || content.description,
@@ -39,91 +37,63 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   const content = await getContentBySlug(slug);
 
   if (!content || content.type !== "movie") {
-    return <div className="rounded-2xl border border-border p-6">Movie not found.</div>;
+    return <div className="p-4">Movie not found.</div>;
   }
 
   const similar = await getSimilarContent(content);
   const topTags = (content.tags || []).slice(0, 4);
 
   return (
-    <div className="space-y-8">
-      <section className="relative -mx-4 -mt-6 h-[56.25vw] min-h-[280px] max-h-[80vh] w-[calc(100%+32px)] overflow-hidden sm:-mx-8 sm:w-[calc(100%+64px)] md:-mt-8">
-        <Image src={content.banner || content.poster} alt={content.title} fill priority className="object-cover" />
+    <div className="min-h-screen bg-[#141414]">
+      <section className="relative w-full" style={{ aspectRatio: '16/9', maxHeight: '80vh' }}>
+        <Image 
+          src={content.banner || content.poster} 
+          alt={content.title} 
+          fill 
+          priority 
+          className="object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
 
-        <div className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-24 md:px-8 md:pb-12 lg:px-16">
-          <div className="mx-auto max-w-3xl">
-            <div className="mb-2 flex flex-wrap items-center gap-2 md:mb-3">
-              <span className="rounded bg-white/20 px-2 py-0.5 text-[10px] font-medium uppercase text-white backdrop-blur-sm md:text-xs">Movie</span>
-              <span className="flex items-center gap-1 rounded bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm md:text-xs">
-                <Star size={10} className="text-yellow-400 md:size-3" /> {Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}
-              </span>
-              <span className="rounded bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm md:text-xs">{content.year} · {content.language}</span>
-              {content.quality && <span className="rounded bg-red-600 px-1.5 py-0.5 text-[9px] font-bold text-white md:text-[10px]">{content.quality}</span>}
-            </div>
-
-            <h1 className="font-[var(--font-heading)] text-2xl leading-tight text-white md:text-3xl lg:text-4xl">{content.title}</h1>
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span className="rounded bg-white/20 px-2 py-0.5 text-xs font-medium uppercase text-white backdrop-blur-sm">Movie</span>
+            <span className="flex items-center gap-1 rounded bg-black/40 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+              <Star size={12} className="text-yellow-400" /> {Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}
+            </span>
+            <span className="rounded bg-black/40 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">{content.year} · {content.language}</span>
+            {content.quality && <span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">{content.quality}</span>}
           </div>
+
+          <h1 className="text-2xl font-bold text-white md:text-3xl lg:text-4xl">{content.title}</h1>
         </div>
       </section>
 
-      <section className="px-4 md:px-8">
-        <div className="mx-auto flex flex-col gap-3 md:flex-row md:justify-center md:items-stretch">
-          <Link href={`/watch/${content.slug}`} className="flex w-full items-center justify-center gap-2 rounded bg-white px-6 py-3 text-base font-bold text-black transition hover:bg-white/90 md:w-auto md:px-8">
+      <section className="px-4 py-6 md:px-8">
+        <div className="flex flex-col gap-3 md:flex-row">
+          <Link href={`/watch/${content.slug}`} className="flex items-center justify-center gap-2 rounded bg-white px-6 py-3 text-base font-bold text-black transition hover:bg-white/90 md:px-8">
             <Play size={20} fill="black" /> Play
           </Link>
           {content.downloadLink && (
-            <a href={content.downloadLink} target="_blank" rel="noopener noreferrer" className="flex w-full items-center justify-center gap-2 rounded border border-white/20 bg-white/10 px-6 py-3 text-base font-medium text-white transition hover:bg-white/20 md:w-auto md:px-8">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            <a href={content.downloadLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded border border-white/20 bg-white/10 px-6 py-3 text-base font-medium text-white transition hover:bg-white/20 md:px-8">
               Download
             </a>
           )}
         </div>
-      </section>
 
-      <section className="px-4 md:px-8">
-        <div className="mx-auto max-w-3xl space-y-6">
-          <div>
-            <h2 className="text-lg font-semibold text-white">Overview</h2>
-            <p className="mt-2 text-sm leading-6 text-gray-400">{content.description}</p>
-          </div>
+        <p className="mt-6 text-sm text-gray-300 md:text-base">{content.description}</p>
 
-          {(content.audioLanguages && content.audioLanguages.length > 0) && (
-            <div>
-              <p className="text-sm font-medium text-white">Audio Languages</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {content.audioLanguages.map((lang: string) => {
-                  const langNames: Record<string, string> = {
-                    EN: "English", TE: "Telugu", HI: "Hindi", TA: "Tamil", ML: "Malayalam",
-                    KN: "Kannada", KO: "Korean", JA: "Japanese", ES: "Spanish", TH: "Thai", ZH: "Chinese"
-                  };
-                  return (
-                    <span key={lang} className="rounded-full bg-red-600/20 px-3 py-1 text-xs text-red-400 border border-red-600/30">
-                      {langNames[lang] || lang}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-2">
+        {topTags.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
             {topTags.map((tag) => (
               <span key={tag} className="rounded-full bg-white/10 px-3 py-1 text-xs text-gray-300">{tag}</span>
             ))}
           </div>
-
-          <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-            <div><p className="text-gray-500">Year</p><p className="font-medium text-white">{content.year}</p></div>
-            <div><p className="text-gray-500">Language</p><p className="font-medium text-white">{content.language}</p></div>
-            <div><p className="text-gray-500">Rating</p><p className="font-medium text-white">{Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}</p></div>
-            <div><p className="text-gray-500">Category</p><p className="font-medium text-white">{content.category || "Movie"}</p></div>
-          </div>
-        </div>
+        )}
       </section>
 
-      <section className="px-4 md:px-8">
+      <section className="px-4 pb-8 md:px-8">
         <ContentRow title="More Like This" items={similar.filter((item) => item.type === "movie")} />
       </section>
     </div>
