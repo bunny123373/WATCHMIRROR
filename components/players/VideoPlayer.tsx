@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MediaPlayer, MediaProvider } from "@vidstack/react";
-import { defaultLayoutIcons, DefaultVideoLayout } from "@vidstack/react/player/layouts/default";
 import Hls from "hls.js";
-import "@vidstack/react/player/styles/default/theme.css";
-import "@vidstack/react/player/styles/default/layouts/video.css";
 
 interface VideoPlayerProps {
   src: string;
@@ -26,7 +22,11 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
       if (hlsRef.current) {
         hlsRef.current.destroy();
       }
-      const hls = new Hls();
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 90
+      });
       hls.loadSource(src);
       hls.attachMedia(videoRef.current);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -70,7 +70,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
               </svg>
             </div>
           </div>
-        ) : isHLS ? (
+        ) : (
           <video
             ref={videoRef}
             poster={poster}
@@ -78,17 +78,6 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
             playsInline
             className="h-full w-full"
           />
-        ) : (
-          <MediaPlayer 
-            src={src}
-            poster={poster}
-            title="Video"
-            autoPlay
-            className="w-full h-full"
-          >
-            <MediaProvider />
-            <DefaultVideoLayout icons={defaultLayoutIcons} />
-          </MediaPlayer>
         )}
       </div>
     </div>
