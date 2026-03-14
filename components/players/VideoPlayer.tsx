@@ -11,7 +11,6 @@ interface VideoPlayerProps {
 type PlayerType = "native" | "vidstack" | "mux";
 
 export function VideoPlayer({ src, poster }: VideoPlayerProps) {
-  const [hasStarted, setHasStarted] = useState(false);
   const [playerType, setPlayerType] = useState<PlayerType>("native");
   const [showDropdown, setShowDropdown] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -41,7 +40,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const muxEmbedUrl = playbackId ? `https://player.mux.com/${playbackId}?autoplay=1&muted=0` : null;
 
   useEffect(() => {
-    if (!hasStarted || playerType !== "native" || !videoRef.current) return;
+    if (playerType !== "native" || !videoRef.current) return;
 
     if (isHLS && Hls.isSupported()) {
       if (hlsRef.current) hlsRef.current.destroy();
@@ -58,7 +57,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
     return () => {
       if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
     };
-  }, [hasStarted, src, isHLS, playerType]);
+  }, [src, isHLS, playerType]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -79,84 +78,66 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   return (
     <div className="w-full bg-black">
       <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
-        {!hasStarted ? (
-          <div 
-            className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black z-10"
-            onClick={() => setHasStarted(true)}
+        {/* Player Dropdown */}
+        <div ref={dropdownRef} className="absolute top-2 right-2 z-20">
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="flex items-center gap-1 rounded bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20"
           >
-            {poster && (
-              <img src={poster} alt="Poster" className="absolute inset-0 h-full w-full object-cover opacity-50" />
-            )}
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-white/90 sm:h-16 sm:w-16 md:h-20 md:w-20">
-              <svg className="h-8 w-8 text-black sm:h-10 sm:w-10" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
+            <span>{playerType.charAt(0).toUpperCase() + playerType.slice(1)}</span>
+            <svg className={`h-3 w-3 transition ${showDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {showDropdown && (
+            <div className="absolute right-0 top-full mt-1 w-28 rounded bg-[#1a1a1a] border border-white/10 py-1 shadow-lg">
+              {playerOptions.map((opt) => (
+                <button
+                  key={opt.type}
+                  onClick={() => { setPlayerType(opt.type); setShowDropdown(false); }}
+                  className={`w-full px-3 py-2 text-left text-xs hover:bg-white/10 ${
+                    playerType === opt.type ? 'text-red-500' : 'text-white'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
-          </div>
-        ) : (
-          <>
-            {/* Player Dropdown */}
-            <div ref={dropdownRef} className="absolute top-2 right-2 z-20">
-              <button
-                onClick={() => setShowDropdown(!showDropdown)}
-                className="flex items-center gap-1 rounded bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20"
-              >
-                <span>{playerType.charAt(0).toUpperCase() + playerType.slice(1)}</span>
-                <svg className={`h-3 w-3 transition ${showDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              
-              {showDropdown && (
-                <div className="absolute right-0 top-full mt-1 w-28 rounded bg-[#1a1a1a] border border-white/10 py-1 shadow-lg">
-                  {playerOptions.map((opt) => (
-                    <button
-                      key={opt.type}
-                      onClick={() => { setPlayerType(opt.type); setShowDropdown(false); }}
-                      className={`w-full px-3 py-2 text-left text-xs hover:bg-white/10 ${
-                        playerType === opt.type ? 'text-red-500' : 'text-white'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+          )}
+        </div>
 
-            {/* Native Player with HLS */}
-            {playerType === "native" && (
-              <video
-                ref={videoRef}
-                poster={poster}
-                controls
-                playsInline
-                className="h-full w-full"
-              />
-            )}
+        {/* Native Player with HLS */}
+        {playerType === "native" && (
+          <video
+            ref={videoRef}
+            poster={poster}
+            controls
+            playsInline
+            className="h-full w-full"
+          />
+        )}
 
-            {/* Mux Player */}
-            {playerType === "mux" && muxEmbedUrl && (
-              <iframe
-                src={muxEmbedUrl}
-                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                allowFullScreen
-                className="h-full w-full border-0"
-              />
-            )}
+        {/* Mux Player */}
+        {playerType === "mux" && muxEmbedUrl && (
+          <iframe
+            src={muxEmbedUrl}
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+            className="h-full w-full border-0"
+          />
+        )}
 
-            {/* Vidstack Player */}
-            {playerType === "vidstack" && !isHLS && (
-              <video
-                src={src}
-                poster={poster}
-                controls
-                playsInline
-                autoPlay
-                className="h-full w-full"
-              />
-            )}
-          </>
+        {/* Vidstack Player */}
+        {playerType === "vidstack" && !isHLS && (
+          <video
+            src={src}
+            poster={poster}
+            controls
+            playsInline
+            autoPlay
+            className="h-full w-full"
+          />
         )}
       </div>
     </div>
