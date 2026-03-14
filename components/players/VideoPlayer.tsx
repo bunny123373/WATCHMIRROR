@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MediaPlayer, MediaProvider } from "@vidstack/react";
 import { defaultLayoutIcons, DefaultVideoLayout } from "@vidstack/react/player/layouts/default";
+import Hls from "hls.js";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 
@@ -13,6 +14,37 @@ interface VideoPlayerProps {
 
 export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const [hasStarted, setHasStarted] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
+
+  const isHLS = src?.includes('.m3u8') || src?.includes('m3u8');
+
+  useEffect(() => {
+    if (!hasStarted || !videoRef.current) return;
+
+    if (isHLS && Hls.isSupported()) {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+      }
+      const hls = new Hls();
+      hls.loadSource(src);
+      hls.attachMedia(videoRef.current);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        videoRef.current?.play();
+      });
+      hlsRef.current = hls;
+    } else if (videoRef.current) {
+      videoRef.current.src = src;
+      videoRef.current.play();
+    }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [hasStarted, src, isHLS]);
 
   return (
     <div className="w-full bg-black">
@@ -38,6 +70,14 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
               </svg>
             </div>
           </div>
+        ) : isHLS ? (
+          <video
+            ref={videoRef}
+            poster={poster}
+            controls
+            playsInline
+            className="h-full w-full"
+          />
         ) : (
           <MediaPlayer 
             src={src}
