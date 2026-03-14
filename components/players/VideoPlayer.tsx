@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { MediaPlayer, MediaProvider } from "@vidstack/react";
+import "@vidstack/react/player/styles/default/theme.css";
+import "@vidstack/react/player/styles/default/layouts/video.css";
 
 interface VideoPlayerProps {
   src: string;
@@ -18,7 +21,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
       >
         {!hasStarted ? (
           <div 
-            className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black"
+            className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black z-10"
             onClick={() => setHasStarted(true)}
           >
             {poster && (
@@ -35,14 +38,14 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
             </div>
           </div>
         ) : (
-          <video
+          <MediaPlayer 
             src={src}
             poster={poster}
-            controls
-            playsInline
-            autoPlay
-            className="h-full w-full"
-          />
+            autoplay
+            className="w-full h-full"
+          >
+            <MediaProvider />
+          </MediaPlayer>
         )}
       </div>
     </div>
