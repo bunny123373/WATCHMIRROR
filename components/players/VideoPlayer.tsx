@@ -78,7 +78,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const playerOptions = [
     { type: "native" as PlayerType, label: "Native", available: true },
     { type: "mux" as PlayerType, label: "Mux", available: isMux },
-    { type: "vidstack" as PlayerType, label: "Vidstack", available: !isHLS },
+    { type: "vidstack" as PlayerType, label: "Vidstack", available: true },
   ].filter(opt => opt.available);
 
   return (
@@ -135,7 +135,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
         )}
 
         {/* Vidstack Player */}
-        {playerType === "vidstack" && !isHLS && (
+        {playerType === "vidstack" && (
           <MediaPlayer
             ref={vidstackRef}
             src={src}
