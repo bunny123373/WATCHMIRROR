@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { MediaPlayer, MediaProvider } from "@vidstack/react";
+import { defaultLayoutIcons, DefaultVideoLayout } from "@vidstack/react/player/layouts/default";
+import "@vidstack/react/player/styles/default/theme.css";
+import "@vidstack/react/player/styles/default/layouts/video.css";
 
 interface VideoPlayerProps {
   src: string;
@@ -35,14 +39,16 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
             </div>
           </div>
         ) : (
-          <video
+          <MediaPlayer 
             src={src}
             poster={poster}
-            controls
-            playsInline
+            title="Video"
             autoPlay
-            className="h-full w-full"
-          />
+            className="w-full h-full"
+          >
+            <MediaProvider />
+            <DefaultVideoLayout icons={defaultLayoutIcons} />
+          </MediaPlayer>
         )}
       </div>
     </div>
