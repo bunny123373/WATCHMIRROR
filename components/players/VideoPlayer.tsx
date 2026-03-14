@@ -24,7 +24,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match && match[1]) {
-        return match[1].replace('.m3u8', '');
+        return match[1].replace('.m3u8', '').replace('/highest', '').replace('/lowest', '');
       }
     }
     return null;
@@ -33,8 +33,8 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const isMux = isMuxUrl(src);
   const playbackId = getMuxPlaybackId(src);
 
-  const MuxPlayerComponent = isMux && playbackId 
-    ? require("@mux/mux-player").default 
+  const muxEmbedUrl = playbackId 
+    ? `https://player.mux.com/${playbackId}?autoplay=1&muted=0&metadata-video-title=Video`
     : null;
 
   return (
@@ -65,13 +65,12 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
           </div>
         </div>
       ) : (
-        isMux && playbackId && MuxPlayerComponent ? (
-          <MuxPlayerComponent
-            playbackId={playbackId}
-            streamType="on-demand"
-            poster={poster}
-            autoPlay
-            accentColor="#E50914"
+        isMux && muxEmbedUrl ? (
+          <iframe
+            src={muxEmbedUrl}
+            style={{ width: '100%', border: 'none', aspectRatio: '16/9' }}
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
             className="w-full h-full"
           />
         ) : (
