@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
-import { MediaPlayer, MediaProvider } from "@vidstack/react";
+import { MediaPlayer, MediaProvider, Poster } from "@vidstack/react";
 import { DefaultVideoLayout, defaultLayoutIcons } from "@vidstack/react/player/layouts/default";
 import "@vidstack/react/player/styles/base.css";
 import "@vidstack/react/player/styles/default/theme.css";
@@ -139,11 +139,18 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
           <MediaPlayer
             ref={vidstackRef}
             src={src}
+            viewType="video"
+            streamType="on-demand"
+            logLevel="warn"
+            crossOrigin
+            playsInline
             poster={poster}
             autoplay
             className="h-full w-full"
           >
-            <MediaProvider />
+            <MediaProvider>
+              <Poster className="vds-poster" />
+            </MediaProvider>
             <DefaultVideoLayout thumbnails={poster} icons={defaultLayoutIcons} />
           </MediaPlayer>
         )}
