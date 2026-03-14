@@ -16,7 +16,7 @@
     "@vidstack/react": "^1.12.13",
     "clsx": "^2.1.1",
     "framer-motion": "^12.6.2",
-    "hls.js": "^1.5.20",
+    "hls.js": "^1.6.15",
     "lucide-react": "^0.487.0",
     "mongoose": "^8.13.2",
     "next": "^16.0.0",
