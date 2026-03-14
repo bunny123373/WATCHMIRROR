@@ -26,51 +26,42 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ slu
   const similar = await getSimilarContent(content);
 
   return (
-    <div className="-mx-4 -mt-6 min-h-screen w-[calc(100%+32px)] bg-black sm:-mx-8 sm:w-[calc(100%+64px)]">
-      <div className="pb-6 pt-14 md:pt-4">
-        <Link 
-          href={`/movie/${content.slug}`}
-          className="fixed left-3 top-3 z-50 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 md:hidden"
-        >
-          <ArrowLeft size={20} />
-        </Link>
+    <div className="min-h-screen bg-black">
+      <Link 
+        href={`/movie/${content.slug}`}
+        className="fixed left-3 top-3 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur-sm transition hover:bg-black/90"
+      >
+        <ArrowLeft size={20} />
+      </Link>
 
-        <section className="w-full">
-          <StreamingPlayer
-            type="movie"
-            slug={content.slug}
-            title={content.title}
-            poster={content.poster}
-            hlsLink={content.hlsLink}
-            embedIframeLink={content.embedIframeLink}
-            backupHlsLink={content.backupHlsLink}
-            backupEmbedIframeLink={content.backupEmbedIframeLink}
-            subtitleTracks={content.subtitleTracks}
-          />
-        </section>
+      <StreamingPlayer
+        type="movie"
+        slug={content.slug}
+        title={content.title}
+        poster={content.poster}
+        hlsLink={content.hlsLink}
+        embedIframeLink={content.embedIframeLink}
+        backupHlsLink={content.backupHlsLink}
+        backupEmbedIframeLink={content.backupEmbedIframeLink}
+        subtitleTracks={content.subtitleTracks}
+      />
 
-        <section className="mt-4 px-4">
-          <Link href={`/movie/${content.slug}`} className="mb-3 hidden items-center gap-1 text-sm text-gray-400 hover:text-white md:flex">
-            <ArrowLeft size={16} /> Back to details
-          </Link>
-          
-          <h1 className="font-[var(--font-heading)] text-xl text-white md:text-2xl">{content.title}</h1>
-          
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-            <span className="flex items-center gap-1">
-              <Star size={10} className="text-yellow-400" /> {Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}
-            </span>
-            <span>·</span>
-            <span>{content.year}</span>
-            <span>·</span>
-            <span>{content.language}</span>
-            {content.quality && <><span>·</span><span className="rounded bg-red-600 px-1 py-0.5 text-[9px] font-bold text-white">{content.quality}</span></>}
-          </div>
-        </section>
+      <div className="px-4 py-4">
+        <h1 className="font-[var(--font-heading)] text-xl text-white md:text-2xl">{content.title}</h1>
+        
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+          <span className="flex items-center gap-1">
+            <Star size={10} className="text-yellow-400" /> {Number.isFinite(content.rating) ? content.rating.toFixed(1) : "N/A"}
+          </span>
+          <span>·</span>
+          <span>{content.year}</span>
+          <span>·</span>
+          <span>{content.language}</span>
+        </div>
+      </div>
 
-        <section className="mt-6 px-4">
-          <ContentRow title="More Like This" items={similar.filter((item) => item.type === "movie")} />
-        </section>
+      <div className="px-4 pb-8">
+        <ContentRow title="More Like This" items={similar.filter((item) => item.type === "movie")} />
       </div>
     </div>
   );
