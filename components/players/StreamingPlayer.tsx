@@ -23,6 +23,8 @@ interface StreamingPlayerProps {
   backupHlsLink?: string;
   backupEmbedIframeLink?: string;
   subtitleTracks?: SubtitleTrack[];
+  seasonNumber?: number;
+  episodeNumber?: number;
 }
 
 export default function StreamingPlayer(props: StreamingPlayerProps) {
