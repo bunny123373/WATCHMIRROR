@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
-import { MediaPlayer, MediaProvider, Poster } from "@vidstack/react";
+import { MediaPlayer, MediaProvider, Poster, useAudioOptions } from "@vidstack/react";
 import { DefaultVideoLayout, defaultLayoutIcons } from "@vidstack/react/player/layouts/default";
 import "@vidstack/react/player/styles/base.css";
 import "@vidstack/react/player/styles/default/theme.css";
@@ -14,6 +14,59 @@ interface VideoPlayerProps {
 }
 
 type PlayerType = "native" | "vidstack" | "mux";
+
+function AudioTrackSelector({ playerRef }: { playerRef: React.RefObject<any> }) {
+  const audioOptions = useAudioOptions();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const currentTrack = audioOptions?.find((opt: any) => opt.selected);
+  const label = currentTrack?.label || "Audio";
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  if (!audioOptions || audioOptions.length <= 1) return null;
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1 rounded bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20"
+      >
+        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        </svg>
+        <span>{label}</span>
+        <svg className={`h-3 w-3 transition ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="absolute bottom-full right-0 mb-1 w-36 rounded bg-[#1a1a1a] border border-white/10 py-1 shadow-lg">
+          {audioOptions.map((opt: any, index: number) => (
+            <button
+              key={index}
+              onClick={() => { opt.select(); setIsOpen(false); }}
+              className={`w-full px-3 py-2 text-left text-xs hover:bg-white/10 ${
+                opt.selected ? 'text-red-500' : 'text-white'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const [playerType, setPlayerType] = useState<PlayerType>("native");
@@ -84,33 +137,35 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   return (
     <div className="w-full bg-black">
       <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
-        {/* Player Dropdown */}
-        <div ref={dropdownRef} className="absolute top-2 right-2 z-20">
-          <button
-            onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center gap-1 rounded bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20"
-          >
-            <span>{playerType.charAt(0).toUpperCase() + playerType.slice(1)}</span>
-            <svg className={`h-3 w-3 transition ${showDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          
-          {showDropdown && (
-            <div className="absolute right-0 top-full mt-1 w-28 rounded bg-[#1a1a1a] border border-white/10 py-1 shadow-lg">
-              {playerOptions.map((opt) => (
-                <button
-                  key={opt.type}
-                  onClick={() => { setPlayerType(opt.type); setShowDropdown(false); }}
-                  className={`w-full px-3 py-2 text-left text-xs hover:bg-white/10 ${
-                    playerType === opt.type ? 'text-red-500' : 'text-white'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          )}
+        {/* Controls Bar */}
+        <div className="absolute top-2 right-2 z-20 flex gap-2">
+          {playerType === "vidstack" && <AudioTrackSelector playerRef={vidstackRef} />}
+          <div ref={dropdownRef} className="relative">
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="flex items-center gap-1 rounded bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20"
+            >
+              <span>{playerType.charAt(0).toUpperCase() + playerType.slice(1)}</span>
+              <svg className={`h-3 w-3 transition ${showDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {showDropdown && (
+              <div className="absolute right-0 top-full mt-1 w-28 rounded bg-[#1a1a1a] border border-white/10 py-1 shadow-lg">
+                {playerOptions.map((opt) => (
+                  <button
+                    key={opt.type}
+                    onClick={() => { setPlayerType(opt.type); setShowDropdown(false); }}
+                    className={`w-full px-3 py-2 text-left text-xs hover:bg-white/10 ${
+                      playerType === opt.type ? 'text-red-500' : 'text-white'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Native Player with HLS */}
