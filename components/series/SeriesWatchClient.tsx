@@ -1,10 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Play, ChevronDown, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import StreamingPlayer from "@/components/players/StreamingPlayer";
 import { Content } from "@/types/content";
 
 export default function SeriesWatchClient({ content }: { content: Content }) {
+  const router = useRouter();
   const now = Date.now();
   const seasons = useMemo(
     () =>
@@ -30,12 +35,41 @@ export default function SeriesWatchClient({ content }: { content: Content }) {
     [season, episodeNumber]
   );
 
+  const currentSeasonIndex = seasons.findIndex((s) => s.seasonNumber === seasonNumber);
+  const currentEpisodeIndex = (season?.episodes || []).findIndex((e) => e.episodeNumber === episodeNumber);
+
+  const prevEpisode = currentEpisodeIndex > 0 
+    ? { season: seasonNumber, episode: season?.episodes[currentEpisodeIndex - 1]?.episodeNumber }
+    : currentSeasonIndex > 0 && seasons[currentSeasonIndex - 1]
+      ? { season: seasons[currentSeasonIndex - 1]?.seasonNumber, episode: seasons[currentSeasonIndex - 1]?.episodes.slice(-1)[0]?.episodeNumber }
+      : null;
+
+  const nextEpisode = currentEpisodeIndex < (season?.episodes.length || 0) - 1
+    ? { season: seasonNumber, episode: season?.episodes[currentEpisodeIndex + 1]?.episodeNumber }
+    : currentSeasonIndex < seasons.length - 1 && seasons[currentSeasonIndex + 1]
+      ? { season: seasons[currentSeasonIndex + 1]?.seasonNumber, episode: seasons[currentSeasonIndex + 1]?.episodes[0]?.episodeNumber }
+      : null;
+
+  const goToPrev = () => {
+    if (prevEpisode && prevEpisode.episode) {
+      setSeasonNumber(prevEpisode.season);
+      setEpisodeNumber(prevEpisode.episode);
+    }
+  };
+
+  const goToNext = () => {
+    if (nextEpisode && nextEpisode.episode) {
+      setSeasonNumber(nextEpisode.season);
+      setEpisodeNumber(nextEpisode.episode);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <StreamingPlayer
         type="series"
         slug={content.slug}
-        title={`${content.title} - ${episode?.episodeTitle || "Episode"}`}
+        title={`${content.title} - ${episode?.episodeTitle || "Episode " + episode?.episodeNumber}`}
         poster={content.poster}
         hlsLink={episode?.hlsLink}
         embedIframeLink={episode?.embedIframeLink}
@@ -48,46 +82,102 @@ export default function SeriesWatchClient({ content }: { content: Content }) {
         outroStart={episode?.outroStart}
       />
 
-      <div className="grid gap-4 md:grid-cols-[220px,1fr]">
-        <div className="rounded-xl bg-[#181818] p-4">
-          <h3 className="mb-3 text-sm font-semibold text-white">Seasons</h3>
-          <div className="space-y-2">
-            {seasons.map((s) => (
-              <button
-                key={s.seasonNumber}
-                onClick={() => {
-                  setSeasonNumber(s.seasonNumber);
-                  setEpisodeNumber(s.episodes[0]?.episodeNumber || 1);
+      <div className="mx-4 rounded-xl bg-[#181818] border border-white/5 md:mx-8">
+        <div className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="text-center">
+              <p className="text-xs text-gray-500">Season</p>
+              <select
+                value={seasonNumber}
+                onChange={(e) => {
+                  const newSeason = Number(e.target.value);
+                  setSeasonNumber(newSeason);
+                  const newSeasonData = seasons.find((s) => s.seasonNumber === newSeason);
+                  setEpisodeNumber(newSeasonData?.episodes[0]?.episodeNumber || 1);
                 }}
-                className={`w-full rounded-lg border px-3 py-2 text-left text-sm ${
-                  s.seasonNumber === seasonNumber
-                    ? "border-[#E50914] bg-[#E50914]/15 text-white"
-                    : "border-[#2f2f2f] text-[#b3b3b3] hover:border-[#4a4a4a]"
-                }`}
+                className="rounded-lg bg-[#2a2a2a] px-3 py-2 text-white border border-white/10 cursor-pointer"
               >
-                Season {s.seasonNumber}
-              </button>
-            ))}
+                {seasons.map((s) => (
+                  <option key={s.seasonNumber} value={s.seasonNumber}>
+                    Season {s.seasonNumber}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-gray-500">Episode</p>
+              <select
+                value={episodeNumber}
+                onChange={(e) => setEpisodeNumber(Number(e.target.value))}
+                className="rounded-lg bg-[#2a2a2a] px-3 py-2 text-white border border-white/10 cursor-pointer"
+              >
+                {season?.episodes.map((ep) => (
+                  <option key={ep.episodeNumber} value={ep.episodeNumber}>
+                    Ep {ep.episodeNumber}: {ep.episodeTitle || "Episode " + ep.episodeNumber}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={goToPrev}
+              disabled={!prevEpisode}
+              className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm ${
+                prevEpisode ? "bg-white/10 text-white hover:bg-white/20" : "bg-white/5 text-gray-600 cursor-not-allowed"
+              }`}
+            >
+              <ChevronLeft size={16} /> Prev
+            </button>
+            <button
+              onClick={goToNext}
+              disabled={!nextEpisode}
+              className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm ${
+                nextEpisode ? "bg-red-600 text-white hover:bg-red-700" : "bg-white/5 text-gray-600 cursor-not-allowed"
+              }`}
+            >
+              Next <ChevronRight size={16} />
+            </button>
           </div>
         </div>
 
-        <div className="rounded-xl bg-[#181818] p-4">
-          <h3 className="mb-3 text-sm font-semibold text-white">Episodes</h3>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {(season?.episodes || []).map((ep) => (
-              <button
-                key={ep.episodeNumber}
-                onClick={() => setEpisodeNumber(ep.episodeNumber)}
-                className={`rounded-lg border p-3 text-left ${
-                  ep.episodeNumber === episode?.episodeNumber
-                    ? "border-[#E50914] bg-[#E50914]/15"
-                    : "border-[#2f2f2f] bg-[#141414] hover:border-[#4a4a4a]"
-                }`}
-              >
-                <p className="text-xs text-[#9ca3af]">Episode {ep.episodeNumber}</p>
-                <p className="text-sm font-semibold text-white">{ep.episodeTitle}</p>
-              </button>
-            ))}
+        <div className="border-t border-white/5">
+          <div className="p-4">
+            <h3 className="mb-3 text-sm font-semibold text-white">Episodes - Season {seasonNumber}</h3>
+            <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {(season?.episodes || []).map((ep) => (
+                <button
+                  key={ep.episodeNumber}
+                  onClick={() => setEpisodeNumber(ep.episodeNumber)}
+                  className={`flex items-start gap-3 rounded-lg border p-3 text-left transition ${
+                    ep.episodeNumber === episode?.episodeNumber
+                      ? "border-red-500 bg-red-500/10"
+                      : "border-white/10 bg-white/5 hover:bg-white/10"
+                  }`}
+                >
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium ${
+                    ep.episodeNumber === episode?.episodeNumber
+                      ? "bg-red-600 text-white"
+                      : "bg-white/10 text-gray-400"
+                  }`}>
+                    {ep.episodeNumber}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium truncate ${
+                      ep.episodeNumber === episode?.episodeNumber ? "text-red-500" : "text-white"
+                    }`}>
+                      {ep.episodeTitle || `Episode ${ep.episodeNumber}`}
+                    </p>
+                    {ep.quality && (
+                      <span className="inline-block rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white mt-1">
+                        {ep.quality}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
