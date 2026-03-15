@@ -92,11 +92,6 @@ export default function AdminPage() {
   const [contentSearch, setContentSearch] = useState("");
   const [contentPage, setContentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<"browse" | "add" | "import">("browse");
-  const [autoFillLoading, setAutoFillLoading] = useState(false);
-  const [externalSourceId, setExternalSourceId] = useState("");
-  const [autoFillBaseUrl, setAutoFillBaseUrl] = useState("");
-  const [autoFillSeasons, setAutoFillSeasons] = useState("1");
-  const [autoFillEpCount, setAutoFillEpCount] = useState("10");
   const itemsPerPage = 20;
 
   useEffect(() => {
@@ -331,49 +326,6 @@ export default function AdminPage() {
         return { ...season, episodes };
       })
     );
-  };
-
-  const autoFillEpisodes = async () => {
-    if (!externalSourceId.trim() && !autoFillBaseUrl.trim()) {
-      setStatus("Please enter an external source ID or Base URL");
-      return;
-    }
-    setAutoFillLoading(true);
-    setStatus("Fetching episode links...");
-    
-    try {
-      const res = await fetch("/api/admin/auto-fill-episodes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-key": adminKey
-        },
-        body: JSON.stringify({ 
-          externalId: externalSourceId.trim() || undefined,
-          baseUrl: autoFillBaseUrl.trim() || undefined,
-          seasonCount: autoFillSeasons,
-          episodesPerSeason: autoFillEpCount
-        })
-      });
-      
-      if (!res.ok) {
-        const err = await res.json();
-        setStatus(err.error || "Failed to fetch episodes");
-        return;
-      }
-      
-      const data = await res.json();
-      if (data.seasons && data.seasons.length > 0) {
-        setSeasonsDraft(data.seasons);
-        setStatus(`Successfully loaded ${data.seasons.reduce((acc: number, s: any) => acc + (s.episodes?.length || 0), 0)} episodes!`);
-      } else {
-        setStatus("No episodes found - " + (data.hint || ""));
-      }
-    } catch (err) {
-      setStatus("Error fetching episodes");
-    } finally {
-      setAutoFillLoading(false);
-    }
   };
 
   const submitContent = async (event: FormEvent) => {
@@ -887,78 +839,6 @@ export default function AdminPage() {
                 </button>
               </div>
               
-              <div className="flex flex-col gap-3 rounded-xl border border-purple-500/30 bg-purple-500/10 p-4">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-purple-400" />
-                  <span className="text-sm font-medium text-purple-300">Auto-fill Episodes - Option 1: External ID</span>
-                </div>
-                <div className="flex gap-2">
-                  <input 
-                    value={externalSourceId} 
-                    onChange={(e) => setExternalSourceId(e.target.value)} 
-                    placeholder="Enter external ID (e.g., 111110)"
-                    className="flex-1 rounded-lg border border-white/10 bg-black/40 px-4 py-2 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-purple-500"
-                  />
-                  <button 
-                    type="button" 
-                    onClick={autoFillEpisodes}
-                    disabled={autoFillLoading}
-                    className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 px-4 py-2 text-xs font-bold text-white transition-all hover:from-purple-500 hover:to-purple-600 disabled:opacity-50"
-                  >
-                    {autoFillLoading ? (
-                      <div className="h-3 w-3 animate-spin rounded-full border border-white/20 border-t-white" />
-                    ) : (
-                      <Sparkles className="h-3 w-3" />
-                    )}
-                    Fetch
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-blue-400" />
-                  <span className="text-sm font-medium text-blue-300">Auto-fill Episodes - Option 2: Base URL Pattern</span>
-                </div>
-                <input 
-                  value={autoFillBaseUrl} 
-                  onChange={(e) => setAutoFillBaseUrl(e.target.value)} 
-                  placeholder="https://vidfast.pro/tv/{id}/{season}/{episode}"
-                  className="w-full rounded-lg border border-white/10 bg-black/40 px-4 py-2 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-blue-500"
-                />
-                <div className="flex gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">Seasons:</span>
-                    <input 
-                      value={autoFillSeasons} 
-                      onChange={(e) => setAutoFillSeasons(e.target.value)} 
-                      className="w-16 rounded-lg border border-white/10 bg-black/40 px-2 py-1 text-center text-sm text-white"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">Episodes/Season:</span>
-                    <input 
-                      value={autoFillEpCount} 
-                      onChange={(e) => setAutoFillEpCount(e.target.value)} 
-                      className="w-16 rounded-lg border border-white/10 bg-black/40 px-2 py-1 text-center text-sm text-white"
-                    />
-                  </div>
-                  <button 
-                    type="button" 
-                    onClick={autoFillEpisodes}
-                    disabled={autoFillLoading || !autoFillBaseUrl.trim()}
-                    className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-1.5 text-xs font-bold text-white transition-all hover:from-blue-500 hover:to-blue-600 disabled:opacity-50"
-                  >
-                    {autoFillLoading ? (
-                      <div className="h-3 w-3 animate-spin rounded-full border border-white/20 border-t-white" />
-                    ) : (
-                      <Sparkles className="h-3 w-3" />
-                    )}
-                    Fetch
-                  </button>
-                </div>
-                <p className="text-xs text-gray-400">Use placeholders: {'{season}'}, {'{episode}'}, {'{seasonNumber}'}, {'{episodeNumber}'} or {'{ep}'}</p>
-              </div>
               {seasonsDraft.map((season, seasonIndex) => (
                 <div key={`season-${seasonIndex}`} className="overflow-hidden rounded-xl border border-white/10 bg-black/30">
                   <div className="flex items-center gap-3 bg-white/5 p-4">
