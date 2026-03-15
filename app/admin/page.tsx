@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Pencil, Plus, Search, Trash2, X, Film, Tv, BarChart3, Clock, Star, Globe, Tag, Lock, ChevronRight, LayoutGrid, List, Grid3X3, Calendar, Sparkles, Database, AlertCircle } from "lucide-react";
 import { Content, ContentType, Season, SubtitleTrack } from "@/types/content";
 
@@ -74,6 +75,8 @@ const ADMIN_STORAGE_KEY = "watchmirror_admin_key";
 const ADMIN_SESSION_DURATION = 60 * 60 * 1000; // 1 hour
 
 export default function AdminPage() {
+  const searchParams = useSearchParams();
+  const urlMode = searchParams.get("mode");
   const [mode, setMode] = useState<ContentType>("movie");
   const [adminKey, setAdminKey] = useState("");
   const [authorized, setAuthorized] = useState(false);
@@ -90,6 +93,16 @@ export default function AdminPage() {
   const [contentPage, setContentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<"browse" | "add" | "import">("browse");
   const itemsPerPage = 20;
+
+  useEffect(() => {
+    if (urlMode === "series") {
+      setMode("series");
+      setActiveTab("add");
+    } else if (urlMode === "movie") {
+      setMode("movie");
+      setActiveTab("add");
+    }
+  }, [urlMode]);
 
   useEffect(() => {
     const stored = localStorage.getItem(ADMIN_STORAGE_KEY);
