@@ -15,7 +15,7 @@ interface VideoPlayerProps {
 
 type PlayerType = "native" | "vidstack" | "mux";
 
-function AudioTrackSelector({ playerRef }: { playerRef: React.RefObject<any> }) {
+function AudioTrackSelector() {
   const audioOptions = useAudioOptions();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -139,7 +139,6 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
       <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
         {/* Controls Bar */}
         <div className="absolute top-2 right-2 z-20 flex gap-2">
-          {playerType === "vidstack" && <AudioTrackSelector playerRef={vidstackRef} />}
           <div ref={dropdownRef} className="relative">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
@@ -206,6 +205,9 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
             <MediaProvider>
               <Poster className="vds-poster" />
             </MediaProvider>
+            <div className="absolute top-2 right-2 z-20">
+              <AudioTrackSelector />
+            </div>
             <DefaultVideoLayout thumbnails={poster} icons={defaultLayoutIcons} />
           </MediaPlayer>
         )}
