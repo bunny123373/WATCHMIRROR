@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { Search, X } from "lucide-react";
+import { Search, X, ArrowRight } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setMobileSearchOpen, setSearchTerm } from "@/store/slices/uiSlice";
 import { Content } from "@/types/content";
@@ -126,6 +126,22 @@ export default function MobileSearchOverlay() {
                       ))}
                     </div>
                   </div>
+                  <Link
+                    href="/search"
+                    onClick={() => dispatch(setMobileSearchOpen(false))}
+                    className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600">
+                        <Search size={18} className="text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">Advanced Search</p>
+                        <p className="text-xs text-gray-400">Filter by genre, year, language</p>
+                      </div>
+                    </div>
+                    <ArrowRight size={18} className="text-gray-400" />
+                  </Link>
                   {!!recent.length && (
                     <div>
                       <p className="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">Recent</p>

@@ -12,6 +12,7 @@ const links = [
   { href: "/movies", label: "Movies" },
   { href: "/series", label: "Series" },
   { href: "/trending", label: "Trending" },
+  { href: "/search", label: "Search" },
   { href: "/my-list", label: "My List" }
 ];
 

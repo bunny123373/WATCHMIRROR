@@ -44,6 +44,8 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ slu
         backupHlsLink={content.backupHlsLink}
         backupEmbedIframeLink={content.backupEmbedIframeLink}
         subtitleTracks={content.subtitleTracks}
+        introEnd={content.introEnd}
+        outroStart={content.outroStart}
       />
 
       <div className="px-4 py-4">

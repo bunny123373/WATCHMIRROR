@@ -44,6 +44,8 @@ export default function SeriesWatchClient({ content }: { content: Content }) {
         subtitleTracks={episode?.subtitleTracks}
         seasonNumber={seasonNumber}
         episodeNumber={episode?.episodeNumber}
+        introEnd={episode?.introEnd}
+        outroStart={episode?.outroStart}
       />
 
       <div className="grid gap-4 md:grid-cols-[220px,1fr]">

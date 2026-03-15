@@ -11,6 +11,9 @@ import "@vidstack/react/player/styles/default/layouts/video.css";
 interface VideoPlayerProps {
   src: string;
   poster?: string;
+  introStart?: number;
+  introEnd?: number;
+  outroStart?: number;
 }
 
 type PlayerType = "native" | "vidstack" | "mux" | "webcomponent";
@@ -161,12 +164,17 @@ function NativeAudioSelector({ videoRef }: { videoRef: React.RefObject<HTMLVideo
   );
 }
 
-export function VideoPlayer({ src, poster }: VideoPlayerProps) {
+export function VideoPlayer({ src, poster, introStart, introEnd, outroStart }: VideoPlayerProps) {
   const [playerType, setPlayerType] = useState<PlayerType>("native");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [subtitleSize, setSubtitleSize] = useState(100);
+  const [subtitleColor, setSubtitleColor] = useState("#ffffff");
+  const [subtitleBg, setSubtitleBg] = useState("rgba(0,0,0,0.7)");
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
   const vidstackRef = useRef<any>(null);
 
   const isHLS = src?.includes('.m3u8') || src?.includes('mux.com') || src?.includes('stream.mux');
@@ -223,10 +231,31 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+        setShowSettings(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const skipTo = (time: number) => {
+    if (playerType === "native" && videoRef.current) {
+      videoRef.current.currentTime = Math.max(0, Math.min(time, videoRef.current.duration || 0));
+    }
+  };
+
+  const skipIntro = () => {
+    if (introEnd && videoRef.current) {
+      videoRef.current.currentTime = introEnd;
+    }
+  };
+
+  const skipOutro = () => {
+    if (outroStart && videoRef.current) {
+      videoRef.current.currentTime = outroStart;
+    }
+  };
 
   const playerOptions = [
     { type: "native" as PlayerType, label: "Native", available: true },
@@ -240,6 +269,88 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
       <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
         {/* Controls Bar */}
         <div className="absolute top-2 right-2 z-20 flex gap-2">
+          {(introEnd || outroStart) && playerType === "native" && (
+            <div className="flex gap-1">
+              {introEnd && (
+                <button
+                  onClick={skipIntro}
+                  className="flex items-center gap-1 rounded bg-white/10 px-2 py-1.5 text-xs text-white hover:bg-white/20"
+                  title="Skip Intro"
+                >
+                  Skip Intro
+                </button>
+              )}
+              {outroStart && (
+                <button
+                  onClick={skipOutro}
+                  className="flex items-center gap-1 rounded bg-white/10 px-2 py-1.5 text-xs text-white hover:bg-white/20"
+                  title="Skip Outro"
+                >
+                  Skip Outro
+                </button>
+              )}
+            </div>
+          )}
+          {playerType === "native" && (
+            <div ref={settingsRef} className="relative">
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="flex items-center gap-1 rounded bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20"
+              >
+                <span>CC</span>
+                <svg className={`h-3 w-3 transition ${showSettings ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {showSettings && (
+                <div className="absolute right-0 top-full mt-1 w-48 rounded bg-[#1a1a1a] border border-white/10 p-3 shadow-lg">
+                  <p className="mb-2 text-xs font-medium text-gray-400">Subtitle Settings</p>
+                  <div className="mb-3">
+                    <label className="mb-1 block text-xs text-gray-500">Size: {subtitleSize}%</label>
+                    <input
+                      type="range"
+                      min="50"
+                      max="200"
+                      value={subtitleSize}
+                      onChange={(e) => setSubtitleSize(Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="mb-1 block text-xs text-gray-500">Color</label>
+                    <div className="flex gap-2">
+                      {["#ffffff", "#ffff00", "#00ff00", "#00ffff", "#ff0000", "#ff00ff"].map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => setSubtitleColor(color)}
+                          className={`h-6 w-6 rounded ${subtitleColor === color ? 'ring-2 ring-red-500' : ''}`}
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500">Background</label>
+                    <div className="flex gap-2">
+                      {[
+                        { label: "None", value: "transparent" },
+                        { label: "Dark", value: "rgba(0,0,0,0.7)" },
+                        { label: "Light", value: "rgba(255,255,255,0.7)" }
+                      ].map((bg) => (
+                        <button
+                          key={bg.value}
+                          onClick={() => setSubtitleBg(bg.value)}
+                          className={`rounded px-2 py-1 text-xs ${subtitleBg === bg.value ? 'bg-red-600 text-white' : 'bg-white/10 text-gray-300'}`}
+                        >
+                          {bg.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <div ref={dropdownRef} className="relative">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
@@ -271,6 +382,13 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
         {/* Native Player */}
         {playerType === "native" && (
           <>
+            <style>{`
+              ::cue {
+                color: ${subtitleColor};
+                background-color: ${subtitleBg};
+                font-size: ${subtitleSize}%;
+              }
+            `}</style>
             <video
               ref={videoRef}
               poster={poster}

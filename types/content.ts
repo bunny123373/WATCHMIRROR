@@ -16,6 +16,9 @@ export interface Episode {
   subtitleTracks?: SubtitleTrack[];
   releaseAt?: string;
   quality?: string;
+  introStart?: number;
+  introEnd?: number;
+  outroStart?: number;
 }
 
 export interface Season {
@@ -53,6 +56,9 @@ export interface Content {
   seasons?: Season[];
   createdAt?: string;
   updatedAt?: string;
+  introStart?: number;
+  introEnd?: number;
+  outroStart?: number;
 }
 
 export interface SubtitleTrack {

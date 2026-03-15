@@ -25,6 +25,9 @@ interface StreamingPlayerProps {
   subtitleTracks?: SubtitleTrack[];
   seasonNumber?: number;
   episodeNumber?: number;
+  introStart?: number;
+  introEnd?: number;
+  outroStart?: number;
 }
 
 export default function StreamingPlayer(props: StreamingPlayerProps) {
@@ -49,7 +52,12 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
   return (
     <div>
       {activeSource.type === "hls" ? (
-        <VideoPlayer src={activeSource.url} poster={props.poster} />
+        <VideoPlayer 
+          src={activeSource.url} 
+          poster={props.poster}
+          introEnd={props.introEnd}
+          outroStart={props.outroStart}
+        />
       ) : (
         <IframePlayer src={activeSource.url} />
       )}
