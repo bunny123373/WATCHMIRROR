@@ -15,7 +15,7 @@ interface VideoPlayerProps {
 
 type PlayerType = "native" | "vidstack" | "mux" | "webcomponent";
 
-function AudioTrackSelector() {
+function AudioTrackSelectorVidstack() {
   const audioOptions = useAudioOptions();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -60,6 +60,99 @@ function AudioTrackSelector() {
               }`}
             >
               {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NativeAudioSelector({ videoRef }: { videoRef: React.RefObject<HTMLVideoElement | null> }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [audioTracks, setAudioTracks] = useState<{ id: number; label: string; enabled: boolean }[]>([]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateTracks = () => {
+      if (!videoRef.current) return;
+      const video = videoRef.current as HTMLVideoElement & { audioTracks?: any };
+      const tracks = video.audioTracks;
+      if (tracks && tracks.length > 0) {
+        const trackList = Array.from(tracks).map((track: any, index: number) => ({
+          id: index,
+          label: track.label || track.language || `Audio ${index + 1}`,
+          enabled: track.enabled
+        }));
+        setAudioTracks(trackList);
+      }
+    };
+
+    const timeout = setTimeout(updateTracks, 1500);
+    const video = videoRef.current;
+    if (video) {
+      video.addEventListener('loadedmetadata', updateTracks);
+    }
+    return () => {
+      clearTimeout(timeout);
+      if (video) {
+        video.removeEventListener('loadedmetadata', updateTracks);
+      }
+    };
+  }, [videoRef]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const enabledTrack = audioTracks.find(t => t.enabled);
+  const currentLabel = enabledTrack?.label || "Audio";
+
+  if (audioTracks.length <= 1) return null;
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1 rounded bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20"
+      >
+        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        </svg>
+        <span>{currentLabel}</span>
+        <svg className={`h-3 w-3 transition ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="absolute bottom-full right-0 mb-1 w-36 rounded bg-[#1a1a1a] border border-white/10 py-1 shadow-lg">
+          {audioTracks.map((track) => (
+            <button
+              key={track.id}
+              onClick={() => {
+                if (videoRef.current) {
+                  const video = videoRef.current as HTMLVideoElement & { audioTracks?: any };
+                  const tracks = video.audioTracks;
+                  if (tracks) {
+                    for (let i = 0; i < tracks.length; i++) {
+                      tracks[i].enabled = i === track.id;
+                    }
+                  }
+                }
+                setAudioTracks(audioTracks.map(t => ({ ...t, enabled: t.id === track.id })));
+                setIsOpen(false);
+              }}
+              className={`w-full px-3 py-2 text-left text-xs hover:bg-white/10 ${
+                track.enabled ? 'text-red-500' : 'text-white'
+              }`}
+            >
+              {track.label}
             </button>
           ))}
         </div>
@@ -151,7 +244,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
               </svg>
             </button>
             {showDropdown && (
-              <div className="absolute right-0 top-full mt-1 w-28 rounded bg-[#1a1a1a] border border-white/10 py-1 shadow-lg">
+              <div className="absolute right-0 top-full mt-1 w-32 rounded bg-[#1a1a1a] border border-white/10 py-1 shadow-lg">
                 {playerOptions.map((opt) => (
                   <button
                     key={opt.type}
@@ -168,15 +261,20 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
           </div>
         </div>
 
-        {/* Native Player with HLS */}
+        {/* Native Player */}
         {playerType === "native" && (
-          <video
-            ref={videoRef}
-            poster={poster}
-            controls
-            playsInline
-            className="h-full w-full"
-          />
+          <>
+            <video
+              ref={videoRef}
+              poster={poster}
+              controls
+              playsInline
+              className="h-full w-full"
+            />
+            <div className="absolute top-2 left-2 z-20">
+              <NativeAudioSelector videoRef={videoRef} />
+            </div>
+          </>
         )}
 
         {/* Mux Player */}
@@ -207,13 +305,13 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
               <Poster className="vds-poster" />
             </MediaProvider>
             <div className="absolute top-2 right-2 z-20">
-              <AudioTrackSelector />
+              <AudioTrackSelectorVidstack />
             </div>
             <DefaultVideoLayout thumbnails={poster} icons={defaultLayoutIcons} />
           </MediaPlayer>
         )}
 
-        {/* Web Component Player (Vidstack via iframe) */}
+        {/* Web Component Player */}
         {playerType === "webcomponent" && isHLS && (
           <iframe
             src={`/api/vidstack-iframe?src=${encodeURIComponent(src)}&poster=${encodeURIComponent(poster || '')}`}
