@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, Star, Home, AlertCircle } from "lucide-react";
+import { Play, Star, Home, AlertCircle, ChevronDown, Calendar } from "lucide-react";
 import ContentRow from "@/components/common/ContentRow";
+import SeasonEpisodeSelector from "@/components/series/SeasonEpisodeSelector";
 import { getContentBySlug, getSimilarContent } from "@/lib/content";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -125,83 +126,11 @@ export default async function SeriesDetailsPage({ params }: { params: Promise<{ 
 
         {seasonsCount > 0 && (
           <div className="mt-8">
-            <h3 className="mb-4 text-lg font-semibold text-white">Seasons & Episodes</h3>
-            
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {(content.seasons || []).slice(0, 6).map((season) => (
-                <div key={season.seasonNumber} className="group overflow-hidden rounded-xl bg-[#1a1a1a] border border-white/5 hover:border-white/20 transition">
-                  <Link href={`/series/watch/${content.slug}?season=${season.seasonNumber}`} className="block">
-                    <div className="relative aspect-video">
-                      {season.episodes[0]?.hlsLink || season.episodes[0]?.embedIframeLink ? (
-                        <Image 
-                          src={content.poster} 
-                          alt={`Season ${season.seasonNumber}`}
-                          fill
-                          className="object-cover opacity-60 group-hover:opacity-80 transition"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-[#2a2a2a]">
-                          <Play size={32} className="text-gray-500" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                      <div className="absolute bottom-3 left-3">
-                        <span className="rounded bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
-                          Season {season.seasonNumber}
-                        </span>
-                      </div>
-                      <div className="absolute bottom-3 right-3">
-                        <span className="rounded bg-black/70 px-2 py-0.5 text-xs text-white">
-                          {season.episodes.length} Episodes
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-3">
-                      <p className="text-sm font-medium text-white truncate">Season {season.seasonNumber}</p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {season.episodes.length} episodes available
-                      </p>
-                    </div>
-                  </Link>
-                  
-                  <div className="px-3 pb-3">
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
-                      {season.episodes.slice(0, 4).map((ep) => (
-                        <Link 
-                          key={ep.episodeNumber}
-                          href={`/series/watch/${content.slug}?season=${season.seasonNumber}&episode=${ep.episodeNumber}`}
-                          className="flex items-center gap-2 rounded p-1.5 hover:bg-white/10 transition"
-                        >
-                          <span className="flex h-6 w-6 items-center justify-center rounded bg-white/10 text-xs text-gray-300">
-                            {ep.episodeNumber}
-                          </span>
-                          <span className="text-xs text-gray-300 truncate flex-1">{ep.episodeTitle || `Episode ${ep.episodeNumber}`}</span>
-                        </Link>
-                      ))}
-                      {season.episodes.length > 4 && (
-                        <Link 
-                          href={`/series/watch/${content.slug}?season=${season.seasonNumber}`}
-                          className="flex items-center justify-center p-1 text-xs text-red-500 hover:underline"
-                        >
-                          +{season.episodes.length - 4} more episodes
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {seasonsCount > 6 && (
-              <div className="mt-4 text-center">
-                <Link 
-                  href={`/series/watch/${content.slug}`}
-                  className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-sm text-white hover:bg-white/10"
-                >
-                  View All {seasonsCount} Seasons
-                </Link>
-              </div>
-            )}
+            <h3 className="mb-4 text-lg font-semibold text-white">Seasons</h3>
+            <SeasonEpisodeSelector 
+              seasons={content.seasons || []} 
+              seriesSlug={content.slug} 
+            />
           </div>
         )}
       </section>
