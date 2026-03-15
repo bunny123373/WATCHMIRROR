@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
-import ContentRow from "@/components/common/ContentRow";
-import { getHomeRows } from "@/lib/content";
+import { Suspense } from "react";
+import TrendingContent from "./TrendingContent";
 
 export const revalidate = 180;
 
 export const metadata: Metadata = {
-  title: "Trending"
+  title: "Trending - WATCHMIRROR"
 };
 
-export default async function TrendingPage() {
-  const data = await getHomeRows();
-
+export default function TrendingPage({
+  searchParams
+}: {
+  searchParams: Promise<{ time?: string; type?: string }>;
+}) {
   return (
-    <div className="space-y-8">
-      <h1 className="font-[var(--font-heading)] text-3xl">Trending Now</h1>
-      <ContentRow title="Top Trending" items={data.trending} />
+    <div className="min-h-screen bg-black pt-20">
+      <Suspense fallback={<div className="p-4 text-white">Loading...</div>}>
+        <TrendingContent searchParams={searchParams} />
+      </Suspense>
     </div>
   );
 }
