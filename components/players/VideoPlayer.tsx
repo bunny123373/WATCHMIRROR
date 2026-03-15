@@ -13,7 +13,7 @@ interface VideoPlayerProps {
   poster?: string;
 }
 
-type PlayerType = "native" | "vidstack" | "mux";
+type PlayerType = "native" | "vidstack" | "mux" | "webcomponent";
 
 function AudioTrackSelector() {
   const audioOptions = useAudioOptions();
@@ -132,6 +132,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
     { type: "native" as PlayerType, label: "Native", available: true },
     { type: "mux" as PlayerType, label: "Mux", available: isMux },
     { type: "vidstack" as PlayerType, label: "Vidstack", available: true },
+    { type: "webcomponent" as PlayerType, label: "WebComponent", available: isHLS },
   ].filter(opt => opt.available);
 
   return (
@@ -210,6 +211,16 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
             </div>
             <DefaultVideoLayout thumbnails={poster} icons={defaultLayoutIcons} />
           </MediaPlayer>
+        )}
+
+        {/* Web Component Player (Vidstack via iframe) */}
+        {playerType === "webcomponent" && isHLS && (
+          <iframe
+            src={`/api/vidstack-iframe?src=${encodeURIComponent(src)}&poster=${encodeURIComponent(poster || '')}`}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            className="h-full w-full border-0"
+          />
         )}
       </div>
     </div>
