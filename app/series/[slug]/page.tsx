@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, Star } from "lucide-react";
+import { Play, Star, Home, AlertCircle } from "lucide-react";
 import ContentRow from "@/components/common/ContentRow";
 import { getContentBySlug, getSimilarContent } from "@/lib/content";
 
@@ -35,7 +35,19 @@ export default async function SeriesDetailsPage({ params }: { params: Promise<{ 
   const content = await getContentBySlug(slug);
 
   if (!content || content.type !== "series") {
-    return <div className="p-4">Series not found.</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#141414] px-4">
+        <div className="text-center">
+          <AlertCircle className="mx-auto h-16 w-16 text-red-500" />
+          <h2 className="mt-4 text-2xl font-bold text-white">Series Not Found</h2>
+          <p className="mt-2 text-gray-400">The series &quot;{slug}&quot; does not exist or has been removed.</p>
+          <Link href="/" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-3 font-bold text-white transition hover:bg-red-700">
+            <Home className="h-4 w-4" />
+            Back to Home
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const similar = await getSimilarContent(content);
