@@ -92,6 +92,8 @@ export default function AdminPage() {
   const [contentSearch, setContentSearch] = useState("");
   const [contentPage, setContentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<"browse" | "add" | "import">("browse");
+  const [autoFillLoading, setAutoFillLoading] = useState(false);
+  const [externalSourceId, setExternalSourceId] = useState("");
   const itemsPerPage = 20;
 
   useEffect(() => {
@@ -326,6 +328,44 @@ export default function AdminPage() {
         return { ...season, episodes };
       })
     );
+  };
+
+  const autoFillEpisodes = async () => {
+    if (!externalSourceId.trim()) {
+      setStatus("Please enter an external source ID");
+      return;
+    }
+    setAutoFillLoading(true);
+    setStatus("Fetching episode links...");
+    
+    try {
+      const res = await fetch("/api/admin/auto-fill-episodes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-key": adminKey
+        },
+        body: JSON.stringify({ externalId: externalSourceId.trim() })
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        setStatus(err.error || "Failed to fetch episodes");
+        return;
+      }
+      
+      const data = await res.json();
+      if (data.seasons && data.seasons.length > 0) {
+        setSeasonsDraft(data.seasons);
+        setStatus(`Successfully loaded ${data.seasons.reduce((acc: number, s: any) => acc + (s.episodes?.length || 0), 0)} episodes!`);
+      } else {
+        setStatus("No episodes found");
+      }
+    } catch (err) {
+      setStatus("Error fetching episodes");
+    } finally {
+      setAutoFillLoading(false);
+    }
   };
 
   const submitContent = async (event: FormEvent) => {
@@ -827,7 +867,7 @@ export default function AdminPage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-4 rounded-xl border border-white/10 bg-black/20 p-5">
+              <div className="space-y-4 rounded-xl border border-white/10 bg-black/20 p-5">
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
                   <Tv className="h-4 w-4 text-red-500" />
@@ -837,6 +877,35 @@ export default function AdminPage() {
                   <Plus className="h-3 w-3" />
                   Add Season
                 </button>
+              </div>
+              
+              <div className="flex flex-col gap-3 rounded-xl border border-purple-500/30 bg-purple-500/10 p-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-purple-400" />
+                  <span className="text-sm font-medium text-purple-300">Auto-fill Episodes from External Source</span>
+                </div>
+                <div className="flex gap-2">
+                  <input 
+                    value={externalSourceId} 
+                    onChange={(e) => setExternalSourceId(e.target.value)} 
+                    placeholder="Enter external source ID (e.g., TMDB ID or vidfast ID like 111110)"
+                    className="flex-1 rounded-lg border border-white/10 bg-black/40 px-4 py-2 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-purple-500"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={autoFillEpisodes}
+                    disabled={autoFillLoading}
+                    className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 px-4 py-2 text-xs font-bold text-white transition-all hover:from-purple-500 hover:to-purple-600 disabled:opacity-50"
+                  >
+                    {autoFillLoading ? (
+                      <div className="h-3 w-3 animate-spin rounded-full border border-white/20 border-t-white" />
+                    ) : (
+                      <Sparkles className="h-3 w-3" />
+                    )}
+                    Auto-fill
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400">Enter the external source ID to automatically fetch episode links. Example: vidfast.pro/tv/111110/1/1 - use 111110</p>
               </div>
               {seasonsDraft.map((season, seasonIndex) => (
                 <div key={`season-${seasonIndex}`} className="overflow-hidden rounded-xl border border-white/10 bg-black/30">
