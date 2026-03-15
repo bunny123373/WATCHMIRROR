@@ -171,6 +171,8 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
 
   const isHLS = src?.includes('.m3u8') || src?.includes('mux.com') || src?.includes('stream.mux');
   const isMux = src?.includes('mux.com') || src?.includes('stream.mux') || src?.includes('mux.net');
+  const isMKV = src?.toLowerCase().includes('.mkv');
+  const isMP4 = src?.toLowerCase().includes('.mp4');
 
   const getMuxPlaybackId = (url: string) => {
     const patterns = [
@@ -194,6 +196,11 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   useEffect(() => {
     if (playerType !== "native" || !videoRef.current) return;
 
+    if (isMKV) {
+      console.warn("MKV format may not work in native player. Try Vidstack or WebComponent player.");
+      return;
+    }
+
     if (isHLS && Hls.isSupported()) {
       if (hlsRef.current) hlsRef.current.destroy();
       const hls = new Hls({ enableWorker: true, lowLatencyMode: true, backBufferLength: 90 });
@@ -209,7 +216,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
     return () => {
       if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
     };
-  }, [src, isHLS, playerType]);
+  }, [src, isHLS, isMKV, playerType]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -225,7 +232,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
     { type: "native" as PlayerType, label: "Native", available: true },
     { type: "mux" as PlayerType, label: "Mux", available: isMux },
     { type: "vidstack" as PlayerType, label: "Vidstack", available: true },
-    { type: "webcomponent" as PlayerType, label: "WebComponent", available: isHLS },
+    { type: "webcomponent" as PlayerType, label: "WebComponent", available: isHLS || isMKV },
   ].filter(opt => opt.available);
 
   return (
