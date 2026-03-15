@@ -925,9 +925,9 @@ export default function AdminPage() {
             </button>
           </div>
 
-          {searchResults.length > 0 && (
+          {tmdbResults.length > 0 && (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {searchResults.map((item) => (
+              {tmdbResults.map((item) => (
                 <button key={`${item.mediaType}-${item.id}`} onClick={() => importTMDB(item.id, item.mediaType)} className="group flex gap-4 rounded-xl border border-white/10 bg-black/30 p-3 text-left transition-all hover:border-purple-500 hover:bg-purple-500/10 hover:shadow-lg hover:shadow-purple-500/20">
                   {item.poster ? (
                     <Image src={item.poster} alt={item.title} width={70} height={100} className="h-[100px] w-[70px] rounded-lg object-cover" />
@@ -939,7 +939,7 @@ export default function AdminPage() {
                   <div className="flex flex-1 flex-col justify-center">
                     <p className="line-clamp-2 font-semibold text-white transition-colors group-hover:text-purple-400">{item.title}</p>
                     <p className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-                      <span className="rounded bg-white/10 px-2 py-0.5 text-gray-300">{item.mediaType.toUpperCase()}</span>
+                      <span className="rounded bg-white/10 px-2 py-0.5 text-gray-300">{item.mediaType?.toUpperCase()}</span>
                       {item.year || "—"}
                     </p>
                   </div>
@@ -948,7 +948,7 @@ export default function AdminPage() {
             </div>
           )}
           
-          {!loading && tmdbQuery && searchResults.length === 0 && (
+          {!loading && tmdbQuery && tmdbResults.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Film className="h-16 w-16 text-gray-700" />
               <p className="mt-4 text-lg font-medium text-gray-400">No results found</p>
