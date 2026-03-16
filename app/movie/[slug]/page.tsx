@@ -84,6 +84,25 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
 
         <p className="mt-6 text-sm text-gray-300 md:text-base">{content.description}</p>
 
+        {content.audioLanguages && content.audioLanguages.length > 0 && (
+          <div className="mt-4">
+            <p className="text-sm font-medium text-white">Audio Languages</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {content.audioLanguages.map((lang: string) => {
+                const langNames: Record<string, string> = {
+                  EN: "English", TE: "Telugu", HI: "Hindi", TA: "Tamil", ML: "Malayalam",
+                  KN: "Kannada", KO: "Korean", JA: "Japanese", ES: "Spanish", TH: "Thai", ZH: "Chinese"
+                };
+                return (
+                  <span key={lang} className="rounded-full bg-red-600/20 px-3 py-1 text-xs text-red-400 border border-red-600/30">
+                    {langNames[lang] || lang}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {topTags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {topTags.map((tag) => (
