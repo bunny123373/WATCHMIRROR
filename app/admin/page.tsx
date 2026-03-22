@@ -1237,6 +1237,12 @@ export default function AdminPage() {
                           placeholder="MP4 Link (Direct)"
                           className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-red-500"
                         />
+                        <input
+                          value={source.embedLink || ""}
+                          onChange={(e) => updateVideoSource(source.language, { embedLink: e.target.value })}
+                          placeholder="Embed Link (iframe)"
+                          className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-red-500"
+                        />
                         <select
                           value={source.quality || "HD"}
                           onChange={(e) => updateVideoSource(source.language, { quality: e.target.value })}
@@ -1373,9 +1379,10 @@ export default function AdminPage() {
                                         <button type="button" onClick={() => removeEpisodeVideoSource(seasonIndex, episodeIndex, source.language)} className="rounded px-1.5 py-0.5 text-[10px] text-red-400 hover:bg-red-500/20">X</button>
                                       </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-1.5">
+                                    <div className="grid grid-cols-3 gap-1.5">
                                       <input value={source.hlsLink || ""} onChange={(e) => updateEpisodeVideoSource(seasonIndex, episodeIndex, source.language, { hlsLink: e.target.value })} placeholder="HLS (.m3u8)" className="rounded border border-white/10 bg-black/40 px-2 py-1 text-xs text-white placeholder:text-gray-600" />
                                       <input value={source.mp4Link || ""} onChange={(e) => updateEpisodeVideoSource(seasonIndex, episodeIndex, source.language, { mp4Link: e.target.value })} placeholder="MP4" className="rounded border border-white/10 bg-black/40 px-2 py-1 text-xs text-white placeholder:text-gray-600" />
+                                      <input value={source.embedLink || ""} onChange={(e) => updateEpisodeVideoSource(seasonIndex, episodeIndex, source.language, { embedLink: e.target.value })} placeholder="Embed" className="rounded border border-white/10 bg-black/40 px-2 py-1 text-xs text-white placeholder:text-gray-600" />
                                     </div>
                                   </div>
                                 ))}

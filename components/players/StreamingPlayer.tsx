@@ -104,6 +104,9 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
       if (currentLanguageSource.mp4Link?.trim()) {
         items.push({ type: "hls" as SourceType, url: currentLanguageSource.mp4Link, label: `${prefix} MP4`, language: currentLanguageSource.language });
       }
+      if (currentLanguageSource.embedLink?.trim()) {
+        items.push({ type: "iframe" as SourceType, url: currentLanguageSource.embedLink, label: `${prefix} Embed`, language: currentLanguageSource.language });
+      }
       return items;
     }
     

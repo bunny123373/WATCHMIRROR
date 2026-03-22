@@ -79,6 +79,7 @@ export interface VideoSource {
   languageLabel: string;
   hlsLink?: string;
   mp4Link?: string;
+  embedLink?: string;
   quality?: string;
   isPrimary?: boolean;
   subtitleTracks?: SubtitleTrack[];
