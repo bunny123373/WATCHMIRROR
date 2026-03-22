@@ -86,6 +86,8 @@ export async function getTMDBDetails(id: string, mediaType: "movie" | "tv"): Pro
     })),
     metaTitle: `${title} (${year})`,
     metaDescription: (details.overview || `${title} streaming on WATCHMIRROR.`).slice(0, 155),
+    tmdbId: String(id),
+    imdbId: details.imdb_id || undefined,
     seasons:
       type === "series"
         ? Array.from({ length: Number(details.number_of_seasons || 1) }).map((_, index) => ({
