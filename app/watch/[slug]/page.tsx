@@ -39,6 +39,8 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ slu
         slug={content.slug}
         title={content.title}
         poster={content.poster}
+        tmdbId={content.tmdbId}
+        imdbId={content.imdbId}
         hlsLink={content.hlsLink}
         embedIframeLink={content.embedIframeLink}
         backupHlsLink={content.backupHlsLink}

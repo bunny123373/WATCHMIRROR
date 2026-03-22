@@ -71,11 +71,14 @@ export default function SeriesWatchClient({ content }: { content: Content }) {
         slug={content.slug}
         title={`${content.title} - ${episode?.episodeTitle || "Episode " + episode?.episodeNumber}`}
         poster={content.poster}
+        tmdbId={episode?.tmdbId || content.tmdbId}
+        imdbId={episode?.imdbId || content.imdbId}
         hlsLink={episode?.hlsLink}
         embedIframeLink={episode?.embedIframeLink}
         backupHlsLink={episode?.backupHlsLink}
         backupEmbedIframeLink={episode?.backupEmbedIframeLink}
         subtitleTracks={episode?.subtitleTracks}
+        videoSources={episode?.videoSources}
         seasonNumber={seasonNumber}
         episodeNumber={episode?.episodeNumber}
         introEnd={episode?.introEnd}

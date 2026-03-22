@@ -679,11 +679,14 @@ export default function AdminPage() {
             episodes: (season.episodes || []).map((episode, episodeIndex) => ({
               episodeNumber: Number(episode.episodeNumber) || episodeIndex + 1,
               episodeTitle: (episode.episodeTitle || `Episode ${episodeIndex + 1}`).trim(),
+              tmdbId: episode.tmdbId,
+              imdbId: episode.imdbId,
               hlsLink: episode.hlsLink || "",
               embedIframeLink: episode.embedIframeLink || "",
               backupHlsLink: episode.backupHlsLink || "",
               backupEmbedIframeLink: episode.backupEmbedIframeLink || "",
               subtitleTracks: episode.subtitleTracks || [],
+              videoSources: episode.videoSources || [],
               releaseAt: episode.releaseAt || "",
               quality: episode.quality || "HD"
             }))
@@ -1151,6 +1154,16 @@ export default function AdminPage() {
                 <input value={payload.quality || ""} onChange={(e) => setPayload({ ...payload, quality: e.target.value })} placeholder="HD / 4K" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">TMDB ID</label>
+                <input value={payload.tmdbId || ""} onChange={(e) => setPayload({ ...payload, tmdbId: e.target.value })} placeholder="e.g., 12345" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">IMDB ID</label>
+                <input value={payload.imdbId || ""} onChange={(e) => setPayload({ ...payload, imdbId: e.target.value })} placeholder="e.g., tt1234567" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
+              </div>
+            </div>
           </div>
 
           {mode === "movie" ? (
@@ -1297,6 +1310,37 @@ export default function AdminPage() {
                             <input type="number" min={1} value={episode.episodeNumber} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeNumber", e.target.value)} placeholder="Ep #" className="w-16 rounded-lg border border-white/10 bg-black/40 px-2 py-1.5 text-sm text-white" />
                             <input value={episode.episodeTitle} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeTitle", e.target.value)} placeholder="Episode title" className="flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white" />
                             {episodeIndex > 0 && <button type="button" onClick={() => removeEpisode(seasonIndex, episodeIndex)} className="rounded-lg bg-red-500/20 px-2 py-1 text-xs text-red-400 hover:bg-red-500/30">Remove</button>}
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              value={(episode as any).tmdbId || ""}
+                              onChange={(e) => {
+                                const updated = [...seasonsDraft];
+                                updated[seasonIndex].episodes[episodeIndex] = {
+                                  ...updated[seasonIndex].episodes[episodeIndex],
+                                  tmdbId: e.target.value
+                                };
+                                setSeasonsDraft(updated);
+                              }}
+                              placeholder="TMDB ID"
+                              className="rounded-lg border border-white/10 bg-black/40 px-2 py-1 text-xs text-white placeholder:text-gray-600"
+                            />
+                            <input
+                              type="text"
+                              value={(episode as any).imdbId || ""}
+                              onChange={(e) => {
+                                const updated = [...seasonsDraft];
+                                updated[seasonIndex].episodes[episodeIndex] = {
+                                  ...updated[seasonIndex].episodes[episodeIndex],
+                                  imdbId: e.target.value
+                                };
+                                setSeasonsDraft(updated);
+                              }}
+                              placeholder="IMDB ID"
+                              className="rounded-lg border border-white/10 bg-black/40 px-2 py-1 text-xs text-white placeholder:text-gray-600"
+                            />
                           </div>
                           
                           <div className="border-t border-white/10 pt-3">
