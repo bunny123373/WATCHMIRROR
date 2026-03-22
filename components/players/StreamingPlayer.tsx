@@ -78,20 +78,20 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
       const items: StreamingSource[] = [];
       
       if (currentLanguageSource.hlsLink?.trim()) {
-        items.push({ type: "hls", url: currentLanguageSource.hlsLink, label: `${prefix} HLS`, language: currentLanguageSource.language });
+        items.push({ type: "hls" as SourceType, url: currentLanguageSource.hlsLink, label: `${prefix} HLS`, language: currentLanguageSource.language });
       }
       if (currentLanguageSource.mp4Link?.trim()) {
-        items.push({ type: "hls", url: currentLanguageSource.mp4Link, label: `${prefix} MP4`, language: currentLanguageSource.language });
+        items.push({ type: "hls" as SourceType, url: currentLanguageSource.mp4Link, label: `${prefix} MP4`, language: currentLanguageSource.language });
       }
       return items;
     }
     
-    return [
-      { type: "hls", url: props.hlsLink || "", label: "Primary HLS" },
-      { type: "hls", url: props.backupHlsLink || "", label: "Backup HLS" },
-      { type: "iframe", url: props.embedIframeLink || "", label: "Primary Embed" },
-      { type: "iframe", url: props.backupEmbedIframeLink || "", label: "Backup Embed" }
-    ].filter((item) => item.url.trim().length > 0);
+    return ([
+      { type: "hls" as SourceType, url: props.hlsLink || "", label: "Primary HLS" },
+      { type: "hls" as SourceType, url: props.backupHlsLink || "", label: "Backup HLS" },
+      { type: "iframe" as SourceType, url: props.embedIframeLink || "", label: "Primary Embed" },
+      { type: "iframe" as SourceType, url: props.backupEmbedIframeLink || "", label: "Backup Embed" }
+    ] as StreamingSource[]).filter((item) => item.url.trim().length > 0);
   }, [currentLanguageSource, props.hlsLink, props.backupHlsLink, props.embedIframeLink, props.backupEmbedIframeLink]);
 
   const activeSource = sources[activeSourceIndex];
