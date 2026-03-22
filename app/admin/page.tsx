@@ -1,10 +1,10 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState, useCallback, DragEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Pencil, Plus, Search, Trash2, X, Film, Tv, BarChart3, Clock, Star, Globe, Tag, Lock, ChevronRight, LayoutGrid, List, Grid3X3, Calendar, Sparkles, Database, AlertCircle } from "lucide-react";
+import { Pencil, Plus, Search, Trash2, X, Film, Tv, BarChart3, Clock, Star, Globe, Tag, Lock, ChevronRight, LayoutGrid, List, Grid3X3, Calendar, Sparkles, Database, AlertCircle, Upload, FileVideo, CheckCircle2, File, FolderOpen, Languages, ChevronDown, ChevronUp, XCircle } from "lucide-react";
 import { Content, ContentType, Season, SubtitleTrack } from "@/types/content";
 
 const emptyPayload: Partial<Content> = {
@@ -91,8 +91,14 @@ export default function AdminPage() {
   const [status, setStatus] = useState("");
   const [contentSearch, setContentSearch] = useState("");
   const [contentPage, setContentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<"browse" | "add" | "import">("browse");
+  const [activeTab, setActiveTab] = useState<"browse" | "add" | "import" | "upload">("browse");
   const itemsPerPage = 20;
+  
+  const [uploadLanguage, setUploadLanguage] = useState<string>("EN");
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadQueue, setUploadQueue] = useState<{ file: File; status: 'pending' | 'uploading' | 'done' | 'error'; progress: number; metadata: Partial<Content> }[]>([]);
+  const [dragOverLanguage, setDragOverLanguage] = useState<string | null>(null);
+  const [expandedLanguages, setExpandedLanguages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (urlMode === "series") {
@@ -328,6 +334,217 @@ export default function AdminPage() {
     );
   };
 
+  const LANGUAGES = [
+    { code: "EN", name: "English", flag: "🇺🇸" },
+    { code: "TE", name: "Telugu", flag: "🇮🇳" },
+    { code: "HI", name: "Hindi", flag: "🇮🇳" },
+    { code: "TA", name: "Tamil", flag: "🇮🇳" },
+    { code: "ML", name: "Malayalam", flag: "🇮🇳" },
+    { code: "KN", name: "Kannada", flag: "🇮🇳" },
+    { code: "KO", name: "Korean", flag: "🇰🇷" },
+    { code: "JA", name: "Japanese", flag: "🇯🇵" },
+    { code: "ES", name: "Spanish", flag: "🇪🇸" },
+    { code: "TH", name: "Thai", flag: "🇹🇭" },
+    { code: "ZH", name: "Chinese", flag: "🇨🇳" }
+  ];
+
+  const extractMetadataFromFilename = (filename: string): Partial<Content> => {
+    const name = filename.replace(/\.[^/.]+$/, "");
+    const parts = name.split(/[-_]/).map(p => p.trim());
+    
+    let title = name;
+    let year: number | undefined;
+    let quality = "HD";
+    
+    const yearMatch = name.match(/(19|20)\d{2}/);
+    if (yearMatch) {
+      year = parseInt(yearMatch[0]);
+    }
+    
+    if (name.toLowerCase().includes("4k") || name.toLowerCase().includes("2160p")) {
+      quality = "4K";
+    } else if (name.toLowerCase().includes("1080p")) {
+      quality = "FHD";
+    } else if (name.toLowerCase().includes("720p")) {
+      quality = "HD";
+    }
+    
+    if (parts.length > 1) {
+      const potentialTitle = parts.slice(0, -1).join(" ");
+      if (potentialTitle.length > 2) {
+        title = potentialTitle;
+      }
+    }
+    
+    return { title, year, quality };
+  };
+
+  const handleFileSelect = useCallback((files: FileList | null, language: string) => {
+    if (!files) return;
+    
+    const videoFiles = Array.from(files).filter(file => 
+      file.type.startsWith("video/") || 
+      [".mp4", ".mkv", ".avi", ".mov", ".webm", ".m3u8", ".ts"].some(ext => 
+        file.name.toLowerCase().endsWith(ext)
+      )
+    );
+    
+    if (videoFiles.length === 0) return;
+    
+    const newQueueItems = videoFiles.map(file => ({
+      file,
+      status: 'pending' as const,
+      progress: 0,
+      metadata: {
+        ...extractMetadataFromFilename(file.name),
+        language,
+        type: "movie" as const,
+        category: "Latest"
+      }
+    }));
+    
+    setUploadQueue(prev => [...prev, ...newQueueItems]);
+    
+    setExpandedLanguages(prev => ({ ...prev, [language]: true }));
+  }, []);
+
+  const handleDrop = useCallback((e: DragEvent<HTMLDivElement>, language: string) => {
+    e.preventDefault();
+    setDragOverLanguage(null);
+    handleFileSelect(e.dataTransfer.files, language);
+  }, [handleFileSelect]);
+
+  const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>, language: string) => {
+    e.preventDefault();
+    setDragOverLanguage(language);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverLanguage(null);
+  }, []);
+
+  const removeFromQueue = useCallback((index: number) => {
+    setUploadQueue(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const updateQueueMetadata = useCallback((index: number, updates: Partial<Content>) => {
+    setUploadQueue(prev => prev.map((item, i) => 
+      i === index ? { ...item, metadata: { ...item.metadata, ...updates } } : item
+    ));
+  }, []);
+
+  const toggleLanguageExpanded = useCallback((language: string) => {
+    setExpandedLanguages(prev => ({ ...prev, [language]: !prev[language] }));
+  }, []);
+
+  const uploadAllForLanguage = useCallback(async (language: string) => {
+    const itemsToUpload = uploadQueue.filter(item => 
+      item.metadata.language === language && item.status === 'pending'
+    );
+    
+    for (const item of itemsToUpload) {
+      const index = uploadQueue.findIndex(q => q.file === item.file);
+      if (index === -1) continue;
+      
+      setUploadQueue(prev => prev.map((q, i) => 
+        i === index ? { ...q, status: 'uploading' } : q
+      ));
+      
+      try {
+        const formData = new FormData();
+        formData.append("file", item.file);
+        formData.append("metadata", JSON.stringify({
+          ...item.metadata,
+          type: item.metadata.type || "movie"
+        }));
+        
+        const res = await fetch("/api/admin/upload", {
+          method: "POST",
+          headers: { "x-admin-key": adminKey },
+          body: formData
+        });
+        
+        if (res.ok) {
+          setUploadQueue(prev => prev.map((q, i) => 
+            i === index ? { ...q, status: 'done', progress: 100 } : q
+          ));
+        } else {
+          setUploadQueue(prev => prev.map((q, i) => 
+            i === index ? { ...q, status: 'error' } : q
+          ));
+        }
+      } catch {
+        setUploadQueue(prev => prev.map((q, i) => 
+          i === index ? { ...q, status: 'error' } : q
+        ));
+      }
+    }
+    
+    await loadContent();
+  }, [uploadQueue, adminKey, loadContent]);
+
+  const uploadAll = useCallback(async () => {
+    const pendingItems = uploadQueue.filter(item => item.status === 'pending');
+    
+    for (const item of pendingItems) {
+      const index = uploadQueue.findIndex(q => q.file === item.file);
+      if (index === -1) continue;
+      
+      setUploadQueue(prev => prev.map((q, i) => 
+        i === index ? { ...q, status: 'uploading' } : q
+      ));
+      
+      try {
+        const res = await fetch("/api/admin/upload", {
+          method: "POST",
+          headers: { "x-admin-key": adminKey },
+          body: JSON.stringify({
+            ...item.metadata,
+            filename: item.file.name,
+            type: item.metadata.type || "movie"
+          })
+        });
+        
+        if (res.ok) {
+          setUploadQueue(prev => prev.map((q, i) => 
+            i === index ? { ...q, status: 'done', progress: 100 } : q
+          ));
+        } else {
+          setUploadQueue(prev => prev.map((q, i) => 
+            i === index ? { ...q, status: 'error' } : q
+          ));
+        }
+      } catch {
+        setUploadQueue(prev => prev.map((q, i) => 
+          i === index ? { ...q, status: 'error' } : q
+        ));
+      }
+    }
+    
+    await loadContent();
+  }, [uploadQueue, adminKey, loadContent]);
+
+  const clearCompleted = useCallback(() => {
+    setUploadQueue(prev => prev.filter(item => item.status !== 'done'));
+  }, []);
+
+  const getQueueForLanguage = useCallback((language: string) => {
+    return uploadQueue.filter(item => item.metadata.language === language);
+  }, [uploadQueue]);
+
+  const getLanguageStats = useMemo(() => {
+    return LANGUAGES.map(lang => {
+      const items = getQueueForLanguage(lang.code);
+      return {
+        ...lang,
+        total: items.length,
+        pending: items.filter(i => i.status === 'pending').length,
+        done: items.filter(i => i.status === 'done').length,
+        error: items.filter(i => i.status === 'error').length
+      };
+    });
+  }, [getQueueForLanguage]);
+
   const submitContent = async (event: FormEvent) => {
     event.preventDefault();
     setStatus("Saving...");
@@ -505,7 +722,7 @@ export default function AdminPage() {
           <p className="mt-1 text-sm text-gray-500">Manage your content library</p>
         </div>
         <div className="flex gap-1 overflow-x-auto rounded-xl bg-white/5 p-1">
-          {(["browse", "add", "import"] as const).map((tab) => (
+          {(["browse", "add", "upload", "import"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -517,9 +734,11 @@ export default function AdminPage() {
             >
               {tab === "browse" && <LayoutGrid className="h-4 w-4" />}
               {tab === "add" && <Plus className="h-4 w-4" />}
+              {tab === "upload" && <Upload className="h-4 w-4" />}
               {tab === "import" && <Sparkles className="h-4 w-4" />}
               {tab === "browse" && "Browse"}
               {tab === "add" && (editingId ? "Edit" : "Add New")}
+              {tab === "upload" && "Upload"}
               {tab === "import" && "Import"}
             </button>
           ))}
@@ -965,6 +1184,289 @@ export default function AdminPage() {
               <p className="mt-1 text-sm text-gray-600">Enter a movie or series name to import details automatically</p>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === "upload" && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-blue-700">
+              <Upload className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white">Upload Videos by Language</h2>
+              <p className="text-sm text-gray-500">Drag and drop video files or click to browse</p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+                    <FolderOpen className="h-4 w-4 text-blue-500" />
+                    Global Upload
+                  </h3>
+                  <select 
+                    value={uploadLanguage} 
+                    onChange={(e) => setUploadLanguage(e.target.value)}
+                    className="rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white outline-none"
+                  >
+                    {LANGUAGES.map(lang => (
+                      <option key={lang.code} value={lang.code}>{lang.flag} {lang.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div
+                  onDrop={(e) => handleDrop(e, uploadLanguage)}
+                  onDragOver={(e) => handleDragOver(e, uploadLanguage)}
+                  onDragLeave={handleDragLeave}
+                  className={`relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition-all ${
+                    dragOverLanguage === uploadLanguage
+                      ? "border-blue-500 bg-blue-500/10"
+                      : "border-white/20 hover:border-white/30"
+                  }`}
+                >
+                  <input
+                    type="file"
+                    multiple
+                    accept="video/*,.m3u8,.ts"
+                    onChange={(e) => handleFileSelect(e.target.files, uploadLanguage)}
+                    className="absolute inset-0 z-10 cursor-pointer opacity-0"
+                  />
+                  <FileVideo className={`h-12 w-12 mb-3 ${dragOverLanguage === uploadLanguage ? "text-blue-400" : "text-gray-500"}`} />
+                  <p className="text-center text-sm text-gray-400">
+                    <span className="font-medium text-blue-400">Click to browse</span> or drag and drop
+                  </p>
+                  <p className="mt-1 text-xs text-gray-600">MP4, MKV, AVI, MOV, WebM, M3U8</p>
+                </div>
+                {uploadQueue.length > 0 && (
+                  <button
+                    onClick={uploadAll}
+                    className="mt-4 w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 text-sm font-bold text-white transition-all hover:from-blue-500 hover:to-blue-600"
+                  >
+                    Upload All ({uploadQueue.filter(i => i.status === 'pending').length} pending)
+                  </button>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+                <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
+                  <Languages className="h-4 w-4 text-blue-500" />
+                  Language Stats
+                </h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {getLanguageStats.filter(l => l.total > 0).map(lang => (
+                    <div key={lang.code} className="rounded-lg bg-black/40 p-3 text-center">
+                      <p className="text-lg font-bold text-white">{lang.total}</p>
+                      <p className="text-xs text-gray-500">{lang.name}</p>
+                      {lang.done > 0 && <p className="text-xs text-green-400">{lang.done} done</p>}
+                      {lang.error > 0 && <p className="text-xs text-red-400">{lang.error} error</p>}
+                    </div>
+                  ))}
+                </div>
+                {uploadQueue.filter(i => i.status === 'done').length > 0 && (
+                  <button
+                    onClick={clearCompleted}
+                    className="mt-4 w-full rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-400 transition-all hover:border-white/20 hover:text-white"
+                  >
+                    Clear Completed
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+                <File className="h-4 w-4 text-blue-500" />
+                Upload Queue ({uploadQueue.length})
+              </h3>
+              
+              {uploadQueue.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-xl border border-white/10 bg-black/20 py-16 text-center">
+                  <FileVideo className="h-16 w-16 text-gray-700" />
+                  <p className="mt-4 text-gray-500">No files in queue</p>
+                  <p className="text-sm text-gray-600">Upload videos to see them here</p>
+                </div>
+              ) : (
+                <div className="max-h-[600px] space-y-2 overflow-y-auto">
+                  {uploadQueue.map((item, index) => (
+                    <div key={`${item.file.name}-${index}`} className="rounded-xl border border-white/10 bg-black/40 p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${
+                          item.status === 'done' ? 'bg-green-500/20 text-green-400' :
+                          item.status === 'error' ? 'bg-red-500/20 text-red-400' :
+                          item.status === 'uploading' ? 'bg-blue-500/20 text-blue-400' :
+                          'bg-white/10 text-gray-400'
+                        }`}>
+                          {item.status === 'done' ? <CheckCircle2 className="h-4 w-4" /> :
+                           item.status === 'error' ? <XCircle className="h-4 w-4" /> :
+                           item.status === 'uploading' ? <FileVideo className="h-4 w-4 animate-pulse" /> :
+                           <FileVideo className="h-4 w-4" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-sm font-medium text-white">{item.file.name}</p>
+                          <p className="mt-0.5 text-xs text-gray-500">
+                            {(item.file.size / (1024 * 1024)).toFixed(2)} MB · {item.metadata.language}
+                          </p>
+                          
+                          <div className="mt-2 grid gap-2">
+                            <input
+                              type="text"
+                              value={item.metadata.title || ""}
+                              onChange={(e) => updateQueueMetadata(index, { title: e.target.value })}
+                              placeholder="Title"
+                              className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder:text-gray-500 outline-none focus:border-blue-500"
+                            />
+                            <div className="grid grid-cols-2 gap-2">
+                              <input
+                                type="number"
+                                value={item.metadata.year || ""}
+                                onChange={(e) => updateQueueMetadata(index, { year: Number(e.target.value) })}
+                                placeholder="Year"
+                                className="rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder:text-gray-500 outline-none focus:border-blue-500"
+                              />
+                              <select
+                                value={item.metadata.quality || "HD"}
+                                onChange={(e) => updateQueueMetadata(index, { quality: e.target.value })}
+                                className="rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white outline-none"
+                              >
+                                <option value="SD">SD</option>
+                                <option value="HD">HD</option>
+                                <option value="FHD">FHD</option>
+                                <option value="4K">4K</option>
+                              </select>
+                            </div>
+                            <input
+                              type="text"
+                              value={item.metadata.category || ""}
+                              onChange={(e) => updateQueueMetadata(index, { category: e.target.value })}
+                              placeholder="Category (e.g., Latest, Trending)"
+                              className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder:text-gray-500 outline-none focus:border-blue-500"
+                            />
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => removeFromQueue(index)}
+                          className="flex-shrink-0 rounded-lg p-1.5 text-gray-500 hover:bg-white/10 hover:text-red-400"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
+              <Languages className="h-4 w-4 text-blue-500" />
+              Language-wise Upload Sections
+            </h3>
+            <p className="mb-4 text-sm text-gray-500">Click on a language section to upload videos directly for that language</p>
+            
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {LANGUAGES.map(lang => {
+                const queueItems = getQueueForLanguage(lang.code);
+                const isExpanded = expandedLanguages[lang.code];
+                
+                return (
+                  <div key={lang.code} className="rounded-xl border border-white/10 bg-black/40 overflow-hidden">
+                    <div
+                      onClick={() => toggleLanguageExpanded(lang.code)}
+                      className="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{lang.flag}</span>
+                        <div>
+                          <p className="font-medium text-white">{lang.name}</p>
+                          <p className="text-xs text-gray-500">{queueItems.length} files in queue</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {queueItems.filter(i => i.status === 'pending').length > 0 && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); uploadAllForLanguage(lang.code); }}
+                            className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-500"
+                          >
+                            Upload All
+                          </button>
+                        )}
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-gray-400" />
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div
+                      onDrop={(e) => handleDrop(e, lang.code)}
+                      onDragOver={(e) => handleDragOver(e, lang.code)}
+                      onDragLeave={handleDragLeave}
+                      className={`border-t border-white/10 transition-all ${
+                        isExpanded ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
+                      }`}
+                    >
+                      <div className={`p-3 ${dragOverLanguage === lang.code ? 'bg-blue-500/10' : ''}`}>
+                        <input
+                          type="file"
+                          multiple
+                          accept="video/*,.m3u8,.ts"
+                          onChange={(e) => handleFileSelect(e.target.files, lang.code)}
+                          className="hidden"
+                          id={`upload-${lang.code}`}
+                        />
+                        <label
+                          htmlFor={`upload-${lang.code}`}
+                          className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 cursor-pointer transition-all ${
+                            dragOverLanguage === lang.code
+                              ? "border-blue-500 bg-blue-500/10"
+                              : "border-white/20 hover:border-white/30"
+                          }`}
+                        >
+                          <Upload className={`h-6 w-6 mb-2 ${dragOverLanguage === lang.code ? "text-blue-400" : "text-gray-500"}`} />
+                          <p className="text-xs text-gray-400">Drop files or click</p>
+                        </label>
+                        
+                        {queueItems.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            {queueItems.map((item, idx) => {
+                              const globalIndex = uploadQueue.findIndex(q => q.file === item.file);
+                              return (
+                                <div key={idx} className="flex items-center gap-2 rounded-lg bg-black/60 p-2">
+                                  <div className={`flex h-6 w-6 items-center justify-center rounded ${
+                                    item.status === 'done' ? 'bg-green-500/20 text-green-400' :
+                                    item.status === 'error' ? 'bg-red-500/20 text-red-400' :
+                                    item.status === 'uploading' ? 'bg-blue-500/20 text-blue-400' :
+                                    'bg-white/10 text-gray-400'
+                                  }`}>
+                                    {item.status === 'done' ? <CheckCircle2 className="h-3 w-3" /> :
+                                     item.status === 'error' ? <XCircle className="h-3 w-3" /> :
+                                     item.status === 'uploading' ? <FileVideo className="h-3 w-3 animate-pulse" /> :
+                                     <File className="h-3 w-3" />}
+                                  </div>
+                                  <span className="flex-1 truncate text-xs text-white">{item.file.name}</span>
+                                  <button
+                                    onClick={() => globalIndex >= 0 && removeFromQueue(globalIndex)}
+                                    className="text-gray-500 hover:text-red-400"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
     </div>
