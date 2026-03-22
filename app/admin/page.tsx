@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Pencil, Plus, Search, Trash2, X, Film, Tv, BarChart3, Clock, Star, Globe, Tag, Lock, ChevronRight, LayoutGrid, List, Grid3X3, Calendar, Sparkles, Database, AlertCircle, Upload, FileVideo, CheckCircle2, File, FolderOpen, Languages, ChevronDown, ChevronUp, XCircle } from "lucide-react";
-import { Content, ContentType, Season, SubtitleTrack } from "@/types/content";
+import { Content, ContentType, Season, SubtitleTrack, VideoSource } from "@/types/content";
 
 const emptyPayload: Partial<Content> = {
   type: "movie",
@@ -99,6 +99,8 @@ export default function AdminPage() {
   const [uploadQueue, setUploadQueue] = useState<{ file: File; status: 'pending' | 'uploading' | 'done' | 'error'; progress: number; metadata: Partial<Content> }[]>([]);
   const [dragOverLanguage, setDragOverLanguage] = useState<string | null>(null);
   const [expandedLanguages, setExpandedLanguages] = useState<Record<string, boolean>>({});
+  
+  const [videoSources, setVideoSources] = useState<VideoSource[]>([]);
 
   useEffect(() => {
     if (urlMode === "series") {
@@ -252,6 +254,7 @@ export default function AdminPage() {
     });
     setMovieSubtitlesInput(subtitleLines(item.subtitleTracks));
     setSeasonsDraft(item.seasons && item.seasons.length ? item.seasons : [createSeason(1)]);
+    setVideoSources(item.videoSources || []);
     setStatus(`Editing: ${item.title}`);
     setActiveTab("add");
   };
@@ -261,6 +264,7 @@ export default function AdminPage() {
     setPayload({ ...emptyPayload, type: mode });
     setSeasonsDraft([createSeason(1)]);
     setMovieSubtitlesInput("");
+    setVideoSources([]);
   };
 
   const addSeason = () => {
@@ -332,6 +336,43 @@ export default function AdminPage() {
         return { ...season, episodes };
       })
     );
+  };
+
+  const addVideoSource = (langCode: string) => {
+    const lang = LANGUAGES.find(l => l.code === langCode);
+    if (!lang) return;
+    if (videoSources.some(v => v.language === langCode)) return;
+    setVideoSources(prev => [...prev, {
+      language: langCode,
+      languageLabel: lang.name,
+      hlsLink: "",
+      mp4Link: "",
+      quality: "HD",
+      isPrimary: prev.length === 0
+    }]);
+  };
+
+  const removeVideoSource = (langCode: string) => {
+    setVideoSources(prev => {
+      const filtered = prev.filter(v => v.language !== langCode);
+      if (filtered.length > 0 && !filtered.some(v => v.isPrimary)) {
+        filtered[0].isPrimary = true;
+      }
+      return filtered;
+    });
+  };
+
+  const updateVideoSource = (langCode: string, updates: Partial<VideoSource>) => {
+    setVideoSources(prev => prev.map(v => 
+      v.language === langCode ? { ...v, ...updates } : v
+    ));
+  };
+
+  const setPrimaryVideoSource = (langCode: string) => {
+    setVideoSources(prev => prev.map(v => ({
+      ...v,
+      isPrimary: v.language === langCode
+    })));
   };
 
   const LANGUAGES = [
@@ -584,6 +625,7 @@ export default function AdminPage() {
         backupHlsLink: mode === "movie" ? payload.backupHlsLink : "",
         backupEmbedIframeLink: mode === "movie" ? payload.backupEmbedIframeLink : "",
         subtitleTracks: mode === "movie" ? parseSubtitleLines(movieSubtitlesInput) : [],
+        videoSources: mode === "movie" ? videoSources : [],
         publishAt: payload.publishAt || null,
         tags: Array.isArray(payload.tags)
           ? payload.tags
@@ -1031,19 +1073,97 @@ export default function AdminPage() {
 
           {mode === "movie" ? (
             <div className="space-y-4 rounded-xl border border-white/10 bg-black/20 p-5">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
-                <Film className="h-4 w-4 text-red-500" />
-                Movie Sources
-              </h3>
-              <div className="grid gap-4">
-                <input value={payload.hlsLink || ""} onChange={(e) => setPayload({ ...payload, hlsLink: e.target.value })} placeholder="HLS Link (.m3u8)" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
-                <input value={payload.embedIframeLink || ""} onChange={(e) => setPayload({ ...payload, embedIframeLink: e.target.value })} placeholder="Embed Iframe Link" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
-                <input value={payload.downloadLink || ""} onChange={(e) => setPayload({ ...payload, downloadLink: e.target.value })} placeholder="Download Link (Google Drive, OneDrive, etc.)" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Subtitles</label>
-                  <textarea value={movieSubtitlesInput} onChange={(e) => setMovieSubtitlesInput(e.target.value)} placeholder="lang|label|url|default (one per line)&#10;en|English|https://...|default&#10;te|Telugu|https://..." className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20 min-h-[100px]" />
-                </div>
+              <div className="flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <Languages className="h-4 w-4 text-red-500" />
+                  Language-wise Video Sources
+                </h3>
               </div>
+              
+              <div className="grid gap-3">
+                {LANGUAGES.filter(l => !videoSources.some(v => v.language === l.code)).length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {LANGUAGES.filter(l => !videoSources.some(v => v.language === l.code)).map(lang => (
+                      <button
+                        key={lang.code}
+                        type="button"
+                        onClick={() => addVideoSource(lang.code)}
+                        className="flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs text-gray-400 transition-all hover:border-red-500 hover:bg-red-500/10 hover:text-red-400"
+                      >
+                        <Plus className="h-3 w-3" />
+                        {lang.flag} {lang.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {videoSources.length > 0 && (
+                <div className="space-y-3">
+                  {videoSources.map((source) => (
+                    <div key={source.language} className={`rounded-xl border ${source.isPrimary ? 'border-red-500 bg-red-500/5' : 'border-white/10 bg-black/40'} p-4`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{LANGUAGES.find(l => l.code === source.language)?.flag}</span>
+                          <span className="font-medium text-white">{source.languageLabel}</span>
+                          {source.isPrimary && (
+                            <span className="rounded bg-red-500/20 px-2 py-0.5 text-xs text-red-400">Primary</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {!source.isPrimary && (
+                            <button
+                              type="button"
+                              onClick={() => setPrimaryVideoSource(source.language)}
+                              className="rounded px-2 py-1 text-xs text-gray-400 hover:bg-white/10 hover:text-white"
+                            >
+                              Set Primary
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeVideoSource(source.language)}
+                            className="rounded p-1 text-gray-500 hover:bg-red-500/20 hover:text-red-400"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <input
+                          value={source.hlsLink || ""}
+                          onChange={(e) => updateVideoSource(source.language, { hlsLink: e.target.value })}
+                          placeholder="HLS Link (.m3u8)"
+                          className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-red-500"
+                        />
+                        <input
+                          value={source.mp4Link || ""}
+                          onChange={(e) => updateVideoSource(source.language, { mp4Link: e.target.value })}
+                          placeholder="MP4 Link (Direct)"
+                          className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-red-500"
+                        />
+                        <select
+                          value={source.quality || "HD"}
+                          onChange={(e) => updateVideoSource(source.language, { quality: e.target.value })}
+                          className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none focus:border-red-500"
+                        >
+                          <option value="SD">SD</option>
+                          <option value="HD">HD</option>
+                          <option value="FHD">FHD (1080p)</option>
+                          <option value="4K">4K</option>
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-1.5 pt-4 border-t border-white/10">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Subtitles (Global)</label>
+                <textarea value={movieSubtitlesInput} onChange={(e) => setMovieSubtitlesInput(e.target.value)} placeholder="lang|label|url|default (one per line)&#10;en|English|https://...|default&#10;te|Telugu|https://..." className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20 min-h-[80px]" />
+              </div>
+              
+              <input value={payload.downloadLink || ""} onChange={(e) => setPayload({ ...payload, downloadLink: e.target.value })} placeholder="Download Link (Google Drive, OneDrive, etc.)" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
             </div>
           ) : (
               <div className="space-y-4 rounded-xl border border-white/10 bg-black/20 p-5">

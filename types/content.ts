@@ -51,6 +51,7 @@ export interface Content {
   backupHlsLink?: string;
   backupEmbedIframeLink?: string;
   subtitleTracks?: SubtitleTrack[];
+  videoSources?: VideoSource[];
   downloadLink?: string;
   publishAt?: string;
   seasons?: Season[];
@@ -66,6 +67,15 @@ export interface SubtitleTrack {
   lang: string;
   url: string;
   isDefault?: boolean;
+}
+
+export interface VideoSource {
+  language: string;
+  languageLabel: string;
+  hlsLink?: string;
+  mp4Link?: string;
+  quality?: string;
+  isPrimary?: boolean;
 }
 
 export interface ContinueWatchingItem {

@@ -19,6 +19,18 @@ const subtitleTrackSchema = new Schema(
   { _id: false }
 );
 
+const videoSourceSchema = new Schema(
+  {
+    language: { type: String, required: true },
+    languageLabel: { type: String, required: true },
+    hlsLink: { type: String, default: "" },
+    mp4Link: { type: String, default: "" },
+    quality: { type: String, default: "HD" },
+    isPrimary: { type: Boolean, default: false }
+  },
+  { _id: false }
+);
+
 const episodeSchema = new Schema(
   {
     episodeNumber: { type: Number, required: true },
@@ -67,6 +79,7 @@ const contentSchema = new Schema(
     backupHlsLink: { type: String, default: "" },
     backupEmbedIframeLink: { type: String, default: "" },
     subtitleTracks: { type: [subtitleTrackSchema], default: [] },
+    videoSources: { type: [videoSourceSchema], default: [] },
     downloadLink: { type: String, default: "" },
     publishAt: { type: Date, default: null },
     seasons: { type: [seasonSchema], default: [] }

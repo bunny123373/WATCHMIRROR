@@ -44,6 +44,7 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ slu
         backupHlsLink={content.backupHlsLink}
         backupEmbedIframeLink={content.backupEmbedIframeLink}
         subtitleTracks={content.subtitleTracks}
+        videoSources={content.videoSources}
         introEnd={content.introEnd}
         outroStart={content.outroStart}
       />
