@@ -26,7 +26,8 @@ const videoSourceSchema = new Schema(
     hlsLink: { type: String, default: "" },
     mp4Link: { type: String, default: "" },
     quality: { type: String, default: "HD" },
-    isPrimary: { type: Boolean, default: false }
+    isPrimary: { type: Boolean, default: false },
+    subtitleTracks: { type: [subtitleTrackSchema], default: [] }
   },
   { _id: false }
 );
@@ -41,7 +42,8 @@ const episodeSchema = new Schema(
     backupEmbedIframeLink: { type: String, default: "" },
     subtitleTracks: { type: [subtitleTrackSchema], default: [] },
     releaseAt: { type: Date, default: null },
-    quality: { type: String, default: "" }
+    quality: { type: String, default: "" },
+    videoSources: { type: [videoSourceSchema], default: [] }
   },
   { _id: false }
 );

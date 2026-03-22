@@ -19,6 +19,7 @@ export interface Episode {
   introStart?: number;
   introEnd?: number;
   outroStart?: number;
+  videoSources?: VideoSource[];
 }
 
 export interface Season {
@@ -76,6 +77,7 @@ export interface VideoSource {
   mp4Link?: string;
   quality?: string;
   isPrimary?: boolean;
+  subtitleTracks?: SubtitleTrack[];
 }
 
 export interface ContinueWatchingItem {

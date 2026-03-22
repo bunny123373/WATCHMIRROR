@@ -13,6 +13,7 @@ interface StreamingSource {
   url: string;
   label: string;
   language?: string;
+  subtitleTracks?: SubtitleTrack[];
 }
 
 interface StreamingPlayerProps {
@@ -78,21 +79,21 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
       const items: StreamingSource[] = [];
       
       if (currentLanguageSource.hlsLink?.trim()) {
-        items.push({ type: "hls" as SourceType, url: currentLanguageSource.hlsLink, label: `${prefix} HLS`, language: currentLanguageSource.language });
+        items.push({ type: "hls" as SourceType, url: currentLanguageSource.hlsLink, label: `${prefix} HLS`, language: currentLanguageSource.language, subtitleTracks: currentLanguageSource.subtitleTracks });
       }
       if (currentLanguageSource.mp4Link?.trim()) {
-        items.push({ type: "hls" as SourceType, url: currentLanguageSource.mp4Link, label: `${prefix} MP4`, language: currentLanguageSource.language });
+        items.push({ type: "hls" as SourceType, url: currentLanguageSource.mp4Link, label: `${prefix} MP4`, language: currentLanguageSource.language, subtitleTracks: currentLanguageSource.subtitleTracks });
       }
       return items;
     }
     
     return ([
-      { type: "hls" as SourceType, url: props.hlsLink || "", label: "Primary HLS" },
-      { type: "hls" as SourceType, url: props.backupHlsLink || "", label: "Backup HLS" },
+      { type: "hls" as SourceType, url: props.hlsLink || "", label: "Primary HLS", subtitleTracks: props.subtitleTracks },
+      { type: "hls" as SourceType, url: props.backupHlsLink || "", label: "Backup HLS", subtitleTracks: props.subtitleTracks },
       { type: "iframe" as SourceType, url: props.embedIframeLink || "", label: "Primary Embed" },
       { type: "iframe" as SourceType, url: props.backupEmbedIframeLink || "", label: "Backup Embed" }
     ] as StreamingSource[]).filter((item) => item.url.trim().length > 0);
-  }, [currentLanguageSource, props.hlsLink, props.backupHlsLink, props.embedIframeLink, props.backupEmbedIframeLink]);
+  }, [currentLanguageSource, props.hlsLink, props.backupHlsLink, props.embedIframeLink, props.backupEmbedIframeLink, props.subtitleTracks]);
 
   const activeSource = sources[activeSourceIndex];
 
@@ -142,6 +143,7 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
           poster={props.poster}
           introEnd={props.introEnd}
           outroStart={props.outroStart}
+          subtitleTracks={activeSource.subtitleTracks}
         />
       ) : (
         <IframePlayer src={activeSource.url} />

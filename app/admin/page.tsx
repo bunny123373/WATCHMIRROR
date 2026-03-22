@@ -375,6 +375,88 @@ export default function AdminPage() {
     })));
   };
 
+  const addEpisodeVideoSource = (seasonIndex: number, episodeIndex: number, langCode: string) => {
+    const lang = LANGUAGES.find(l => l.code === langCode);
+    if (!lang) return;
+    
+    setSeasonsDraft(prev => prev.map((season, sIdx) => {
+      if (sIdx !== seasonIndex) return season;
+      return {
+        ...season,
+        episodes: season.episodes.map((ep, eIdx) => {
+          if (eIdx !== episodeIndex) return ep;
+          const currentSources = ep.videoSources || [];
+          if (currentSources.some(v => v.language === langCode)) return ep;
+          return {
+            ...ep,
+            videoSources: [...currentSources, {
+              language: langCode,
+              languageLabel: lang.name,
+              hlsLink: "",
+              mp4Link: "",
+              quality: "HD",
+              isPrimary: currentSources.length === 0
+            }]
+          };
+        })
+      };
+    }));
+  };
+
+  const removeEpisodeVideoSource = (seasonIndex: number, episodeIndex: number, langCode: string) => {
+    setSeasonsDraft(prev => prev.map((season, sIdx) => {
+      if (sIdx !== seasonIndex) return season;
+      return {
+        ...season,
+        episodes: season.episodes.map((ep, eIdx) => {
+          if (eIdx !== episodeIndex) return ep;
+          const filtered = (ep.videoSources || []).filter(v => v.language !== langCode);
+          if (filtered.length > 0 && !filtered.some(v => v.isPrimary)) {
+            filtered[0].isPrimary = true;
+          }
+          return { ...ep, videoSources: filtered };
+        })
+      };
+    }));
+  };
+
+  const updateEpisodeVideoSource = (seasonIndex: number, episodeIndex: number, langCode: string, updates: Partial<VideoSource>) => {
+    setSeasonsDraft(prev => prev.map((season, sIdx) => {
+      if (sIdx !== seasonIndex) return season;
+      return {
+        ...season,
+        episodes: season.episodes.map((ep, eIdx) => {
+          if (eIdx !== episodeIndex) return ep;
+          return {
+            ...ep,
+            videoSources: (ep.videoSources || []).map(v => 
+              v.language === langCode ? { ...v, ...updates } : v
+            )
+          };
+        })
+      };
+    }));
+  };
+
+  const setPrimaryEpisodeVideoSource = (seasonIndex: number, episodeIndex: number, langCode: string) => {
+    setSeasonsDraft(prev => prev.map((season, sIdx) => {
+      if (sIdx !== seasonIndex) return season;
+      return {
+        ...season,
+        episodes: season.episodes.map((ep, eIdx) => {
+          if (eIdx !== episodeIndex) return ep;
+          return {
+            ...ep,
+            videoSources: (ep.videoSources || []).map(v => ({
+              ...v,
+              isPrimary: v.language === langCode
+            }))
+          };
+        })
+      };
+    }));
+  };
+
   const LANGUAGES = [
     { code: "EN", name: "English", flag: "🇺🇸" },
     { code: "TE", name: "Telugu", flag: "🇮🇳" },
@@ -1153,6 +1235,21 @@ export default function AdminPage() {
                           <option value="4K">4K</option>
                         </select>
                       </div>
+                      <div className="space-y-1.5 pt-3 border-t border-white/10">
+                        <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Subtitles for {source.languageLabel}</label>
+                        <textarea
+                          value={(source.subtitleTracks || []).map(t => `${t.lang}|${t.label}|${t.url}${t.isDefault ? '|default' : ''}`).join('\n')}
+                          onChange={(e) => {
+                            const tracks = e.target.value.split('\n').map(line => {
+                              const [lang = '', label = '', url = '', defaultFlag = ''] = line.split('|').map(i => i.trim());
+                              return { lang, label, url, isDefault: defaultFlag.toLowerCase() === 'default' };
+                            }).filter(t => t.url);
+                            updateVideoSource(source.language, { subtitleTracks: tracks });
+                          }}
+                          placeholder="lang|label|url|default (one per line)&#10;en|English|https://...|default&#10;te|Telugu|https://..."
+                          className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white placeholder:text-gray-500 outline-none focus:border-red-500 min-h-[60px]"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1191,16 +1288,63 @@ export default function AdminPage() {
                       {seasonsDraft.length > 1 && <button type="button" onClick={() => removeSeason(seasonIndex)} className="rounded-lg bg-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/30">Remove</button>}
                     </div>
                   </div>
-                  <div className="max-h-[300px] overflow-y-auto p-3 space-y-2">
-                    {season.episodes.map((episode, episodeIndex) => (
-                      <div key={`episode-${seasonIndex}-${episodeIndex}`} className="grid gap-2 rounded-lg bg-black/40 p-3 md:grid-cols-2">
-                        <input type="number" min={1} value={episode.episodeNumber} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeNumber", e.target.value)} placeholder="Ep #" className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white" />
-                        <input value={episode.episodeTitle} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeTitle", e.target.value)} placeholder="Episode title" className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white" />
-                        <input value={episode.hlsLink || ""} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "hlsLink", e.target.value)} placeholder="HLS Link" className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white" />
-                        <input value={episode.embedIframeLink || ""} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "embedIframeLink", e.target.value)} placeholder="Iframe Link" className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white" />
-                        {episodeIndex > 0 && <button type="button" onClick={() => removeEpisode(seasonIndex, episodeIndex)} className="col-span-2 rounded-lg bg-red-500/20 py-2 text-xs text-red-400 hover:bg-red-500/30">Remove Episode</button>}
-                      </div>
-                    ))}
+                  <div className="max-h-[400px] overflow-y-auto p-3 space-y-3">
+                    {season.episodes.map((episode, episodeIndex) => {
+                      const episodeSources = episode.videoSources || [];
+                      return (
+                        <div key={`episode-${seasonIndex}-${episodeIndex}`} className="rounded-lg bg-black/40 p-4 space-y-3">
+                          <div className="flex items-center gap-2">
+                            <input type="number" min={1} value={episode.episodeNumber} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeNumber", e.target.value)} placeholder="Ep #" className="w-16 rounded-lg border border-white/10 bg-black/40 px-2 py-1.5 text-sm text-white" />
+                            <input value={episode.episodeTitle} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeTitle", e.target.value)} placeholder="Episode title" className="flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white" />
+                            {episodeIndex > 0 && <button type="button" onClick={() => removeEpisode(seasonIndex, episodeIndex)} className="rounded-lg bg-red-500/20 px-2 py-1 text-xs text-red-400 hover:bg-red-500/30">Remove</button>}
+                          </div>
+                          
+                          <div className="border-t border-white/10 pt-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-xs font-medium text-gray-400">Video Sources (Language-wise)</p>
+                              <div className="flex flex-wrap gap-1">
+                                {LANGUAGES.filter(l => !episodeSources.some(v => v.language === l.code)).slice(0, 4).map(lang => (
+                                  <button
+                                    key={lang.code}
+                                    type="button"
+                                    onClick={() => addEpisodeVideoSource(seasonIndex, episodeIndex, lang.code)}
+                                    className="rounded px-1.5 py-0.5 text-[10px] bg-white/10 text-gray-400 hover:bg-white/20"
+                                  >
+                                    +{lang.flag}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {episodeSources.length > 0 ? (
+                              <div className="space-y-2">
+                                {episodeSources.map((source) => (
+                                  <div key={source.language} className={`rounded-lg p-2 ${source.isPrimary ? 'bg-red-500/10 border border-red-500/30' : 'bg-black/40 border border-white/10'}`}>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="text-xs font-medium text-white">{LANGUAGES.find(l => l.code === source.language)?.flag} {source.languageLabel}</span>
+                                      <div className="flex gap-1">
+                                        {!source.isPrimary && (
+                                          <button type="button" onClick={() => setPrimaryEpisodeVideoSource(seasonIndex, episodeIndex, source.language)} className="rounded px-1.5 py-0.5 text-[10px] text-gray-400 hover:bg-white/10">Primary</button>
+                                        )}
+                                        <button type="button" onClick={() => removeEpisodeVideoSource(seasonIndex, episodeIndex, source.language)} className="rounded px-1.5 py-0.5 text-[10px] text-red-400 hover:bg-red-500/20">X</button>
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-1.5">
+                                      <input value={source.hlsLink || ""} onChange={(e) => updateEpisodeVideoSource(seasonIndex, episodeIndex, source.language, { hlsLink: e.target.value })} placeholder="HLS (.m3u8)" className="rounded border border-white/10 bg-black/40 px-2 py-1 text-xs text-white placeholder:text-gray-600" />
+                                      <input value={source.mp4Link || ""} onChange={(e) => updateEpisodeVideoSource(seasonIndex, episodeIndex, source.language, { mp4Link: e.target.value })} placeholder="MP4" className="rounded border border-white/10 bg-black/40 px-2 py-1 text-xs text-white placeholder:text-gray-600" />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-center py-3 text-xs text-gray-500">
+                                <p>No video sources. Click + buttons above to add.</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
