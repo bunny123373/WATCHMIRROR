@@ -9,17 +9,19 @@ export interface CastMember {
 export interface Episode {
   episodeNumber: number;
   episodeTitle: string;
+  tmdbId?: string;
+  imdbId?: string;
   hlsLink?: string;
   embedIframeLink?: string;
   backupHlsLink?: string;
   backupEmbedIframeLink?: string;
   subtitleTracks?: SubtitleTrack[];
+  videoSources?: VideoSource[];
   releaseAt?: string;
   quality?: string;
   introStart?: number;
   introEnd?: number;
   outroStart?: number;
-  videoSources?: VideoSource[];
 }
 
 export interface Season {
@@ -47,6 +49,8 @@ export interface Content {
   cast: CastMember[];
   metaTitle: string;
   metaDescription: string;
+  tmdbId?: string;
+  imdbId?: string;
   hlsLink?: string;
   embedIframeLink?: string;
   backupHlsLink?: string;

@@ -13,7 +13,6 @@ interface StreamingSource {
   url: string;
   label: string;
   language?: string;
-  subtitleTracks?: SubtitleTrack[];
 }
 
 interface StreamingPlayerProps {
@@ -21,6 +20,8 @@ interface StreamingPlayerProps {
   slug: string;
   title: string;
   poster: string;
+  tmdbId?: string;
+  imdbId?: string;
   hlsLink?: string;
   embedIframeLink?: string;
   backupHlsLink?: string;
@@ -52,6 +53,25 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [activeSourceIndex, setActiveSourceIndex] = useState(0);
 
+  const vidsrcEmbedUrl = useMemo(() => {
+    if (props.tmdbId || props.imdbId) {
+      const base = "https://vidsrc-embed.ru/embed";
+      if (props.type === "movie") {
+        const id = props.imdbId || props.tmdbId;
+        const param = props.imdbId ? `imdb=${props.imdbId}` : `tmdb=${props.tmdbId}`;
+        return `${base}/movie?${param}`;
+      } else if (props.type === "series" && props.seasonNumber && props.episodeNumber) {
+        const id = props.imdbId || props.tmdbId;
+        return `${base}/tv/${id}/${props.seasonNumber}-${props.episodeNumber}`;
+      } else if (props.type === "series") {
+        const id = props.imdbId || props.tmdbId;
+        const param = props.imdbId ? `imdb=${props.imdbId}` : `tmdb=${props.tmdbId}`;
+        return `${base}/tv?${param}`;
+      }
+    }
+    return null;
+  }, [props.tmdbId, props.imdbId, props.type, props.seasonNumber, props.episodeNumber]);
+
   const languageSources = useMemo(() => {
     if (!props.videoSources || props.videoSources.length === 0) return null;
     return props.videoSources;
@@ -79,30 +99,34 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
       const items: StreamingSource[] = [];
       
       if (currentLanguageSource.hlsLink?.trim()) {
-        items.push({ type: "hls" as SourceType, url: currentLanguageSource.hlsLink, label: `${prefix} HLS`, language: currentLanguageSource.language, subtitleTracks: currentLanguageSource.subtitleTracks });
+        items.push({ type: "hls" as SourceType, url: currentLanguageSource.hlsLink, label: `${prefix} HLS`, language: currentLanguageSource.language });
       }
       if (currentLanguageSource.mp4Link?.trim()) {
-        items.push({ type: "hls" as SourceType, url: currentLanguageSource.mp4Link, label: `${prefix} MP4`, language: currentLanguageSource.language, subtitleTracks: currentLanguageSource.subtitleTracks });
+        items.push({ type: "hls" as SourceType, url: currentLanguageSource.mp4Link, label: `${prefix} MP4`, language: currentLanguageSource.language });
       }
       return items;
     }
     
-    return ([
-      { type: "hls" as SourceType, url: props.hlsLink || "", label: "Primary HLS", subtitleTracks: props.subtitleTracks },
-      { type: "hls" as SourceType, url: props.backupHlsLink || "", label: "Backup HLS", subtitleTracks: props.subtitleTracks },
-      { type: "iframe" as SourceType, url: props.embedIframeLink || "", label: "Primary Embed" },
-      { type: "iframe" as SourceType, url: props.backupEmbedIframeLink || "", label: "Backup Embed" }
-    ] as StreamingSource[]).filter((item) => item.url.trim().length > 0);
-  }, [currentLanguageSource, props.hlsLink, props.backupHlsLink, props.embedIframeLink, props.backupEmbedIframeLink, props.subtitleTracks]);
+    const items: StreamingSource[] = [];
+    if (props.hlsLink?.trim()) items.push({ type: "hls" as SourceType, url: props.hlsLink, label: "Primary HLS" });
+    if (props.backupHlsLink?.trim()) items.push({ type: "hls" as SourceType, url: props.backupHlsLink, label: "Backup HLS" });
+    if (props.embedIframeLink?.trim()) items.push({ type: "iframe" as SourceType, url: props.embedIframeLink, label: "Primary Embed" });
+    if (props.backupEmbedIframeLink?.trim()) items.push({ type: "iframe" as SourceType, url: props.backupEmbedIframeLink, label: "Backup Embed" });
+    return items;
+  }, [currentLanguageSource, props.hlsLink, props.backupHlsLink, props.embedIframeLink, props.backupEmbedIframeLink]);
 
   const activeSource = sources[activeSourceIndex];
 
-  if (!activeSource) {
+  if (!activeSource && !vidsrcEmbedUrl) {
     return (
       <div className="flex aspect-video items-center justify-center bg-[#181818] text-gray-400">
         Streaming not available
       </div>
     );
+  }
+
+  if (!activeSource && vidsrcEmbedUrl) {
+    return <IframePlayer src={vidsrcEmbedUrl} />;
   }
 
   return (
@@ -143,7 +167,6 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
           poster={props.poster}
           introEnd={props.introEnd}
           outroStart={props.outroStart}
-          subtitleTracks={activeSource.subtitleTracks}
         />
       ) : (
         <IframePlayer src={activeSource.url} />

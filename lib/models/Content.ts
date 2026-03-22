@@ -36,14 +36,16 @@ const episodeSchema = new Schema(
   {
     episodeNumber: { type: Number, required: true },
     episodeTitle: { type: String, required: true },
+    tmdbId: { type: String, default: "" },
+    imdbId: { type: String, default: "" },
     hlsLink: { type: String, default: "" },
     embedIframeLink: { type: String, default: "" },
     backupHlsLink: { type: String, default: "" },
     backupEmbedIframeLink: { type: String, default: "" },
     subtitleTracks: { type: [subtitleTrackSchema], default: [] },
+    videoSources: { type: [videoSourceSchema], default: [] },
     releaseAt: { type: Date, default: null },
-    quality: { type: String, default: "" },
-    videoSources: { type: [videoSourceSchema], default: [] }
+    quality: { type: String, default: "" }
   },
   { _id: false }
 );
@@ -76,6 +78,8 @@ const contentSchema = new Schema(
     cast: { type: [castSchema], default: [] },
     metaTitle: { type: String, default: "" },
     metaDescription: { type: String, default: "" },
+    tmdbId: { type: String, default: "" },
+    imdbId: { type: String, default: "" },
     hlsLink: { type: String, default: "" },
     embedIframeLink: { type: String, default: "" },
     backupHlsLink: { type: String, default: "" },

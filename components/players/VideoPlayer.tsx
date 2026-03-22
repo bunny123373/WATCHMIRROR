@@ -7,7 +7,6 @@ import { DefaultVideoLayout, defaultLayoutIcons } from "@vidstack/react/player/l
 import "@vidstack/react/player/styles/base.css";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
-import { SubtitleTrack } from "@/types/content";
 
 interface VideoPlayerProps {
   src: string;
@@ -15,7 +14,6 @@ interface VideoPlayerProps {
   introStart?: number;
   introEnd?: number;
   outroStart?: number;
-  subtitleTracks?: SubtitleTrack[];
 }
 
 type PlayerType = "native" | "vidstack" | "mux" | "webcomponent";
@@ -166,7 +164,7 @@ function NativeAudioSelector({ videoRef }: { videoRef: React.RefObject<HTMLVideo
   );
 }
 
-export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, subtitleTracks }: VideoPlayerProps) {
+export function VideoPlayer({ src, poster, introStart, introEnd, outroStart }: VideoPlayerProps) {
   const [playerType, setPlayerType] = useState<PlayerType>("native");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -227,36 +225,6 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, sub
       if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
     };
   }, [src, isHLS, isMKV, playerType]);
-
-  useEffect(() => {
-    if (playerType !== "native" || !videoRef.current || !subtitleTracks || subtitleTracks.length === 0) return;
-
-    const video = videoRef.current;
-    const tracks = subtitleTracks.filter(t => t.url);
-
-    tracks.forEach((track) => {
-      const existingTrack = Array.from(video.textTracks).find(t => t.label === track.label);
-      if (existingTrack) return;
-
-      const trackEl = document.createElement("track");
-      trackEl.kind = "subtitles";
-      trackEl.label = track.label;
-      trackEl.srclang = track.lang;
-      trackEl.src = track.url;
-      if (track.isDefault) {
-        trackEl.default = true;
-      }
-      video.appendChild(trackEl);
-    });
-
-    return () => {
-      Array.from(video.textTracks).forEach((track) => {
-        if (tracks.some(t => t.label === track.label)) {
-          track.mode = "disabled";
-        }
-      });
-    };
-  }, [subtitleTracks, playerType]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
