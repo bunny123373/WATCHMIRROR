@@ -384,18 +384,31 @@ export default function AdminPage() {
     })));
   };
 
-  const autoFillAllEmbedLinks = () => {
+  const autoFillAllEmbedLinks = (langCode: string = "EN") => {
     if (!payload.tmdbId && !payload.imdbId) {
       alert("Please enter TMDB ID or IMDB ID first");
       return;
     }
-    setVideoSources(prev => prev.map(v => ({
-      ...v,
-      embedLink: getVidsrcEmbedUrl(payload.tmdbId, payload.imdbId)
-    })));
+    const embedUrl = getVidsrcEmbedUrl(payload.tmdbId, payload.imdbId);
+    const lang = LANGUAGES.find(l => l.code === langCode);
+    setVideoSources(prev => {
+      const existingSource = prev.find(v => v.language === langCode);
+      if (existingSource) {
+        return prev.map(v => v.language === langCode ? { ...v, embedLink: embedUrl } : v);
+      }
+      return [...prev, {
+        language: langCode,
+        languageLabel: lang?.name || "English",
+        hlsLink: "",
+        mp4Link: "",
+        embedLink: embedUrl,
+        quality: "HD",
+        isPrimary: prev.length === 0
+      }];
+    });
   };
 
-  const autoFillEpisodeEmbedLinks = (seasonIndex: number, episodeIndex: number) => {
+  const autoFillEpisodeEmbedLinks = (seasonIndex: number, episodeIndex: number, langCode: string = "EN") => {
     const episode = seasonsDraft[seasonIndex]?.episodes[episodeIndex];
     const season = seasonsDraft[seasonIndex];
     if (!episode) return;
@@ -406,15 +419,32 @@ export default function AdminPage() {
       return;
     }
     const embedUrl = getVidsrcEpisodeEmbedUrl(epTmdbId, epImdbId, season.seasonNumber, episode.episodeNumber);
+    const lang = LANGUAGES.find(l => l.code === langCode);
     setSeasonsDraft(prev => prev.map((s, sIdx) => {
       if (sIdx !== seasonIndex) return s;
       return {
         ...s,
         episodes: s.episodes.map((ep, eIdx) => {
           if (eIdx !== episodeIndex) return ep;
+          const currentSources = ep.videoSources || [];
+          const existingSource = currentSources.find(v => v.language === langCode);
+          if (existingSource) {
+            return {
+              ...ep,
+              videoSources: currentSources.map(v => v.language === langCode ? { ...v, embedLink: embedUrl } : v)
+            };
+          }
           return {
             ...ep,
-            videoSources: (ep.videoSources || []).map(v => ({ ...v, embedLink: embedUrl }))
+            videoSources: [...currentSources, {
+              language: langCode,
+              languageLabel: lang?.name || "English",
+              hlsLink: "",
+              mp4Link: "",
+              embedLink: embedUrl,
+              quality: "HD",
+              isPrimary: currentSources.length === 0
+            }]
           };
         })
       };
@@ -1229,14 +1259,27 @@ export default function AdminPage() {
                   <Languages className="h-4 w-4 text-red-500" />
                   Language-wise Video Sources
                 </h3>
-                {videoSources.length > 0 && (payload.tmdbId || payload.imdbId) && (
-                  <button
-                    type="button"
-                    onClick={autoFillAllEmbedLinks}
-                    className="rounded-lg bg-purple-600/20 px-3 py-1.5 text-xs text-purple-400 hover:bg-purple-600/30"
-                  >
-                    Auto-fill Embeds
-                  </button>
+                {(payload.tmdbId || payload.imdbId) && (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => autoFillAllEmbedLinks("EN")}
+                      className="rounded-lg bg-purple-600/20 px-3 py-1.5 text-xs text-purple-400 hover:bg-purple-600/30"
+                    >
+                      Auto-fill EN
+                    </button>
+                    {videoSources.length > 0 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => autoFillAllEmbedLinks()}
+                          className="rounded-lg bg-white/10 px-3 py-1.5 text-xs text-gray-400 hover:bg-white/20"
+                        >
+                          Fill All Langs
+                        </button>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
               
@@ -1418,13 +1461,20 @@ export default function AdminPage() {
                             <div className="flex items-center justify-between mb-2">
                               <p className="text-xs font-medium text-gray-400">Video Sources (Language-wise)</p>
                               <div className="flex flex-wrap gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => autoFillEpisodeEmbedLinks(seasonIndex, episodeIndex, "EN")}
+                                  className="rounded px-1.5 py-0.5 text-[10px] bg-purple-600/20 text-purple-400 hover:bg-purple-600/30"
+                                >
+                                  Auto-fill EN
+                                </button>
                                 {episodeSources.length > 0 && (
                                   <button
                                     type="button"
                                     onClick={() => autoFillEpisodeEmbedLinks(seasonIndex, episodeIndex)}
-                                    className="rounded px-1.5 py-0.5 text-[10px] bg-purple-600/20 text-purple-400 hover:bg-purple-600/30"
+                                    className="rounded px-1.5 py-0.5 text-[10px] bg-white/10 text-gray-400 hover:bg-white/20"
                                   >
-                                    Auto-fill
+                                    Fill all
                                   </button>
                                 )}
                                 {LANGUAGES.filter(l => !episodeSources.some(v => v.language === l.code)).slice(0, 4).map(lang => (
