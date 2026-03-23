@@ -147,13 +147,70 @@ export default function AdminPage() {
       language: item.language?.toUpperCase() || "EN",
       tmdbId: item.tmdb || "",
       imdbId: item.imdb || "",
-      hlsLink: embedUrl,
-      embedIframeLink: embedUrl,
       description: item.synopsis || item.overview || "",
     });
     
-    if (type === "series") {
+    if (type === "movie") {
+      setVideoSources([{
+        language: "EN",
+        languageLabel: "English",
+        hlsLink: "",
+        mp4Link: "",
+        embedLink: embedUrl,
+        quality: "HD",
+        isPrimary: true
+      }]);
       setSeasonsDraft([createSeason(1)]);
+    } else {
+      setVideoSources([]);
+      try {
+        const epRes = await fetch(`https://vidsrc-embed.ru/episodes/latest/page-1.json`);
+        const epData = await epRes.json();
+        const seriesEps = epData.filter((ep: any) => ep.imdb === embedId || ep.tmdb === embedId);
+        
+        if (seriesEps.length > 0) {
+          const season1Eps = seriesEps.filter((ep: any) => !ep.season || ep.season === 1);
+          const seasonsMap: Record<number, any[]> = {};
+          
+          seriesEps.forEach((ep: any) => {
+            const sNum = ep.season || 1;
+            if (!seasonsMap[sNum]) seasonsMap[sNum] = [];
+            seasonsMap[sNum].push({
+              episodeNumber: ep.episode || ep.episodeNumber || 1,
+              episodeTitle: ep.title || ep.name || `Episode ${ep.episode || 1}`,
+              tmdbId: ep.tmdb || "",
+              imdbId: ep.imdb || "",
+              hlsLink: "",
+              embedIframeLink: "",
+              backupHlsLink: "",
+              backupEmbedIframeLink: "",
+              subtitleTracks: [],
+              videoSources: [{
+                language: "EN",
+                languageLabel: "English",
+                hlsLink: "",
+                mp4Link: "",
+                embedLink: `https://vidsrc-embed.ru/embed/tv/${embedId}/${sNum}-${ep.episode || ep.episodeNumber || 1}`,
+                quality: "HD",
+                isPrimary: true
+              }],
+              releaseAt: "",
+              quality: "HD"
+            });
+          });
+          
+          const seasons = Object.keys(seasonsMap).sort((a, b) => Number(a) - Number(b)).map(sNum => ({
+            seasonNumber: Number(sNum),
+            episodes: seasonsMap[Number(sNum)].sort((a, b) => a.episodeNumber - b.episodeNumber)
+          }));
+          
+          setSeasonsDraft(seasons);
+        } else {
+          setSeasonsDraft([createSeason(1)]);
+        }
+      } catch {
+        setSeasonsDraft([createSeason(1)]);
+      }
     }
     
     setActiveTab("add");
