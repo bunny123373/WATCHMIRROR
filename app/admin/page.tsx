@@ -81,6 +81,8 @@ export default function AdminPage() {
   const [adminKey, setAdminKey] = useState("");
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [tmdbQuery, setTmdbQuery] = useState("");
+  const [tmdbResults, setTmdbResults] = useState<any[]>([]);
   const [payload, setPayload] = useState<Partial<Content>>(emptyPayload);
   const [seasonsDraft, setSeasonsDraft] = useState<Season[]>([createSeason(1)]);
   const [movieSubtitlesInput, setMovieSubtitlesInput] = useState("");
@@ -267,6 +269,33 @@ export default function AdminPage() {
       ...prev,
       type: nextMode
     }));
+  };
+
+  const searchTMDB = async () => {
+    if (!tmdbQuery.trim()) return;
+    setLoading(true);
+    const res = await fetch(`/api/tmdb/search?query=${encodeURIComponent(tmdbQuery)}`);
+    const data = await res.json();
+    setTmdbResults(data.results || []);
+    setLoading(false);
+  };
+
+  const importTMDB = async (id: number, mediaType: "movie" | "tv") => {
+    setLoading(true);
+    const res = await fetch(`/api/tmdb/details/${id}?mediaType=${mediaType}`);
+    const data = await res.json();
+    const nextType: ContentType = mediaType === "movie" ? "movie" : "series";
+    const details = data.details || {};
+
+    applyMode(nextType);
+    setPayload((prev) => ({ ...prev, ...details, type: nextType }));
+    setMovieSubtitlesInput(subtitleLines((details.subtitleTracks || []) as SubtitleTrack[]));
+    if (nextType === "series") {
+      const importedSeasons = Array.isArray(details.seasons) && details.seasons.length ? (details.seasons as Season[]) : [createSeason(1)];
+      setSeasonsDraft(importedSeasons);
+    }
+    setLoading(false);
+    setActiveTab("add");
   };
 
   const startEdit = (item: Content) => {
@@ -1991,6 +2020,69 @@ export default function AdminPage() {
                 );
               })}
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+            <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-purple-600 to-purple-700">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white">TMDB Search</h2>
+                <p className="text-sm text-gray-500">Search and import content from TMDB</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mt-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                <input value={tmdbQuery} onChange={(e) => setTmdbQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && searchTMDB()} placeholder={mode === "movie" ? "Search for movies..." : "Search for series..."} className="w-full rounded-xl border border-white/10 bg-black/40 pl-12 pr-4 py-3.5 text-base text-white placeholder:text-gray-500 outline-none transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20" />
+              </div>
+              <button onClick={searchTMDB} disabled={loading} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-3.5 text-base font-bold text-white transition-all hover:from-purple-500 hover:to-purple-600 hover:shadow-lg hover:shadow-purple-600/25 disabled:cursor-not-allowed disabled:opacity-50">
+                {loading ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    Searching...
+                  </>
+                ) : (
+                  <>
+                    <Search className="h-4 w-4" />
+                    Search
+                  </>
+                )}
+              </button>
+            </div>
+
+            {tmdbResults.length > 0 && (
+              <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {tmdbResults.map((item) => (
+                  <button key={`${item.mediaType}-${item.id}`} onClick={() => importTMDB(item.id, item.mediaType)} className="group flex gap-4 rounded-xl border border-white/10 bg-black/30 p-3 text-left transition-all hover:border-purple-500 hover:bg-purple-500/10">
+                    {item.poster ? (
+                      <Image src={item.poster} alt={item.title} width={70} height={100} className="h-[100px] w-[70px] rounded-lg object-cover" />
+                    ) : (
+                      <div className="flex h-[100px] w-[70px] items-center justify-center rounded-lg bg-black/50">
+                        <Film className="h-8 w-8 text-gray-600" />
+                      </div>
+                    )}
+                    <div className="flex flex-1 flex-col justify-center">
+                      <p className="line-clamp-2 font-semibold text-white transition-colors group-hover:text-purple-400">{item.title}</p>
+                      <p className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+                        <span className="rounded bg-white/10 px-2 py-0.5 text-gray-300">{item.mediaType?.toUpperCase()}</span>
+                        {item.year || "—"}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {!loading && tmdbQuery && tmdbResults.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Film className="h-16 w-16 text-gray-700" />
+                <p className="mt-4 text-lg font-medium text-gray-400">No results found</p>
+                <p className="text-sm text-gray-600">Try searching with different keywords</p>
+              </div>
+            )}
           </div>
         </div>
       )}
