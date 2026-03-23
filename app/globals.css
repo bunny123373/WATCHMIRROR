@@ -21,15 +21,11 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(1100px 420px at 50% -180px, rgba(229, 9, 20, 0.2), transparent 70%),
-    linear-gradient(180deg, #141414 0%, #111111 60%, #0d0d0d 100%);
+  background: #141414;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  background-attachment: fixed;
-  transform: translateZ(0);
 }
 
 main {

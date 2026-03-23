@@ -1047,7 +1047,7 @@ export default function AdminPage() {
             <h1 className="font-[var(--font-heading)] text-4xl font-bold text-white">Admin Portal</h1>
             <p className="mt-3 text-gray-400">Enter your credentials to access the dashboard</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/80 p-8 shadow-2xl backdrop-blur-xl">
+          <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/80 p-8 shadow-2xl -xl">
             <div className="space-y-4">
               <div>
                 <label className="mb-2 block text-xs font-medium text-gray-400 uppercase tracking-wider">Admin Key</label>
@@ -1171,7 +1171,7 @@ export default function AdminPage() {
 
       {activeTab === "browse" && (
         <div className="space-y-6">
-          <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-4 -sm sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-2">
               <button
                 onClick={() => applyMode("movie")}
@@ -1287,7 +1287,7 @@ export default function AdminPage() {
       )}
 
       {activeTab === "add" && (
-        <form onSubmit={submitContent} className="space-y-6 rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+        <form onSubmit={submitContent} className="space-y-6 rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 -sm">
           <div className="flex items-center gap-3 pb-4 border-b border-white/10">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-red-600 to-red-700">
               {editingId ? <Pencil className="h-5 w-5 text-white" /> : <Plus className="h-5 w-5 text-white" />}
@@ -1709,7 +1709,7 @@ export default function AdminPage() {
 
       {activeTab === "import" && (
         <div className="space-y-6">
-          <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+          <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 -sm">
             <div className="flex items-center gap-3 pb-4 border-b border-white/10">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-green-600 to-green-700">
                 <Download className="h-5 w-5 text-white" />
@@ -1796,7 +1796,7 @@ export default function AdminPage() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+          <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 -sm">
             <div className="flex items-center gap-3 pb-4 border-b border-white/10">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-purple-600 to-purple-700">
                 <Sparkles className="h-5 w-5 text-white" />
@@ -1875,7 +1875,7 @@ export default function AdminPage() {
 
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-4">
-              <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+              <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 -sm">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
                     <FolderOpen className="h-4 w-4 text-blue-500" />
@@ -1924,7 +1924,7 @@ export default function AdminPage() {
                 )}
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+              <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 -sm">
                 <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
                   <Languages className="h-4 w-4 text-blue-500" />
                   Language Stats
@@ -2034,7 +2034,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 backdrop-blur-sm">
+          <div className="rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-6 -sm">
             <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
               <Languages className="h-4 w-4 text-blue-500" />
               Language-wise Upload Sections
