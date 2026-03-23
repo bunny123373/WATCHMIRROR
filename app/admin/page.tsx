@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useMemo, useState, useCallback, DragEvent } from 
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Pencil, Plus, Search, Trash2, X, Film, Tv, BarChart3, Clock, Star, Globe, Tag, Lock, ChevronRight, LayoutGrid, List, Grid3X3, Calendar, Sparkles, Database, AlertCircle, Upload, FileVideo, CheckCircle2, File, FolderOpen, Languages, ChevronDown, ChevronUp, XCircle } from "lucide-react";
+import { Pencil, Plus, Search, Trash2, X, Film, Tv, BarChart3, Clock, Star, Globe, Tag, Lock, ChevronRight, LayoutGrid, List, Grid3X3, Calendar, Sparkles, Database, AlertCircle, Upload, FileVideo, CheckCircle2, File, FolderOpen, Languages, ChevronDown, ChevronUp, XCircle, Download } from "lucide-react";
 import { Content, ContentType, Season, SubtitleTrack, VideoSource } from "@/types/content";
 
 const emptyPayload: Partial<Content> = {
@@ -269,6 +269,49 @@ export default function AdminPage() {
 
   const addSeason = () => {
     setSeasonsDraft((prev) => [...prev, createSeason(prev.length + 1)]);
+  };
+
+  const autoFillSeasonsFromTMDB = async () => {
+    if (!payload.tmdbId) {
+      alert("Please enter TMDB ID first");
+      return;
+    }
+    
+    try {
+      const seasonsRes = await fetch(`/api/tmdb/seasons/${payload.tmdbId}`);
+      if (!seasonsRes.ok) throw new Error("Failed to fetch seasons");
+      const { seasons } = await seasonsRes.json();
+      
+      const seasonsWithEpisodes = await Promise.all(
+        seasons.map(async (season: { seasonNumber: number; seasonName: string }) => {
+          const epRes = await fetch(`/api/tmdb/seasons/${payload.tmdbId}/episodes?season=${season.seasonNumber}`);
+          const { episodes } = await epRes.json();
+          
+          return {
+            seasonNumber: season.seasonNumber,
+            episodes: episodes.map((ep: { episodeNumber: number; episodeTitle: string; tmdbId: string }) => ({
+              episodeNumber: ep.episodeNumber,
+              episodeTitle: ep.episodeTitle,
+              tmdbId: ep.tmdbId,
+              imdbId: "",
+              hlsLink: "",
+              embedIframeLink: "",
+              backupHlsLink: "",
+              backupEmbedIframeLink: "",
+              subtitleTracks: [],
+              videoSources: [],
+              releaseAt: "",
+              quality: "HD"
+            }))
+          };
+        })
+      );
+      
+      setSeasonsDraft(seasonsWithEpisodes);
+    } catch (error) {
+      console.error("Auto-fill failed:", error);
+      alert("Failed to fetch seasons from TMDB. Make sure TMDB ID is correct.");
+    }
   };
 
   const removeSeason = (seasonIndex: number) => {
@@ -1396,10 +1439,18 @@ export default function AdminPage() {
                   <Tv className="h-4 w-4 text-red-500" />
                   Seasons & Episodes
                 </h3>
-                <button type="button" onClick={addSeason} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-xs font-bold text-white transition-all hover:from-red-500 hover:to-red-600">
-                  <Plus className="h-3 w-3" />
-                  Add Season
-                </button>
+                <div className="flex gap-2">
+                  {payload.tmdbId && (
+                    <button type="button" onClick={autoFillSeasonsFromTMDB} className="flex items-center gap-1.5 rounded-xl bg-purple-600/20 px-4 py-2 text-xs font-bold text-purple-400 transition-all hover:bg-purple-600/30">
+                      <Download className="h-3 w-3" />
+                      Auto-fill from TMDB
+                    </button>
+                  )}
+                  <button type="button" onClick={addSeason} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-xs font-bold text-white transition-all hover:from-red-500 hover:to-red-600">
+                    <Plus className="h-3 w-3" />
+                    Add Season
+                  </button>
+                </div>
               </div>
               
               {seasonsDraft.map((season, seasonIndex) => (

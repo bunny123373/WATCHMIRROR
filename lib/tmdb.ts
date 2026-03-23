@@ -111,3 +111,47 @@ export async function getTMDBSimilar(id: string, mediaType: "movie" | "tv") {
     year: Number((item.release_date || item.first_air_date || "").slice(0, 4)) || null
   }));
 }
+
+export interface TMDBSeason {
+  seasonNumber: number;
+  seasonName: string;
+  episodeCount: number;
+  airDate: string;
+  overview: string;
+  poster: string;
+}
+
+export interface TMBDEpisode {
+  episodeNumber: number;
+  episodeTitle: string;
+  airDate: string;
+  overview: string;
+  stillPath: string;
+  tmdbId: string;
+}
+
+export async function getTMDBSeasons(tmdbId: string): Promise<TMDBSeason[]> {
+  const details = await tmdbFetch<any>(`/tv/${tmdbId}`);
+  return (details.seasons || [])
+    .filter((s: any) => s.season_number > 0)
+    .map((s: any) => ({
+      seasonNumber: s.season_number,
+      seasonName: s.name || `Season ${s.season_number}`,
+      episodeCount: s.episode_count,
+      airDate: s.air_date || "",
+      overview: s.overview || "",
+      poster: s.poster_path ? `${baseImage}${s.poster_path}` : ""
+    }));
+}
+
+export async function getTMDBSeasonEpisodes(tmdbId: string, seasonNumber: number): Promise<TMBDEpisode[]> {
+  const data = await tmdbFetch<any>(`/tv/${tmdbId}/season/${seasonNumber}`);
+  return (data.episodes || []).map((ep: any) => ({
+    episodeNumber: ep.episode_number,
+    episodeTitle: ep.name || `Episode ${ep.episode_number}`,
+    airDate: ep.air_date || "",
+    overview: ep.overview || "",
+    stillPath: ep.still_path ? `${baseImage}${ep.still_path}` : "",
+    tmdbId: String(ep.id)
+  }));
+}
