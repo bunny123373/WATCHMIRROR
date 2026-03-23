@@ -971,7 +971,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 scroll-smooth">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-[var(--font-heading)] text-3xl font-bold text-white">Dashboard</h1>
@@ -1002,8 +1002,7 @@ export default function AdminPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
-          <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-red-600/20 blur-xl transition-all group-hover:bg-red-600/30 lg:-right-8 lg:-top-8 lg:h-24 lg:w-24" />
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-transform hover:scale-[1.02]">
           <div className="relative flex items-center gap-3 lg:gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-700 shadow-lg shadow-red-600/30 lg:h-12 lg:w-12">
               <Database className="h-5 w-5 text-white lg:h-6 lg:w-6" />
@@ -1014,8 +1013,7 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
-        <Link href="/admin/movies" className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
-          <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-blue-500/20 blur-xl transition-all group-hover:bg-blue-500/30 lg:-right-8 lg:-top-8 lg:h-24 lg:w-24" />
+        <Link href="/admin/movies" className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-transform hover:scale-[1.02]">
           <div className="relative flex items-center gap-3 lg:gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-600/30 lg:h-12 lg:w-12">
               <Film className="h-5 w-5 text-white lg:h-6 lg:w-6" />
@@ -1026,8 +1024,7 @@ export default function AdminPage() {
             </div>
           </div>
         </Link>
-        <Link href="/admin/series" className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
-          <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-purple-500/20 blur-xl transition-all group-hover:bg-purple-500/30 lg:-right-8 lg:-top-8 lg:h-24 lg:w-24" />
+        <Link href="/admin/series" className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-transform hover:scale-[1.02]">
           <div className="relative flex items-center gap-3 lg:gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-600/30 lg:h-12 lg:w-12">
               <Tv className="h-5 w-5 text-white lg:h-6 lg:w-6" />
@@ -1038,8 +1035,7 @@ export default function AdminPage() {
             </div>
           </div>
         </Link>
-        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
-          <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-yellow-500/20 blur-xl transition-all group-hover:bg-yellow-500/30 lg:-right-8 lg:-top-8 lg:h-24 lg:w-24" />
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-transform hover:scale-[1.02]">
           <div className="relative flex items-center gap-3 lg:gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-lg shadow-yellow-600/30 lg:h-12 lg:w-12">
               <Star className="h-5 w-5 text-white lg:h-6 lg:w-6" />
@@ -1050,8 +1046,7 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
-        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/50">
-          <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-green-500/20 blur-xl transition-all group-hover:bg-green-500/30 lg:-right-8 lg:-top-8 lg:h-24 lg:w-24" />
+        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-transform hover:scale-[1.02]">
           <div className="relative flex items-center gap-3 lg:gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-600/30 lg:h-12 lg:w-12">
               <Clock className="h-5 w-5 text-white lg:h-6 lg:w-6" />
@@ -1107,7 +1102,7 @@ export default function AdminPage() {
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {paginatedItems.map((item) => (
-              <div key={item._id || item.slug} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#1a1a1a]/50 transition-all hover:border-white/30 hover:shadow-2xl hover:shadow-black/50">
+              <div key={item._id || item.slug} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#1a1a1a]/50 transition-transform hover:scale-[1.02]">
                 <div className="flex gap-4 p-4">
                   {item.poster ? (
                     <Image src={item.poster} alt={item.title} width={80} height={120} className="h-[120px] w-[80px] rounded-xl object-cover shadow-lg" />
