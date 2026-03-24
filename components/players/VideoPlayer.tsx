@@ -7,6 +7,7 @@ import { DefaultVideoLayout, defaultLayoutIcons } from "@vidstack/react/player/l
 import "@vidstack/react/player/styles/base.css";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
+import PlayerjsPlayer from "./PlayerjsPlayer";
 
 interface VideoPlayerProps {
   src: string;
@@ -16,7 +17,7 @@ interface VideoPlayerProps {
   outroStart?: number;
 }
 
-type PlayerType = "native" | "vidstack" | "mux" | "webcomponent";
+type PlayerType = "native" | "vidstack" | "mux" | "webcomponent" | "playerjs";
 
 function AudioTrackSelectorVidstack() {
   const audioOptions = useAudioOptions();
@@ -262,6 +263,7 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart }: V
     { type: "mux" as PlayerType, label: "Mux", available: isMux },
     { type: "vidstack" as PlayerType, label: "Vidstack", available: true },
     { type: "webcomponent" as PlayerType, label: "WebComponent", available: isHLS || isMKV },
+    { type: "playerjs" as PlayerType, label: "Playerjs", available: true },
   ].filter(opt => opt.available);
 
   return (
@@ -269,7 +271,7 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart }: V
       <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
         {/* Controls Bar */}
         <div className="absolute top-2 right-2 z-20 flex gap-2">
-          {(introEnd || outroStart) && playerType === "native" && (
+          {(introEnd || outroStart) && (playerType === "native" || playerType === "playerjs") && (
             <div className="flex gap-1">
               {introEnd && (
                 <button
@@ -443,6 +445,15 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart }: V
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
             className="h-full w-full border-0"
+          />
+        )}
+
+        {/* Playerjs Player */}
+        {playerType === "playerjs" && (
+          <PlayerjsPlayer
+            src={src}
+            poster={poster}
+            title={""}
           />
         )}
       </div>

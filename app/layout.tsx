@@ -38,8 +38,13 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const playerjsUrl = process.env.NEXT_PUBLIC_PLAYERJS_URL;
+  
   return (
     <html lang="en">
+      <head>
+        {playerjsUrl && <script src={playerjsUrl} async />}
+      </head>
       <body className="font-[var(--font-body)] antialiased">
         <ReduxProvider>
           <ContinueHydrator />
