@@ -21,6 +21,10 @@ export default function Navbar() {
   const dispatch = useAppDispatch();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const isWatchPage = pathname?.startsWith("/series/watch") || pathname?.startsWith("/movies/watch");
+
+  if (isWatchPage) return null;
+
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-gradient-to-b from-black/95 via-black/80 to-black/35 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between px-4 md:h-16 md:px-8">
