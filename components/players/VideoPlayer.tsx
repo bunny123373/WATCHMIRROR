@@ -173,7 +173,6 @@ function NativeAudioSelector({ videoRef }: { videoRef: React.RefObject<HTMLVideo
 
 export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slug, type, seasonNumber, episodeNumber, title }: VideoPlayerProps) {
   const [playerType, setPlayerType] = useState<PlayerType>("native");
-  const [showDropdown, setShowDropdown] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [subtitleSize, setSubtitleSize] = useState(100);
   const [subtitleColor, setSubtitleColor] = useState("#ffffff");
@@ -181,7 +180,6 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slu
   const [customSubtitle, setCustomSubtitle] = useState<{ name: string; url: string } | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const vidstackRef = useRef<any>(null);
 
@@ -236,9 +234,6 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slu
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
       if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
         setShowSettings(false);
       }
@@ -508,32 +503,6 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slu
               )}
             </div>
           )}
-          <div ref={dropdownRef} className="relative">
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center gap-1 rounded bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20"
-            >
-              <span>{playerType.charAt(0).toUpperCase() + playerType.slice(1)}</span>
-              <svg className={`h-3 w-3 transition ${showDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {showDropdown && (
-              <div className="absolute right-0 top-full mt-1 w-32 rounded bg-[#1a1a1a] border border-white/10 py-1 shadow-lg">
-                {playerOptions.map((opt) => (
-                  <button
-                    key={opt.type}
-                    onClick={() => { setPlayerType(opt.type); setShowDropdown(false); }}
-                    className={`w-full px-3 py-2 text-left text-xs hover:bg-white/10 ${
-                      playerType === opt.type ? 'text-red-500' : 'text-white'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
           {playerType === "native" && (
             <div className="absolute top-2 left-14 z-20">
               {customSubtitle ? (
@@ -650,6 +619,22 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slu
             title={""}
           />
         )}
+      </div>
+      <div className="flex flex-wrap items-center gap-2 border-t border-white/10 bg-[#111] px-3 py-2">
+        <span className="text-xs font-medium text-gray-400">Player</span>
+        {playerOptions.map((opt) => (
+          <button
+            key={opt.type}
+            onClick={() => setPlayerType(opt.type)}
+            className={`rounded px-3 py-1.5 text-xs transition ${
+              playerType === opt.type
+                ? "bg-red-600 text-white"
+                : "bg-white/10 text-white hover:bg-white/20"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
       </div>
     </div>
   );
