@@ -603,6 +603,62 @@ export default function AdminPage() {
     }));
   };
 
+  const autoFillSeasonEmbedLinks = (seasonIndex: number, langCode: string = "EN") => {
+    const season = seasonsDraft[seasonIndex];
+    if (!season) return;
+
+    const hasTmdbId = season.episodes.some((episode) => Boolean(episode.tmdbId || payload.tmdbId));
+    if (!hasTmdbId) {
+      alert("Please enter TMDB ID first");
+      return;
+    }
+
+    const lang = LANGUAGES.find((item) => item.code === langCode);
+
+    setSeasonsDraft((prev) =>
+      prev.map((currentSeason, currentSeasonIndex) => {
+        if (currentSeasonIndex !== seasonIndex) return currentSeason;
+
+        return {
+          ...currentSeason,
+          episodes: currentSeason.episodes.map((episode) => {
+            const tmdbId = episode.tmdbId || payload.tmdbId;
+            if (!tmdbId) return episode;
+
+            const embedUrl = getSeriesEpisodeEmbedUrl(tmdbId, currentSeason.seasonNumber, episode.episodeNumber);
+            const currentSources = episode.videoSources || [];
+            const existingSource = currentSources.find((source) => source.language === langCode);
+
+            if (existingSource) {
+              return {
+                ...episode,
+                videoSources: currentSources.map((source) =>
+                  source.language === langCode ? { ...source, embedLink: embedUrl } : source
+                )
+              };
+            }
+
+            return {
+              ...episode,
+              videoSources: [
+                ...currentSources,
+                {
+                  language: langCode,
+                  languageLabel: lang?.name || "English",
+                  hlsLink: "",
+                  mp4Link: "",
+                  embedLink: embedUrl,
+                  quality: "HD",
+                  isPrimary: currentSources.length === 0
+                }
+              ]
+            };
+          })
+        };
+      })
+    );
+  };
+
   const getSeriesEpisodeEmbedUrl = (tmdbId?: string, seasonNumber?: number, episodeNumber?: number) => {
     if (!tmdbId) return "";
     return `https://vidfast.pro/tv/${tmdbId}/${seasonNumber || 1}/${episodeNumber || 1}?autoPlay=true`;
@@ -1565,6 +1621,13 @@ export default function AdminPage() {
                     </div>
                     <span className="text-sm text-gray-500">{season.episodes.length} episode{season.episodes.length !== 1 ? 's' : ''}</span>
                     <div className="ml-auto flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => autoFillSeasonEmbedLinks(seasonIndex, "EN")}
+                        className="rounded-lg bg-purple-600/20 px-3 py-1.5 text-xs text-purple-400 hover:bg-purple-600/30"
+                      >
+                        Fill Season EN
+                      </button>
                       <button type="button" onClick={() => addEpisode(seasonIndex)} className="rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20">+ Episode</button>
                       {seasonsDraft.length > 1 && <button type="button" onClick={() => removeSeason(seasonIndex)} className="rounded-lg bg-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/30">Remove</button>}
                     </div>
