@@ -8,6 +8,7 @@ import "@vidstack/react/player/styles/base.css";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import PlayerjsPlayer from "./PlayerjsPlayer";
+import { ContentType } from "@/types/content";
 
 interface VideoPlayerProps {
   src: string;
@@ -15,6 +16,11 @@ interface VideoPlayerProps {
   introStart?: number;
   introEnd?: number;
   outroStart?: number;
+  slug?: string;
+  type?: ContentType;
+  seasonNumber?: number;
+  episodeNumber?: number;
+  title?: string;
 }
 
 type PlayerType = "native" | "vidstack" | "mux" | "webcomponent" | "playerjs";
@@ -165,7 +171,7 @@ function NativeAudioSelector({ videoRef }: { videoRef: React.RefObject<HTMLVideo
   );
 }
 
-export function VideoPlayer({ src, poster, introStart, introEnd, outroStart }: VideoPlayerProps) {
+export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slug, type, seasonNumber, episodeNumber, title }: VideoPlayerProps) {
   const [playerType, setPlayerType] = useState<PlayerType>("native");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -258,6 +264,105 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart }: V
       videoRef.current.currentTime = outroStart;
     }
   };
+
+  const CONTINUE_KEY = "watchmirror_continue_watching";
+
+  const saveContinueWatching = useCallback((currentTime: number, duration: number) => {
+    if (!slug || !type || !videoRef.current || duration <= 0) return;
+    
+    const progress = currentTime / duration;
+    if (progress < 0.05 || progress > 0.95) return;
+
+    try {
+      const existing = localStorage.getItem(CONTINUE_KEY);
+      const items = existing ? JSON.parse(existing) : [];
+      
+      const newItem = {
+        slug,
+        type,
+        title: title || "",
+        poster: poster || "",
+        currentTime,
+        duration,
+        seasonNumber,
+        episodeNumber,
+        updatedAt: new Date().toISOString()
+      };
+      
+      const idx = items.findIndex((item: any) => 
+        item.slug === slug && 
+        item.seasonNumber === seasonNumber && 
+        item.episodeNumber === episodeNumber
+      );
+      
+      if (idx >= 0) {
+        items[idx] = newItem;
+      } else {
+        items.unshift(newItem);
+      }
+      
+      const sorted = items
+        .sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        .slice(0, 10);
+      
+      localStorage.setItem(CONTINUE_KEY, JSON.stringify(sorted));
+    } catch (e) {
+      console.error("Failed to save continue watching:", e);
+    }
+  }, [slug, type, title, poster, seasonNumber, episodeNumber]);
+
+  useEffect(() => {
+    if (!slug || !videoRef.current || playerType !== "native") return;
+
+    const video = videoRef.current;
+    let saveInterval: NodeJS.Timeout;
+
+    const loadSavedProgress = () => {
+      try {
+        const existing = localStorage.getItem(CONTINUE_KEY);
+        if (!existing) return;
+        const items = JSON.parse(existing);
+        const saved = items.find((item: any) => 
+          item.slug === slug && 
+          item.seasonNumber === seasonNumber && 
+          item.episodeNumber === episodeNumber
+        );
+        if (saved && saved.currentTime && saved.duration) {
+          const progress = saved.currentTime / saved.duration;
+          if (progress > 0.05 && progress < 0.95) {
+            video.currentTime = saved.currentTime;
+          }
+        }
+      } catch (e) {}
+    };
+
+    video.addEventListener('loadedmetadata', loadSavedProgress);
+    
+    const handleTimeUpdate = () => {
+      if (video.currentTime > 0 && video.duration > 0) {
+        saveContinueWatching(video.currentTime, video.duration);
+      }
+    };
+    
+    const handlePause = () => {
+      if (video.currentTime > 0 && video.duration > 0) {
+        saveContinueWatching(video.currentTime, video.duration);
+      }
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('pause', handlePause);
+    
+    return () => {
+      if (video.currentTime > 0 && video.duration > 0) {
+        saveContinueWatching(video.currentTime, video.duration);
+      }
+      video.removeEventListener('loadedmetadata', loadSavedProgress);
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('pause', handlePause);
+      if (saveInterval) clearInterval(saveInterval);
+    };
+  }, [slug, seasonNumber, episodeNumber, playerType, saveContinueWatching]);
 
   const handleSubtitleUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

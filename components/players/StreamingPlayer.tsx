@@ -170,6 +170,11 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
           poster={props.poster}
           introEnd={props.introEnd}
           outroStart={props.outroStart}
+          slug={props.slug}
+          type={props.type}
+          seasonNumber={props.seasonNumber}
+          episodeNumber={props.episodeNumber}
+          title={props.title}
         />
       ) : (
         <IframePlayer src={activeSource.url} />
