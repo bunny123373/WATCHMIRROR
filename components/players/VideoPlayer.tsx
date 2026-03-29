@@ -8,11 +8,12 @@ import "@vidstack/react/player/styles/base.css";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import PlayerjsPlayer from "./PlayerjsPlayer";
-import { ContentType } from "@/types/content";
+import { ContentType, SubtitleTrack } from "@/types/content";
 
 interface VideoPlayerProps {
   src: string;
   poster?: string;
+  subtitleTracks?: SubtitleTrack[];
   introStart?: number;
   introEnd?: number;
   outroStart?: number;
@@ -171,13 +172,12 @@ function NativeAudioSelector({ videoRef }: { videoRef: React.RefObject<HTMLVideo
   );
 }
 
-export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slug, type, seasonNumber, episodeNumber, title }: VideoPlayerProps) {
+export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, introEnd, outroStart, slug, type, seasonNumber, episodeNumber, title }: VideoPlayerProps) {
   const [playerType, setPlayerType] = useState<PlayerType>("native");
   const [showSettings, setShowSettings] = useState(false);
   const [subtitleSize, setSubtitleSize] = useState(100);
   const [subtitleColor, setSubtitleColor] = useState("#ffffff");
   const [subtitleBg, setSubtitleBg] = useState("rgba(0,0,0,0.7)");
-  const [customSubtitle, setCustomSubtitle] = useState<{ name: string; url: string } | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -357,57 +357,6 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slu
     };
   }, [slug, seasonNumber, episodeNumber, playerType, saveContinueWatching]);
 
-  const handleSubtitleUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const validTypes = ['.srt', '.vtt', '.txt'];
-    const ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-    if (!validTypes.includes(ext)) {
-      alert('Please upload a .srt or .vtt subtitle file');
-      return;
-    }
-
-    const url = URL.createObjectURL(file);
-    setCustomSubtitle({ name: file.name, url });
-  }, []);
-
-  const removeCustomSubtitle = useCallback(() => {
-    if (customSubtitle?.url) {
-      URL.revokeObjectURL(customSubtitle.url);
-    }
-    setCustomSubtitle(null);
-  }, [customSubtitle]);
-
-  useEffect(() => {
-    return () => {
-      if (customSubtitle?.url) {
-        URL.revokeObjectURL(customSubtitle.url);
-      }
-    };
-  }, [customSubtitle]);
-
-  useEffect(() => {
-    if (!customSubtitle || !videoRef.current) return;
-    
-    const video = videoRef.current;
-    const track = document.createElement('track');
-    track.kind = 'subtitles';
-    track.src = customSubtitle.url;
-    track.srclang = 'en';
-    track.label = 'Custom';
-    track.default = true;
-    
-    video.appendChild(track);
-    track.track.mode = 'showing';
-    
-    return () => {
-      if (track.parentNode === video) {
-        video.removeChild(track);
-      }
-    };
-  }, [customSubtitle]);
-
   const playerOptions = [
     { type: "native" as PlayerType, label: "Native", available: true },
     { type: "mux" as PlayerType, label: "Mux", available: isMux },
@@ -503,35 +452,6 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slu
               )}
             </div>
           )}
-          {playerType === "native" && (
-            <div className="absolute top-2 left-14 z-20">
-              {customSubtitle ? (
-                <button
-                  onClick={removeCustomSubtitle}
-                  className="flex items-center gap-1 rounded bg-red-600/80 px-2 py-1 text-xs text-white hover:bg-red-600"
-                  title="Remove custom subtitle"
-                >
-                  <span>{customSubtitle.name}</span>
-                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              ) : (
-                <label className="flex items-center gap-1 rounded bg-white/10 px-2 py-1.5 text-xs text-white hover:bg-white/20 cursor-pointer">
-                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                  <span>Upload Subtitle</span>
-                  <input
-                    type="file"
-                    accept=".srt,.vtt,.txt"
-                    onChange={handleSubtitleUpload}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Native Player */}
@@ -551,15 +471,16 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slu
               playsInline
               className="h-full w-full"
             >
-              {customSubtitle && (
+              {subtitleTracks.map((track) => (
                 <track
+                  key={`${track.lang}-${track.label}-${track.url}`}
                   kind="subtitles"
-                  src={customSubtitle.url}
-                  srcLang="en"
-                  label="Custom"
-                  default
+                  src={track.url}
+                  srcLang={track.lang}
+                  label={track.label}
+                  default={track.isDefault}
                 />
-              )}
+              ))}
             </video>
             <div className="absolute top-2 left-2 z-20">
               <NativeAudioSelector videoRef={videoRef} />
@@ -617,6 +538,7 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slu
             src={src}
             poster={poster}
             title={""}
+            subtitle={subtitleTracks.find((track) => track.isDefault)?.url || subtitleTracks[0]?.url}
           />
         )}
       </div>

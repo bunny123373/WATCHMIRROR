@@ -168,6 +168,7 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
         <VideoPlayer 
           src={activeSource.url} 
           poster={props.poster}
+          subtitleTracks={currentLanguageSource?.subtitleTracks || props.subtitleTracks}
           introEnd={props.introEnd}
           outroStart={props.outroStart}
           slug={props.slug}
