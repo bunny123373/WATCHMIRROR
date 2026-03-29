@@ -405,11 +405,19 @@ export default function AdminPage() {
               tmdbId: ep.tmdbId,
               imdbId: "",
               hlsLink: "",
-              embedIframeLink: "",
+              embedIframeLink: getSeriesEpisodeEmbedUrl(payload.tmdbId, season.seasonNumber, ep.episodeNumber),
               backupHlsLink: "",
               backupEmbedIframeLink: "",
               subtitleTracks: [],
-              videoSources: [],
+              videoSources: [{
+                language: "EN",
+                languageLabel: "English",
+                hlsLink: "",
+                mp4Link: "",
+                embedLink: getSeriesEpisodeEmbedUrl(payload.tmdbId, season.seasonNumber, ep.episodeNumber),
+                quality: "HD",
+                isPrimary: true
+              }],
               releaseAt: "",
               quality: "HD"
             }))
