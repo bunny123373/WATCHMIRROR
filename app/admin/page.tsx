@@ -190,7 +190,7 @@ export default function AdminPage() {
                 languageLabel: "English",
                 hlsLink: "",
                 mp4Link: "",
-                embedLink: `https://vidfast.pro/tv/${ep.tmdb || item.tmdb}/${sNum}/${ep.episode || ep.episodeNumber || 1}?autoPlay=true`,
+                embedLink: `https://vidfast.pro/tv/${ep.tmdb || item.tmdb}/${sNum}/${ep.episode || ep.episodeNumber || 1}?autoPlay=true&nextButton=true&autoNext=true`,
                 quality: "HD",
                 isPrimary: true
               }],
@@ -618,7 +618,7 @@ export default function AdminPage() {
 
   const getSeriesEpisodeEmbedUrl = (tmdbId?: string, seasonNumber?: number, episodeNumber?: number) => {
     if (!tmdbId) return "";
-    return `https://vidfast.pro/tv/${tmdbId}/${seasonNumber || 1}/${episodeNumber || 1}?autoPlay=true`;
+    return `https://vidfast.pro/tv/${tmdbId}/${seasonNumber || 1}/${episodeNumber || 1}?autoPlay=true&nextButton=true&autoNext=true`;
   };
 
   const addEpisodeVideoSource = (seasonIndex: number, episodeIndex: number, langCode: string) => {
