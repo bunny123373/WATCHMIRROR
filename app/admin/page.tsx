@@ -190,7 +190,7 @@ export default function AdminPage() {
                 languageLabel: "English",
                 hlsLink: "",
                 mp4Link: "",
-                embedLink: `https://vidsrc-embed.ru/embed/tv/${embedId}/${sNum}-${ep.episode || ep.episodeNumber || 1}`,
+                embedLink: `https://vidfast.pro/tv/${ep.tmdb || item.tmdb}/${sNum}/${ep.episode || ep.episodeNumber || 1}?autoPlay=true`,
                 quality: "HD",
                 isPrimary: true
               }],
@@ -566,12 +566,11 @@ export default function AdminPage() {
     const season = seasonsDraft[seasonIndex];
     if (!episode) return;
     const epTmdbId = episode.tmdbId || payload.tmdbId;
-    const epImdbId = episode.imdbId || payload.imdbId;
-    if (!epTmdbId && !epImdbId) {
-      alert("Please enter TMDB ID or IMDB ID first");
+    if (!epTmdbId) {
+      alert("Please enter TMDB ID first");
       return;
     }
-    const embedUrl = getVidsrcEpisodeEmbedUrl(epTmdbId, epImdbId, season.seasonNumber, episode.episodeNumber);
+    const embedUrl = getSeriesEpisodeEmbedUrl(epTmdbId, season.seasonNumber, episode.episodeNumber);
     const lang = LANGUAGES.find(l => l.code === langCode);
     setSeasonsDraft(prev => prev.map((s, sIdx) => {
       if (sIdx !== seasonIndex) return s;
@@ -604,10 +603,9 @@ export default function AdminPage() {
     }));
   };
 
-  const getVidsrcEpisodeEmbedUrl = (tmdbId?: string, imdbId?: string, seasonNumber?: number, episodeNumber?: number) => {
-    if (!tmdbId && !imdbId) return "";
-    const id = imdbId || tmdbId;
-    return `https://vidsrc-embed.ru/embed/tv/${id}/${seasonNumber || 1}-${episodeNumber || 1}`;
+  const getSeriesEpisodeEmbedUrl = (tmdbId?: string, seasonNumber?: number, episodeNumber?: number) => {
+    if (!tmdbId) return "";
+    return `https://vidfast.pro/tv/${tmdbId}/${seasonNumber || 1}/${episodeNumber || 1}?autoPlay=true`;
   };
 
   const addEpisodeVideoSource = (seasonIndex: number, episodeIndex: number, langCode: string) => {
@@ -623,8 +621,8 @@ export default function AdminPage() {
           const currentSources = ep.videoSources || [];
           if (currentSources.some(v => v.language === langCode)) return ep;
           const epTmdbId = ep.tmdbId || (seasonsDraft[sIdx] as any)?.tmdbId || payload.tmdbId;
-          const epImdbId = ep.imdbId || (seasonsDraft[sIdx] as any)?.imdbId || payload.imdbId;
-          const embedUrl = getVidsrcEpisodeEmbedUrl(epTmdbId, epImdbId, season.seasonNumber, ep.episodeNumber);
+          if (!epTmdbId) return ep;
+          const embedUrl = getSeriesEpisodeEmbedUrl(epTmdbId, season.seasonNumber, ep.episodeNumber);
           return {
             ...ep,
             videoSources: [...currentSources, {

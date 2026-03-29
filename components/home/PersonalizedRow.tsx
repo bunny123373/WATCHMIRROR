@@ -6,10 +6,20 @@ import Link from "next/link";
 import { useAppSelector } from "@/store/hooks";
 import { Content } from "@/types/content";
 
-function scoreItem(item: Content, watched: Set<string>, preferredLanguage: string): number {
+function scoreItem(
+  item: Content,
+  watched: Set<string>,
+  preferredType: string,
+  favoriteCategories: Set<string>,
+  favoriteTags: Set<string>,
+  favoriteLanguages: Set<string>
+): number {
   let score = 0;
   if (watched.has(item.slug)) score -= 100;
-  if (preferredLanguage && item.language?.toLowerCase() === preferredLanguage) score += 20;
+  if (preferredType && item.type === preferredType) score += 24;
+  if (favoriteCategories.has((item.category || "").toLowerCase())) score += 18;
+  if (favoriteLanguages.has((item.language || "").toLowerCase())) score += 12;
+  score += (item.tags || []).reduce((sum, tag) => sum + (favoriteTags.has(tag.toLowerCase()) ? 8 : 0), 0);
   score += item.popularity || 0;
   score += (item.rating || 0) * 8;
   return score;
@@ -30,13 +40,37 @@ export default function PersonalizedRow() {
   }, []);
 
   const recommendations = useMemo(() => {
-    if (!items.length) return [];
+    if (!items.length || !watchedItems.length) return [];
+
     const watchedSlugs = new Set(watchedItems.map((item) => item.slug));
-    const preferredLanguage = (navigator.language || "en").slice(0, 2).toLowerCase();
+    const watchedContent = items.filter((item) => watchedSlugs.has(item.slug));
+
+    if (!watchedContent.length) return [];
+
+    const typeCounts = watchedContent.reduce<Record<string, number>>((acc, item) => {
+      acc[item.type] = (acc[item.type] || 0) + 1;
+      return acc;
+    }, {});
+
+    const preferredType =
+      Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
+    const favoriteCategories = new Set(
+      watchedContent.map((item) => (item.category || "").toLowerCase()).filter(Boolean)
+    );
+    const favoriteTags = new Set(
+      watchedContent.flatMap((item) => (item.tags || []).map((tag) => tag.toLowerCase()))
+    );
+    const favoriteLanguages = new Set(
+      watchedContent.map((item) => (item.language || "").toLowerCase()).filter(Boolean)
+    );
 
     return [...items]
-      .sort((a, b) => scoreItem(b, watchedSlugs, preferredLanguage) - scoreItem(a, watchedSlugs, preferredLanguage))
       .filter((item) => !watchedSlugs.has(item.slug))
+      .sort(
+        (a, b) =>
+          scoreItem(b, watchedSlugs, preferredType, favoriteCategories, favoriteTags, favoriteLanguages) -
+          scoreItem(a, watchedSlugs, preferredType, favoriteCategories, favoriteTags, favoriteLanguages)
+      )
       .slice(0, 12);
   }, [items, watchedItems]);
 
@@ -44,7 +78,7 @@ export default function PersonalizedRow() {
 
   return (
     <section className="space-y-4">
-      <h2 className="font-[var(--font-heading)] text-2xl">Recommended For You</h2>
+      <h2 className="font-[var(--font-heading)] text-2xl text-white">Because You Watched</h2>
       <div className="scrollbar-thin flex gap-4 overflow-x-auto pb-2">
         {recommendations.map((item) => {
           const href = item.type === "movie" ? `/movie/${item.slug}` : `/series/${item.slug}`;

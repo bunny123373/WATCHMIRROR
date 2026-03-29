@@ -25,6 +25,8 @@ interface VideoPlayerProps {
   seasonNumber?: number;
   episodeNumber?: number;
   title?: string;
+  onNearEndChange?: (payload: { isNearEnd: boolean; remainingTime: number; duration: number }) => void;
+  onEnded?: () => void;
 }
 
 type PlayerType = "native" | "videojs" | "vidstack" | "mux" | "webcomponent" | "playerjs";
@@ -182,7 +184,21 @@ function NativeAudioSelector({ videoRef }: { videoRef: React.RefObject<HTMLVideo
   );
 }
 
-export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, introEnd, outroStart, slug, type, seasonNumber, episodeNumber, title }: VideoPlayerProps) {
+export function VideoPlayer({
+  src,
+  poster,
+  subtitleTracks = [],
+  introStart,
+  introEnd,
+  outroStart,
+  slug,
+  type,
+  seasonNumber,
+  episodeNumber,
+  title,
+  onNearEndChange,
+  onEnded
+}: VideoPlayerProps) {
   const dispatch = useAppDispatch();
   const [playerType, setPlayerType] = useState<PlayerType>("native");
   const [showSettings, setShowSettings] = useState(false);
@@ -468,18 +484,32 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
     
     const handleTimeUpdate = () => {
       if (video.currentTime > 0 && video.duration > 0) {
+        const remainingTime = Math.max(0, video.duration - video.currentTime);
+        onNearEndChange?.({
+          isNearEnd: remainingTime <= 15,
+          remainingTime,
+          duration: video.duration
+        });
         syncContinueWatching(video.currentTime, video.duration);
       }
     };
     
     const handlePause = () => {
+      const remainingTime = Math.max(0, (video.duration || 0) - video.currentTime);
+      onNearEndChange?.({ isNearEnd: false, remainingTime, duration: video.duration || 0 });
       if (video.currentTime > 0 && video.duration > 0) {
         syncContinueWatching(video.currentTime, video.duration, true);
       }
     };
 
+    const handleEnded = () => {
+      onNearEndChange?.({ isNearEnd: false, remainingTime: 0, duration: video.duration || 0 });
+      onEnded?.();
+    };
+
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('pause', handlePause);
+    video.addEventListener('ended', handleEnded);
     
     return () => {
       if (video.currentTime > 0 && video.duration > 0) {
@@ -488,8 +518,9 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
       video.removeEventListener('loadedmetadata', loadSavedProgress);
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('pause', handlePause);
+      video.removeEventListener('ended', handleEnded);
     };
-  }, [dispatch, episodeNumber, playerType, seasonNumber, slug, syncContinueWatching]);
+  }, [dispatch, episodeNumber, onEnded, onNearEndChange, playerType, seasonNumber, slug, syncContinueWatching]);
 
   const playerOptions = [
     { type: "native" as PlayerType, label: "Native", available: true },

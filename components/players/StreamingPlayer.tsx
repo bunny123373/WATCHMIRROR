@@ -33,6 +33,8 @@ interface StreamingPlayerProps {
   introStart?: number;
   introEnd?: number;
   outroStart?: number;
+  onNearEndChange?: (payload: { isNearEnd: boolean; remainingTime: number; duration: number }) => void;
+  onEnded?: () => void;
 }
 
 const LANGUAGES = [
@@ -153,6 +155,8 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
           seasonNumber={props.seasonNumber}
           episodeNumber={props.episodeNumber}
           title={props.title}
+          onNearEndChange={props.onNearEndChange}
+          onEnded={props.onEnded}
         />
       ) : (
         <IframePlayer src={activeSource.url} />

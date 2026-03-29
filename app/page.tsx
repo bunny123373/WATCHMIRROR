@@ -1,5 +1,6 @@
 import HeroBanner from "@/components/home/HeroBanner";
 import ContinueWatchingRow from "@/components/home/ContinueWatchingRow";
+import PersonalizedRow from "@/components/home/PersonalizedRow";
 import TopTenRow from "@/components/home/TopTenRow";
 import MyListRow from "@/components/home/MyListRow";
 import ContentRow from "@/components/common/ContentRow";
@@ -21,6 +22,7 @@ export default async function HomePage() {
       <TopTenRow items={data.trending} />
       <MyListRow />
       <ContinueWatchingRow />
+      <PersonalizedRow />
       
       <ContentRow title="Trending Now" items={data.trending} />
       <ContentRow title="Top Rated" items={data.topRated} />

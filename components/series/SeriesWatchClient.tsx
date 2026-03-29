@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -28,6 +28,8 @@ export default function SeriesWatchClient({ content }: { content: Content }) {
 
   const [seasonNumber, setSeasonNumber] = useState(seasons[0]?.seasonNumber || 1);
   const [episodeNumber, setEpisodeNumber] = useState(seasons[0]?.episodes?.[0]?.episodeNumber || 1);
+  const [autoNextActive, setAutoNextActive] = useState(false);
+  const [countdown, setCountdown] = useState(15);
 
   const season = useMemo(() => seasons.find((item) => item.seasonNumber === seasonNumber), [seasons, seasonNumber]);
   const episode = useMemo(
@@ -64,26 +66,105 @@ export default function SeriesWatchClient({ content }: { content: Content }) {
     }
   };
 
+  useEffect(() => {
+    setAutoNextActive(false);
+    setCountdown(15);
+  }, [seasonNumber, episodeNumber]);
+
+  useEffect(() => {
+    if (!autoNextActive || !nextEpisode?.episode) return;
+
+    const timer = window.setInterval(() => {
+      setCountdown((value) => {
+        if (value <= 1) {
+          window.clearInterval(timer);
+          goToNext();
+          return 15;
+        }
+        return value - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [autoNextActive, nextEpisode?.episode]);
+
+  const handleNearEndChange = ({ isNearEnd, remainingTime }: { isNearEnd: boolean; remainingTime: number; duration: number }) => {
+    if (!nextEpisode?.episode) {
+      setAutoNextActive(false);
+      return;
+    }
+
+    if (isNearEnd) {
+      setCountdown(Math.max(1, Math.min(15, Math.ceil(remainingTime))));
+      setAutoNextActive(true);
+      return;
+    }
+
+    setAutoNextActive(false);
+    setCountdown(15);
+  };
+
+  const cancelAutoNext = () => {
+    setAutoNextActive(false);
+    setCountdown(15);
+  };
+
   return (
     <div className="space-y-6">
-      <StreamingPlayer
-        type="series"
-        slug={content.slug}
-        title={`${content.title} - ${episode?.episodeTitle || "Episode " + episode?.episodeNumber}`}
-        poster={content.poster}
-        tmdbId={episode?.tmdbId || content.tmdbId}
-        imdbId={episode?.imdbId || content.imdbId}
-        hlsLink={episode?.hlsLink}
-        embedIframeLink={episode?.embedIframeLink}
-        backupHlsLink={episode?.backupHlsLink}
-        backupEmbedIframeLink={episode?.backupEmbedIframeLink}
-        subtitleTracks={episode?.subtitleTracks}
-        videoSources={episode?.videoSources}
-        seasonNumber={seasonNumber}
-        episodeNumber={episode?.episodeNumber}
-        introEnd={episode?.introEnd}
-        outroStart={episode?.outroStart}
-      />
+      <div className="relative">
+        <StreamingPlayer
+          type="series"
+          slug={content.slug}
+          title={`${content.title} - ${episode?.episodeTitle || "Episode " + episode?.episodeNumber}`}
+          poster={content.poster}
+          tmdbId={episode?.tmdbId || content.tmdbId}
+          imdbId={episode?.imdbId || content.imdbId}
+          hlsLink={episode?.hlsLink}
+          embedIframeLink={episode?.embedIframeLink}
+          backupHlsLink={episode?.backupHlsLink}
+          backupEmbedIframeLink={episode?.backupEmbedIframeLink}
+          subtitleTracks={episode?.subtitleTracks}
+          videoSources={episode?.videoSources}
+          seasonNumber={seasonNumber}
+          episodeNumber={episode?.episodeNumber}
+          introEnd={episode?.introEnd}
+          outroStart={episode?.outroStart}
+          onNearEndChange={handleNearEndChange}
+          onEnded={() => {
+            cancelAutoNext();
+            goToNext();
+          }}
+        />
+
+        {autoNextActive && nextEpisode?.episode && (
+          <div className="pointer-events-none absolute bottom-16 right-4 z-30 max-w-xs rounded-2xl border border-white/10 bg-black/85 p-4 text-white shadow-2xl backdrop-blur">
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-400">Up Next</p>
+            <p className="mt-2 text-sm font-semibold">
+              Season {nextEpisode.season}, Episode {nextEpisode.episode}
+            </p>
+            <p className="mt-1 text-xs text-gray-300">
+              Playing next in {countdown}s
+            </p>
+            <div className="mt-3 flex gap-2 pointer-events-auto">
+              <button
+                onClick={cancelAutoNext}
+                className="rounded-lg border border-white/15 px-3 py-2 text-xs text-white hover:bg-white/10"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  cancelAutoNext();
+                  goToNext();
+                }}
+                className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+              >
+                Play Now
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="mx-4 rounded-xl bg-[#181818] border border-white/5 md:mx-8">
         <div className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
