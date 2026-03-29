@@ -10,6 +10,8 @@ import "@vidstack/react/player/styles/default/layouts/video.css";
 import PlayerjsPlayer from "./PlayerjsPlayer";
 import VideojsPlayer from "./VideojsPlayer";
 import { ContentType, SubtitleTrack } from "@/types/content";
+import { useAppDispatch } from "@/store/hooks";
+import { removeContinue, upsertContinue } from "@/store/slices/continueSlice";
 
 interface VideoPlayerProps {
   src: string;
@@ -26,6 +28,13 @@ interface VideoPlayerProps {
 }
 
 type PlayerType = "native" | "videojs" | "vidstack" | "mux" | "webcomponent" | "playerjs";
+const CONTINUE_KEY = "watchmirror_continue_watching";
+const PROFILE_KEY = "watchmirror_profile";
+
+function getActiveProfileName(): string {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem(PROFILE_KEY)?.trim() || "";
+}
 
 function AudioTrackSelectorVidstack() {
   const audioOptions = useAudioOptions();
@@ -174,6 +183,7 @@ function NativeAudioSelector({ videoRef }: { videoRef: React.RefObject<HTMLVideo
 }
 
 export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, introEnd, outroStart, slug, type, seasonNumber, episodeNumber, title }: VideoPlayerProps) {
+  const dispatch = useAppDispatch();
   const [playerType, setPlayerType] = useState<PlayerType>("native");
   const [showSettings, setShowSettings] = useState(false);
   const [subtitleSize, setSubtitleSize] = useState(100);
@@ -184,6 +194,7 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
   const hlsRef = useRef<Hls | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const vidstackRef = useRef<any>(null);
+  const lastSyncedTimeRef = useRef(0);
 
   const isHLS = src?.includes('.m3u8') || src?.includes('mux.com') || src?.includes('stream.mux');
   const isMux = src?.includes('mux.com') || src?.includes('stream.mux') || src?.includes('mux.net');
@@ -299,13 +310,10 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
     }
   };
 
-  const CONTINUE_KEY = "watchmirror_continue_watching";
-
   const saveContinueWatching = useCallback((currentTime: number, duration: number) => {
     if (!slug || !type || !videoRef.current || duration <= 0) return;
     
     const progress = currentTime / duration;
-    if (progress < 0.05 || progress > 0.95) return;
 
     try {
       const existing = localStorage.getItem(CONTINUE_KEY);
@@ -323,13 +331,17 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
         updatedAt: new Date().toISOString()
       };
       
-      const idx = items.findIndex((item: any) => 
+      const idx = items.findIndex((item: any) =>
         item.slug === slug && 
         item.seasonNumber === seasonNumber && 
         item.episodeNumber === episodeNumber
       );
       
-      if (idx >= 0) {
+      if (progress < 0.05 || progress > 0.95) {
+        if (idx >= 0) {
+          items.splice(idx, 1);
+        }
+      } else if (idx >= 0) {
         items[idx] = newItem;
       } else {
         items.unshift(newItem);
@@ -345,41 +357,124 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
     }
   }, [slug, type, title, poster, seasonNumber, episodeNumber]);
 
+  const syncContinueWatching = useCallback(async (currentTime: number, duration: number, force = false) => {
+    if (!slug || !type || duration <= 0) return;
+
+    const progressItem = {
+      slug,
+      type,
+      title: title || "",
+      poster: poster || "",
+      currentTime,
+      duration,
+      seasonNumber,
+      episodeNumber
+    };
+
+    saveContinueWatching(currentTime, duration);
+
+    const progress = currentTime / duration;
+    if (progress < 0.05 || progress > 0.95) {
+      dispatch(removeContinue({ slug, seasonNumber, episodeNumber }));
+    } else {
+      dispatch(
+        upsertContinue({
+          ...progressItem,
+          updatedAt: new Date().toISOString()
+        })
+      );
+    }
+
+    const profileName = getActiveProfileName();
+    if (!profileName) return;
+    if (!force && Math.abs(currentTime - lastSyncedTimeRef.current) < 10) return;
+    lastSyncedTimeRef.current = currentTime;
+
+    try {
+      const res = await fetch("/api/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          profileName,
+          ...progressItem
+        })
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      if (data.removed) {
+        dispatch(removeContinue({ slug, seasonNumber, episodeNumber }));
+        return;
+      }
+
+      if (data.item) {
+        dispatch(upsertContinue(data.item));
+      }
+    } catch {}
+  }, [dispatch, episodeNumber, poster, saveContinueWatching, seasonNumber, slug, title, type]);
+
   useEffect(() => {
     if (!slug || !videoRef.current || playerType !== "native") return;
 
     const video = videoRef.current;
 
-    const loadSavedProgress = () => {
+    const loadSavedProgress = async () => {
       try {
+        const profileName = getActiveProfileName();
+        if (profileName) {
+          const params = new URLSearchParams({
+            profile: profileName,
+            slug
+          });
+
+          if (seasonNumber !== undefined) params.set("seasonNumber", String(seasonNumber));
+          if (episodeNumber !== undefined) params.set("episodeNumber", String(episodeNumber));
+
+          const res = await fetch(`/api/progress?${params.toString()}`, { cache: "no-store" });
+          if (res.ok) {
+            const data = await res.json();
+            const saved = data.item;
+            if (saved?.currentTime && saved?.duration) {
+              const progress = saved.currentTime / saved.duration;
+              if (progress > 0.05 && progress < 0.95) {
+                video.currentTime = saved.currentTime;
+                dispatch(upsertContinue(saved));
+                return;
+              }
+            }
+          }
+        }
+
         const existing = localStorage.getItem(CONTINUE_KEY);
         if (!existing) return;
         const items = JSON.parse(existing);
-        const saved = items.find((item: any) => 
-          item.slug === slug && 
-          item.seasonNumber === seasonNumber && 
+        const saved = items.find((item: any) =>
+          item.slug === slug &&
+          item.seasonNumber === seasonNumber &&
           item.episodeNumber === episodeNumber
         );
         if (saved && saved.currentTime && saved.duration) {
           const progress = saved.currentTime / saved.duration;
           if (progress > 0.05 && progress < 0.95) {
             video.currentTime = saved.currentTime;
+            dispatch(upsertContinue(saved));
           }
         }
-      } catch (e) {}
+      } catch {}
     };
 
     video.addEventListener('loadedmetadata', loadSavedProgress);
     
     const handleTimeUpdate = () => {
       if (video.currentTime > 0 && video.duration > 0) {
-        saveContinueWatching(video.currentTime, video.duration);
+        syncContinueWatching(video.currentTime, video.duration);
       }
     };
     
     const handlePause = () => {
       if (video.currentTime > 0 && video.duration > 0) {
-        saveContinueWatching(video.currentTime, video.duration);
+        syncContinueWatching(video.currentTime, video.duration, true);
       }
     };
 
@@ -388,13 +483,13 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
     
     return () => {
       if (video.currentTime > 0 && video.duration > 0) {
-        saveContinueWatching(video.currentTime, video.duration);
+        syncContinueWatching(video.currentTime, video.duration, true);
       }
       video.removeEventListener('loadedmetadata', loadSavedProgress);
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('pause', handlePause);
     };
-  }, [slug, seasonNumber, episodeNumber, playerType, saveContinueWatching]);
+  }, [dispatch, episodeNumber, playerType, seasonNumber, slug, syncContinueWatching]);
 
   const playerOptions = [
     { type: "native" as PlayerType, label: "Native", available: true },
