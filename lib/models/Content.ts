@@ -25,6 +25,7 @@ const videoSourceSchema = new Schema(
     languageLabel: { type: String, required: true },
     hlsLink: { type: String, default: "" },
     mp4Link: { type: String, default: "" },
+    embedLink: { type: String, default: "" },
     quality: { type: String, default: "HD" },
     isPrimary: { type: Boolean, default: false },
     subtitleTracks: { type: [subtitleTrackSchema], default: [] }

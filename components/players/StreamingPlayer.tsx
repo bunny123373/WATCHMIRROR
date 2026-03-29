@@ -52,6 +52,12 @@ const LANGUAGES = [
 export default function StreamingPlayer(props: StreamingPlayerProps) {
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [activeSourceIndex, setActiveSourceIndex] = useState(0);
+  const hasUsableSource = (source?: VideoSource | null) =>
+    Boolean(
+      source?.hlsLink?.trim() ||
+      source?.mp4Link?.trim() ||
+      source?.embedLink?.trim()
+    );
 
   const vidsrcEmbedUrl = useMemo(() => {
     if (props.tmdbId || props.imdbId) {
@@ -74,7 +80,8 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
 
   const languageSources = useMemo(() => {
     if (!props.videoSources || props.videoSources.length === 0) return null;
-    return props.videoSources;
+    const validSources = props.videoSources.filter(hasUsableSource);
+    return validSources.length > 0 ? validSources : null;
   }, [props.videoSources]);
 
   const availableLanguages = useMemo(() => {
