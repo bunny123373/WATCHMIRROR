@@ -179,6 +179,7 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
   const [subtitleSize, setSubtitleSize] = useState(100);
   const [subtitleColor, setSubtitleColor] = useState("#ffffff");
   const [subtitleBg, setSubtitleBg] = useState("rgba(0,0,0,0.7)");
+  const playerShellRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -241,6 +242,43 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    type ScreenLockMode = "any" | "natural" | "landscape" | "portrait" | "portrait-primary" | "portrait-secondary" | "landscape-primary" | "landscape-secondary";
+    const orientation = screen.orientation as (ScreenOrientation & {
+      lock?: (orientation: ScreenLockMode) => Promise<void>;
+      unlock?: () => void;
+    }) | undefined;
+
+    const handleFullscreenChange = async () => {
+      const fullscreenElement = document.fullscreenElement;
+      const playerShell = playerShellRef.current;
+      const isPlayerFullscreen = Boolean(
+        fullscreenElement &&
+        playerShell &&
+        (fullscreenElement === playerShell || playerShell.contains(fullscreenElement))
+      );
+
+      if (isPlayerFullscreen) {
+        try {
+          await orientation?.lock?.("landscape");
+        } catch {}
+        return;
+      }
+
+      try {
+        orientation?.unlock?.();
+      } catch {}
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      try {
+        orientation?.unlock?.();
+      } catch {}
+    };
   }, []);
 
   const skipTo = (time: number) => {
@@ -369,7 +407,7 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
 
   return (
     <div className="w-full bg-black">
-      <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+      <div ref={playerShellRef} className="relative w-full" style={{ aspectRatio: '16/9' }}>
         {/* Controls Bar */}
         <div className="absolute top-2 right-2 z-20 flex gap-2">
           {(introEnd || outroStart) && (playerType === "native" || playerType === "playerjs") && (
