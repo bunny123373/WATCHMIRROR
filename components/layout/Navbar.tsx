@@ -21,7 +21,7 @@ export default function Navbar() {
   const dispatch = useAppDispatch();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const isWatchPage = pathname?.startsWith("/series/watch") || pathname?.startsWith("/movies/watch");
+  const isWatchPage = pathname?.startsWith("/series/watch") || pathname?.startsWith("/movies/watch") || pathname?.startsWith("/watch/");
 
   if (isWatchPage) return null;
 

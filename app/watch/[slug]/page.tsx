@@ -26,7 +26,7 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ slu
   const similar = await getSimilarContent(content);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black -mt-14 md:-mt-20">
       <Link 
         href={`/movie/${content.slug}`}
         className="fixed left-3 top-3 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur-sm transition hover:bg-black/90"

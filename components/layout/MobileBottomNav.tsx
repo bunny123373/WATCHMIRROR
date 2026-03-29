@@ -17,6 +17,9 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
 
+  const isWatchPage = pathname?.startsWith("/series/watch") || pathname?.startsWith("/movies/watch") || pathname?.startsWith("/watch/");
+  if (isWatchPage) return null;
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[#0a0a0a]/95 backdrop-blur-xl md:hidden">
       <ul className="flex items-center justify-around px-1">
