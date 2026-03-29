@@ -315,7 +315,6 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slu
     if (!slug || !videoRef.current || playerType !== "native") return;
 
     const video = videoRef.current;
-    let saveInterval: NodeJS.Timeout;
 
     const loadSavedProgress = () => {
       try {
@@ -360,7 +359,6 @@ export function VideoPlayer({ src, poster, introStart, introEnd, outroStart, slu
       video.removeEventListener('loadedmetadata', loadSavedProgress);
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('pause', handlePause);
-      if (saveInterval) clearInterval(saveInterval);
     };
   }, [slug, seasonNumber, episodeNumber, playerType, saveContinueWatching]);
 
