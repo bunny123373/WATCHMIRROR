@@ -1666,7 +1666,7 @@ export default function AdminPage() {
                     onClick={() => autoFillAllSeriesEmbedLinks("EN")}
                     className="rounded-xl bg-purple-600/20 px-4 py-2 text-xs font-bold text-purple-400 transition-all hover:bg-purple-600/30"
                   >
-                    Fill All Seasons EN
+                    Auto Fill All Episodes
                   </button>
                   <button type="button" onClick={addSeason} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-xs font-bold text-white transition-all hover:from-red-500 hover:to-red-600">
                     <Plus className="h-3 w-3" />
