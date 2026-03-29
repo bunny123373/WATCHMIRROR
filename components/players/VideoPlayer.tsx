@@ -8,6 +8,7 @@ import "@vidstack/react/player/styles/base.css";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import PlayerjsPlayer from "./PlayerjsPlayer";
+import VideojsPlayer from "./VideojsPlayer";
 import { ContentType, SubtitleTrack } from "@/types/content";
 
 interface VideoPlayerProps {
@@ -24,7 +25,7 @@ interface VideoPlayerProps {
   title?: string;
 }
 
-type PlayerType = "native" | "vidstack" | "mux" | "webcomponent" | "playerjs";
+type PlayerType = "native" | "videojs" | "vidstack" | "mux" | "webcomponent" | "playerjs";
 
 function AudioTrackSelectorVidstack() {
   const audioOptions = useAudioOptions();
@@ -359,6 +360,7 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
 
   const playerOptions = [
     { type: "native" as PlayerType, label: "Native", available: true },
+    { type: "videojs" as PlayerType, label: "Video.js", available: true },
     { type: "mux" as PlayerType, label: "Mux", available: isMux },
     { type: "vidstack" as PlayerType, label: "Vidstack", available: true },
     { type: "webcomponent" as PlayerType, label: "WebComponent", available: isHLS || isMKV },
@@ -495,6 +497,15 @@ export function VideoPlayer({ src, poster, subtitleTracks = [], introStart, intr
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowFullScreen
             className="h-full w-full border-0"
+          />
+        )}
+
+        {/* Video.js Player */}
+        {playerType === "videojs" && (
+          <VideojsPlayer
+            src={src}
+            poster={poster}
+            subtitleTracks={subtitleTracks}
           />
         )}
 

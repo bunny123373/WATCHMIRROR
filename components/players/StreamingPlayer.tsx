@@ -141,36 +141,6 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
 
   return (
     <div>
-      {languageSources && availableLanguages.length > 1 && (
-        <div className="mx-4 mb-3 rounded-lg border border-[#2a2a2a] bg-[#181818] p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Globe className="h-4 w-4 text-gray-400" />
-            <p className="text-xs text-gray-400">
-              Select Language: <span className="text-white">{currentLanguageSource?.languageLabel}</span>
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {availableLanguages.map((lang) => (
-              <button
-                key={lang.code}
-                onClick={() => {
-                  setSelectedLanguage(lang.code);
-                  setActiveSourceIndex(0);
-                }}
-                className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs ${
-                  (selectedLanguage === lang.code || (!selectedLanguage && lang.code === availableLanguages[0]?.code))
-                    ? "bg-red-600 text-white" 
-                    : "bg-[#2a2a2a] text-gray-300 hover:bg-[#3a3a3a]"
-                }`}
-              >
-                <span>{lang.flag}</span>
-                <span>{lang.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {activeSource.type === "hls" ? (
         <VideoPlayer 
           src={activeSource.url} 
@@ -186,6 +156,36 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
         />
       ) : (
         <IframePlayer src={activeSource.url} />
+      )}
+
+      {languageSources && availableLanguages.length > 1 && (
+        <div className="mx-4 mt-3 rounded-lg border border-[#2a2a2a] bg-[#181818] p-3">
+          <div className="mb-2 flex items-center gap-2">
+            <Globe className="h-4 w-4 text-gray-400" />
+            <p className="text-xs text-gray-400">
+              Language: <span className="text-white">{currentLanguageSource?.languageLabel}</span>
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {availableLanguages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => {
+                  setSelectedLanguage(lang.code);
+                  setActiveSourceIndex(0);
+                }}
+                className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs ${
+                  (selectedLanguage === lang.code || (!selectedLanguage && lang.code === availableLanguages[0]?.code))
+                    ? "bg-red-600 text-white"
+                    : "bg-[#2a2a2a] text-gray-300 hover:bg-[#3a3a3a]"
+                }`}
+              >
+                <span>{lang.flag}</span>
+                <span>{lang.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       {sources.length > 1 && (

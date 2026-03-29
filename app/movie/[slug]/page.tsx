@@ -44,6 +44,9 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   const topTags = (content.tags || []).slice(0, 4);
 
   const mp4Link = content.videoSources?.find(s => s.mp4Link)?.mp4Link || content.videoSources?.[0]?.mp4Link;
+  const directDownloadUrl = mp4Link
+    ? `/api/download?url=${encodeURIComponent(mp4Link)}&title=${encodeURIComponent(content.title)}`
+    : null;
 
   return (
     <div className="min-h-screen bg-[#141414]">
@@ -82,8 +85,8 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               Download
             </a>
           )}
-          {mp4Link && (
-            <a href={mp4Link} download target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded border border-white/20 bg-white/10 px-6 py-3 text-base font-medium text-white transition hover:bg-white/20 md:px-8">
+          {directDownloadUrl && (
+            <a href={directDownloadUrl} className="flex items-center justify-center gap-2 rounded border border-white/20 bg-white/10 px-6 py-3 text-base font-medium text-white transition hover:bg-white/20 md:px-8">
               <Download size={20} /> Direct MP4
             </a>
           )}
