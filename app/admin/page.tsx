@@ -381,6 +381,66 @@ export default function AdminPage() {
     setSeasonsDraft((prev) => [...prev, createSeason(prev.length + 1)]);
   };
 
+  const autoFillSeriesSeasonsAndEpisodes = async () => {
+    if (!payload.tmdbId) {
+      alert("Please enter TMDB ID first");
+      return;
+    }
+
+    try {
+      const seasonsRes = await fetch(`/api/tmdb/seasons/${payload.tmdbId}`);
+      if (!seasonsRes.ok) throw new Error("Failed to fetch seasons");
+      const { seasons } = await seasonsRes.json();
+
+      const filledSeasons = await Promise.all(
+        (Array.isArray(seasons) ? seasons : []).map(async (season: { seasonNumber: number }) => {
+          const episodesRes = await fetch(`/api/tmdb/seasons/${payload.tmdbId}/episodes?season=${season.seasonNumber}`);
+          if (!episodesRes.ok) throw new Error("Failed to fetch episodes");
+          const { episodes } = await episodesRes.json();
+
+          return {
+            seasonNumber: season.seasonNumber,
+            episodes: (Array.isArray(episodes) ? episodes : []).map(
+              (episode: { episodeNumber: number; episodeTitle: string; tmdbId: string }) => {
+                const embedUrl = getSeriesEpisodeEmbedUrl(payload.tmdbId, season.seasonNumber, episode.episodeNumber);
+
+                return {
+                  episodeNumber: episode.episodeNumber,
+                  episodeTitle: episode.episodeTitle,
+                  tmdbId: episode.tmdbId,
+                  imdbId: "",
+                  hlsLink: "",
+                  embedIframeLink: embedUrl,
+                  backupHlsLink: "",
+                  backupEmbedIframeLink: "",
+                  subtitleTracks: [],
+                  videoSources: [
+                    {
+                      language: "EN",
+                      languageLabel: "English",
+                      hlsLink: "",
+                      mp4Link: "",
+                      embedLink: embedUrl,
+                      quality: "HD",
+                      isPrimary: true
+                    }
+                  ],
+                  releaseAt: "",
+                  quality: "HD"
+                };
+              }
+            )
+          };
+        })
+      );
+
+      setSeasonsDraft(filledSeasons.length ? filledSeasons : [createSeason(1)]);
+    } catch (error) {
+      console.error("Failed to auto-fill series seasons and episodes:", error);
+      alert("Failed to auto-fill seasons and episodes. Check the TMDB ID.");
+    }
+  };
+
   const removeSeason = (seasonIndex: number) => {
     setSeasonsDraft((prev) => prev.filter((_, idx) => idx !== seasonIndex).map((season, idx) => ({ ...season, seasonNumber: idx + 1 })));
   };
@@ -1663,10 +1723,17 @@ export default function AdminPage() {
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
+                    onClick={autoFillSeriesSeasonsAndEpisodes}
+                    className="rounded-xl bg-blue-600/20 px-4 py-2 text-xs font-bold text-blue-400 transition-all hover:bg-blue-600/30"
+                  >
+                    Auto Fill Seasons & Episodes
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => autoFillAllSeriesEmbedLinks("EN")}
                     className="rounded-xl bg-purple-600/20 px-4 py-2 text-xs font-bold text-purple-400 transition-all hover:bg-purple-600/30"
                   >
-                    Auto Fill All Episodes
+                    Auto Fill Episodes All Seasons
                   </button>
                   <button type="button" onClick={addSeason} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-xs font-bold text-white transition-all hover:from-red-500 hover:to-red-600">
                     <Plus className="h-3 w-3" />
