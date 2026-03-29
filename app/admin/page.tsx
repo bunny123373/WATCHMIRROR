@@ -616,6 +616,58 @@ export default function AdminPage() {
     );
   };
 
+  const autoFillAllSeriesEmbedLinks = (langCode: string = "EN") => {
+    const hasTmdbId = seasonsDraft.some((season) =>
+      season.episodes.some((episode) => Boolean(episode.tmdbId || payload.tmdbId))
+    );
+
+    if (!hasTmdbId) {
+      alert("Please enter TMDB ID first");
+      return;
+    }
+
+    const lang = LANGUAGES.find((item) => item.code === langCode);
+
+    setSeasonsDraft((prev) =>
+      prev.map((season) => ({
+        ...season,
+        episodes: season.episodes.map((episode) => {
+          const tmdbId = episode.tmdbId || payload.tmdbId;
+          if (!tmdbId) return episode;
+
+          const embedUrl = getSeriesEpisodeEmbedUrl(tmdbId, season.seasonNumber, episode.episodeNumber);
+          const currentSources = episode.videoSources || [];
+          const existingSource = currentSources.find((source) => source.language === langCode);
+
+          if (existingSource) {
+            return {
+              ...episode,
+              videoSources: currentSources.map((source) =>
+                source.language === langCode ? { ...source, embedLink: embedUrl } : source
+              )
+            };
+          }
+
+          return {
+            ...episode,
+            videoSources: [
+              ...currentSources,
+              {
+                language: langCode,
+                languageLabel: lang?.name || "English",
+                hlsLink: "",
+                mp4Link: "",
+                embedLink: embedUrl,
+                quality: "HD",
+                isPrimary: currentSources.length === 0
+              }
+            ]
+          };
+        })
+      }))
+    );
+  };
+
   const getSeriesEpisodeEmbedUrl = (tmdbId?: string, seasonNumber?: number, episodeNumber?: number) => {
     if (!tmdbId) return "";
     return `https://vidfast.pro/tv/${tmdbId}/${seasonNumber || 1}/${episodeNumber || 1}?autoPlay=true&nextButton=true&autoNext=true`;
@@ -1556,6 +1608,13 @@ export default function AdminPage() {
                   Seasons & Episodes
                 </h3>
                 <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => autoFillAllSeriesEmbedLinks("EN")}
+                    className="rounded-xl bg-purple-600/20 px-4 py-2 text-xs font-bold text-purple-400 transition-all hover:bg-purple-600/30"
+                  >
+                    Fill All Seasons EN
+                  </button>
                   <button type="button" onClick={addSeason} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-xs font-bold text-white transition-all hover:from-red-500 hover:to-red-600">
                     <Plus className="h-3 w-3" />
                     Add Season
