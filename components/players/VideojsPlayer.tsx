@@ -21,7 +21,7 @@ export default function VideojsPlayer({ src, poster, subtitleTracks = [] }: Vide
     <Player.Provider>
       <MinimalVideoSkin poster={poster}>
         {isHls ? (
-          <HlsVideo src={src} poster={poster} playsInline preload="auto">
+          <HlsVideo src={src} poster={poster} autoPlay muted playsInline preload="auto">
             {subtitleTracks.map((track) => (
               <track
                 key={`${track.lang}-${track.label}-${track.url}`}
@@ -34,7 +34,7 @@ export default function VideojsPlayer({ src, poster, subtitleTracks = [] }: Vide
             ))}
           </HlsVideo>
         ) : (
-          <Video src={src} poster={poster} playsInline preload="auto">
+          <Video src={src} poster={poster} autoPlay muted playsInline preload="auto">
             {subtitleTracks.map((track) => (
               <track
                 key={`${track.lang}-${track.label}-${track.url}`}
