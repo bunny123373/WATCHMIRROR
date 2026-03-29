@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, Star } from "lucide-react";
+import { Play, Star, Download } from "lucide-react";
 import ContentRow from "@/components/common/ContentRow";
 import { getContentBySlug, getSimilarContent } from "@/lib/content";
 
@@ -43,6 +43,8 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   const similar = await getSimilarContent(content);
   const topTags = (content.tags || []).slice(0, 4);
 
+  const mp4Link = content.videoSources?.find(s => s.mp4Link)?.mp4Link || content.videoSources?.[0]?.mp4Link;
+
   return (
     <div className="min-h-screen bg-[#141414]">
       <section className="relative w-full" style={{ aspectRatio: '16/9', maxHeight: '80vh' }}>
@@ -78,6 +80,11 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
           {content.downloadLink && (
             <a href={content.downloadLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded border border-white/20 bg-white/10 px-6 py-3 text-base font-medium text-white transition hover:bg-white/20 md:px-8">
               Download
+            </a>
+          )}
+          {mp4Link && (
+            <a href={mp4Link} download target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded border border-white/20 bg-white/10 px-6 py-3 text-base font-medium text-white transition hover:bg-white/20 md:px-8">
+              <Download size={20} /> Direct MP4
             </a>
           )}
         </div>
