@@ -560,6 +560,59 @@ export default function AdminPage() {
     }));
   };
 
+  const autoFillAllEpisodeSourceLinks = (seasonIndex: number, episodeIndex: number) => {
+    const season = seasonsDraft[seasonIndex];
+    const episode = season?.episodes[episodeIndex];
+    if (!season || !episode) return;
+
+    const tmdbId = episode.tmdbId || payload.tmdbId;
+    if (!tmdbId) {
+      alert("Please enter TMDB ID first");
+      return;
+    }
+
+    const embedUrl = getSeriesEpisodeEmbedUrl(tmdbId, season.seasonNumber, episode.episodeNumber);
+
+    setSeasonsDraft((prev) =>
+      prev.map((currentSeason, currentSeasonIndex) => {
+        if (currentSeasonIndex !== seasonIndex) return currentSeason;
+
+        return {
+          ...currentSeason,
+          episodes: currentSeason.episodes.map((currentEpisode, currentEpisodeIndex) => {
+            if (currentEpisodeIndex !== episodeIndex) return currentEpisode;
+
+            const currentSources = currentEpisode.videoSources || [];
+            if (currentSources.length === 0) {
+              return {
+                ...currentEpisode,
+                videoSources: [
+                  {
+                    language: "EN",
+                    languageLabel: "English",
+                    hlsLink: "",
+                    mp4Link: "",
+                    embedLink: embedUrl,
+                    quality: "HD",
+                    isPrimary: true
+                  }
+                ]
+              };
+            }
+
+            return {
+              ...currentEpisode,
+              videoSources: currentSources.map((source) => ({
+                ...source,
+                embedLink: embedUrl
+              }))
+            };
+          })
+        };
+      })
+    );
+  };
+
   const autoFillSeasonEmbedLinks = (seasonIndex: number, langCode: string = "EN") => {
     const season = seasonsDraft[seasonIndex];
     if (!season) return;
@@ -1150,7 +1203,7 @@ export default function AdminPage() {
           <h1 className="font-[var(--font-heading)] text-3xl font-bold text-white">Dashboard</h1>
           <p className="mt-1 text-sm text-gray-500">Manage your content library</p>
         </div>
-        <div className="flex gap-1 overflow-x-auto rounded-xl bg-white/5 p-1">
+        <div className="flex flex-wrap gap-1 rounded-xl bg-white/5 p-1">
           {(["browse", "add", "upload", "import"] as const).map((tab) => (
             <button
               key={tab}
@@ -1174,7 +1227,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] p-4 lg:p-5 transition-transform hover:scale-[1.02]">
           <div className="relative flex items-center gap-3 lg:gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-700 shadow-lg shadow-red-600/30 lg:h-12 lg:w-12">
@@ -1235,7 +1288,7 @@ export default function AdminPage() {
       {activeTab === "browse" && (
         <div className="space-y-6">
           <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-[#1a1a1a]/50 p-4 -sm sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => applyMode("movie")}
                 className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-all ${
@@ -1366,7 +1419,7 @@ export default function AdminPage() {
               <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Title *</label>
               <input value={payload.title || ""} onChange={(e) => setPayload({ ...payload, title: e.target.value })} placeholder="Enter title" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" required />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Type</label>
                 <select value={mode} onChange={(e) => applyMode(e.target.value as "movie" | "series")} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition-all focus:border-red-500">
@@ -1431,7 +1484,7 @@ export default function AdminPage() {
               <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Banner URL</label>
               <input value={payload.banner || ""} onChange={(e) => setPayload({ ...payload, banner: e.target.value })} placeholder="https://..." className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Year</label>
                 <input type="number" value={payload.year || ""} onChange={(e) => setPayload({ ...payload, year: Number(e.target.value) })} placeholder="2024" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
@@ -1441,7 +1494,7 @@ export default function AdminPage() {
                 <input value={payload.category || ""} onChange={(e) => setPayload({ ...payload, category: e.target.value })} placeholder="Latest" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Rating</label>
                 <input value={payload.rating?.toString() || "0"} onChange={(e) => setPayload({ ...payload, rating: Number(e.target.value) })} placeholder="0-10" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
@@ -1451,7 +1504,7 @@ export default function AdminPage() {
                 <input value={payload.quality || ""} onChange={(e) => setPayload({ ...payload, quality: e.target.value })} placeholder="HD / 4K" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">TMDB ID</label>
                 <input value={payload.tmdbId || ""} onChange={(e) => setPayload({ ...payload, tmdbId: e.target.value })} placeholder="e.g., 12345" className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20" />
@@ -1465,7 +1518,7 @@ export default function AdminPage() {
 
           {mode === "movie" ? (
             <div className="space-y-4 rounded-xl border border-white/10 bg-black/20 p-5">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
                   <Languages className="h-4 w-4 text-red-500" />
                   Language-wise Video Sources
@@ -1607,7 +1660,7 @@ export default function AdminPage() {
                   <Tv className="h-4 w-4 text-red-500" />
                   Seasons & Episodes
                 </h3>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => autoFillAllSeriesEmbedLinks("EN")}
@@ -1624,13 +1677,13 @@ export default function AdminPage() {
               
               {seasonsDraft.map((season, seasonIndex) => (
                 <div key={`season-${seasonIndex}`} className="overflow-hidden rounded-xl border border-white/10 bg-black/30">
-                  <div className="flex items-center gap-3 bg-white/5 p-4">
+                  <div className="flex flex-col gap-3 bg-white/5 p-4 sm:flex-row sm:items-center">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-gray-400">Season</span>
                       <input type="number" min={1} value={season.seasonNumber} onChange={(e) => updateSeasonField(seasonIndex, Number(e.target.value) || season.seasonNumber)} className="w-16 rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-center text-sm text-white" />
                     </div>
                     <span className="text-sm text-gray-500">{season.episodes.length} episode{season.episodes.length !== 1 ? 's' : ''}</span>
-                    <div className="ml-auto flex gap-2">
+                    <div className="flex flex-wrap gap-2 sm:ml-auto">
                       <button
                         type="button"
                         onClick={() => autoFillSeasonEmbedLinks(seasonIndex, "EN")}
@@ -1647,13 +1700,13 @@ export default function AdminPage() {
                       const episodeSources = episode.videoSources || [];
                       return (
                         <div key={`episode-${seasonIndex}-${episodeIndex}`} className="rounded-lg bg-black/40 p-4 space-y-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                             <input type="number" min={1} value={episode.episodeNumber} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeNumber", e.target.value)} placeholder="Ep #" className="w-16 rounded-lg border border-white/10 bg-black/40 px-2 py-1.5 text-sm text-white" />
-                            <input value={episode.episodeTitle} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeTitle", e.target.value)} placeholder="Episode title" className="flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white" />
+                            <input value={episode.episodeTitle} onChange={(e) => updateEpisodeField(seasonIndex, episodeIndex, "episodeTitle", e.target.value)} placeholder="Episode title" className="w-full flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-sm text-white" />
                             {episodeIndex > 0 && <button type="button" onClick={() => removeEpisode(seasonIndex, episodeIndex)} className="rounded-lg bg-red-500/20 px-2 py-1 text-xs text-red-400 hover:bg-red-500/30">Remove</button>}
                           </div>
                           
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <input
                               type="text"
                               value={(episode as any).tmdbId || ""}
@@ -1685,7 +1738,7 @@ export default function AdminPage() {
                           </div>
                           
                           <div className="border-t border-white/10 pt-3">
-                            <div className="flex items-center justify-between mb-2">
+                            <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                               <p className="text-xs font-medium text-gray-400">Video Sources (Language-wise)</p>
                               <div className="flex flex-wrap gap-1">
                                 <button
@@ -1698,7 +1751,7 @@ export default function AdminPage() {
                                 {episodeSources.length > 0 && (
                                   <button
                                     type="button"
-                                    onClick={() => autoFillEpisodeEmbedLinks(seasonIndex, episodeIndex)}
+                                    onClick={() => autoFillAllEpisodeSourceLinks(seasonIndex, episodeIndex)}
                                     className="rounded px-1.5 py-0.5 text-[10px] bg-white/10 text-gray-400 hover:bg-white/20"
                                   >
                                     Fill all
@@ -1721,7 +1774,7 @@ export default function AdminPage() {
                               <div className="space-y-2">
                                 {episodeSources.map((source) => (
                                   <div key={source.language} className={`rounded-lg p-2 ${source.isPrimary ? 'bg-red-500/10 border border-red-500/30' : 'bg-black/40 border border-white/10'}`}>
-                                    <div className="flex items-center justify-between mb-2">
+                                    <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                       <span className="text-xs font-medium text-white">{LANGUAGES.find(l => l.code === source.language)?.flag} {source.languageLabel}</span>
                                       <div className="flex gap-1">
                                         {!source.isPrimary && (
@@ -1730,7 +1783,7 @@ export default function AdminPage() {
                                         <button type="button" onClick={() => removeEpisodeVideoSource(seasonIndex, episodeIndex, source.language)} className="rounded px-1.5 py-0.5 text-[10px] text-red-400 hover:bg-red-500/20">X</button>
                                       </div>
                                     </div>
-                                    <div className="grid grid-cols-3 gap-1.5">
+                                    <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3">
                                       <input value={source.hlsLink || ""} onChange={(e) => updateEpisodeVideoSource(seasonIndex, episodeIndex, source.language, { hlsLink: e.target.value })} placeholder="HLS (.m3u8)" className="rounded border border-white/10 bg-black/40 px-2 py-1 text-xs text-white placeholder:text-gray-600" />
                                       <input value={source.mp4Link || ""} onChange={(e) => updateEpisodeVideoSource(seasonIndex, episodeIndex, source.language, { mp4Link: e.target.value })} placeholder="MP4" className="rounded border border-white/10 bg-black/40 px-2 py-1 text-xs text-white placeholder:text-gray-600" />
                                       <input value={source.embedLink || ""} onChange={(e) => updateEpisodeVideoSource(seasonIndex, episodeIndex, source.language, { embedLink: e.target.value })} placeholder="Embed" className="rounded border border-white/10 bg-black/40 px-2 py-1 text-xs text-white placeholder:text-gray-600" />
