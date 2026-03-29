@@ -1,8 +1,8 @@
 "use client";
 
-import "@videojs/react/video/skin.css";
+import "@videojs/react/video/minimal-skin.css";
 import { createPlayer } from "@videojs/react";
-import { videoFeatures, VideoSkin, Video } from "@videojs/react/video";
+import { videoFeatures, MinimalVideoSkin, Video } from "@videojs/react/video";
 import { HlsVideo } from "@videojs/react/media/hls-video";
 import { SubtitleTrack } from "@/types/content";
 
@@ -19,7 +19,7 @@ export default function VideojsPlayer({ src, poster, subtitleTracks = [] }: Vide
 
   return (
     <Player.Provider>
-      <VideoSkin>
+      <MinimalVideoSkin poster={poster}>
         {isHls ? (
           <HlsVideo src={src} poster={poster} playsInline preload="auto">
             {subtitleTracks.map((track) => (
@@ -47,7 +47,7 @@ export default function VideojsPlayer({ src, poster, subtitleTracks = [] }: Vide
             ))}
           </Video>
         )}
-      </VideoSkin>
+      </MinimalVideoSkin>
     </Player.Provider>
   );
 }
