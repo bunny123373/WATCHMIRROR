@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import ReduxProvider from "@/components/providers/redux-provider";
 import Navbar from "@/components/layout/Navbar";
@@ -43,7 +44,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <head>
-        {playerjsUrl && <script src={playerjsUrl} async />}
+        {playerjsUrl && (
+          <Script
+            src={playerjsUrl}
+            strategy="beforeInteractive"
+          />
+        )}
       </head>
       <body className="font-[var(--font-body)] antialiased">
         <ReduxProvider>

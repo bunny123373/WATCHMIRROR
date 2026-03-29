@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 
 interface PlayerjsPlayerProps {
   src: string;
@@ -39,36 +39,59 @@ export default function PlayerjsPlayer({
   start,
   end
 }: PlayerjsPlayerProps) {
+  const playerId = useId().replace(/:/g, "");
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!containerRef.current || !window.Playerjs) return;
+    if (!containerRef.current) return;
 
-    const playerId = `playerjs-${Date.now()}`;
-    
-    playerRef.current = new window.Playerjs({
-      id: playerId,
-      file: src,
-      poster: poster,
-      title: title,
-      subtitle: subtitle,
-      autoplay: autoplay ? 1 : 0,
-      start: start,
-      end: end
-    });
+    let cancelled = false;
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    return () => {
+    const destroyPlayer = () => {
       if (playerRef.current) {
         try {
           playerRef.current.destroy?.();
-        } catch (e) {}
+        } catch {}
+        playerRef.current = null;
       }
     };
-  }, [src, poster, title, subtitle, autoplay, start, end]);
+
+    const initPlayer = () => {
+      if (cancelled) return;
+
+      if (!window.Playerjs) {
+        retryTimeout = setTimeout(initPlayer, 250);
+        return;
+      }
+
+      destroyPlayer();
+
+      playerRef.current = new window.Playerjs({
+        id: playerId,
+        file: src,
+        poster,
+        title,
+        subtitle,
+        autoplay: autoplay ? 1 : 0,
+        start,
+        end
+      });
+    };
+
+    initPlayer();
+
+    return () => {
+      cancelled = true;
+      if (retryTimeout) clearTimeout(retryTimeout);
+      destroyPlayer();
+    };
+  }, [playerId, src, poster, title, subtitle, autoplay, start, end]);
 
   return (
     <div 
+      id={playerId}
       ref={containerRef} 
       className="playerjs-container w-full h-full"
       style={{ aspectRatio: '16/9' }}
