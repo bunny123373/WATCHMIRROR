@@ -381,57 +381,6 @@ export default function AdminPage() {
     setSeasonsDraft((prev) => [...prev, createSeason(prev.length + 1)]);
   };
 
-  const autoFillSeasonsFromTMDB = async () => {
-    if (!payload.tmdbId) {
-      alert("Please enter TMDB ID first");
-      return;
-    }
-    
-    try {
-      const seasonsRes = await fetch(`/api/tmdb/seasons/${payload.tmdbId}`);
-      if (!seasonsRes.ok) throw new Error("Failed to fetch seasons");
-      const { seasons } = await seasonsRes.json();
-      
-      const seasonsWithEpisodes = await Promise.all(
-        seasons.map(async (season: { seasonNumber: number; seasonName: string }) => {
-          const epRes = await fetch(`/api/tmdb/seasons/${payload.tmdbId}/episodes?season=${season.seasonNumber}`);
-          const { episodes } = await epRes.json();
-          
-          return {
-            seasonNumber: season.seasonNumber,
-            episodes: episodes.map((ep: { episodeNumber: number; episodeTitle: string; tmdbId: string }) => ({
-              episodeNumber: ep.episodeNumber,
-              episodeTitle: ep.episodeTitle,
-              tmdbId: ep.tmdbId,
-              imdbId: "",
-              hlsLink: "",
-              embedIframeLink: getSeriesEpisodeEmbedUrl(payload.tmdbId, season.seasonNumber, ep.episodeNumber),
-              backupHlsLink: "",
-              backupEmbedIframeLink: "",
-              subtitleTracks: [],
-              videoSources: [{
-                language: "EN",
-                languageLabel: "English",
-                hlsLink: "",
-                mp4Link: "",
-                embedLink: getSeriesEpisodeEmbedUrl(payload.tmdbId, season.seasonNumber, ep.episodeNumber),
-                quality: "HD",
-                isPrimary: true
-              }],
-              releaseAt: "",
-              quality: "HD"
-            }))
-          };
-        })
-      );
-      
-      setSeasonsDraft(seasonsWithEpisodes);
-    } catch (error) {
-      console.error("Auto-fill failed:", error);
-      alert("Failed to fetch seasons from TMDB. Make sure TMDB ID is correct.");
-    }
-  };
-
   const removeSeason = (seasonIndex: number) => {
     setSeasonsDraft((prev) => prev.filter((_, idx) => idx !== seasonIndex).map((season, idx) => ({ ...season, seasonNumber: idx + 1 })));
   };
@@ -1607,12 +1556,6 @@ export default function AdminPage() {
                   Seasons & Episodes
                 </h3>
                 <div className="flex gap-2">
-                  {payload.tmdbId && (
-                    <button type="button" onClick={autoFillSeasonsFromTMDB} className="flex items-center gap-1.5 rounded-xl bg-purple-600/20 px-4 py-2 text-xs font-bold text-purple-400 transition-all hover:bg-purple-600/30">
-                      <Download className="h-3 w-3" />
-                      Auto-fill from TMDB
-                    </button>
-                  )}
                   <button type="button" onClick={addSeason} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-xs font-bold text-white transition-all hover:from-red-500 hover:to-red-600">
                     <Plus className="h-3 w-3" />
                     Add Season
