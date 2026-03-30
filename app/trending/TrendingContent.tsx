@@ -81,7 +81,7 @@ export default function TrendingContent({
     .slice(0, 10);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-12">
+    <div className="w-full pb-12">
       <div className="mb-6 flex items-center gap-3">
         <TrendingUp className="text-red-500" size={28} />
         <h1 className="font-[var(--font-heading)] text-3xl text-white md:text-4xl">Trending</h1>

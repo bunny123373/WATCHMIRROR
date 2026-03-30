@@ -114,7 +114,7 @@ export default function SearchContent({
   const hasFilters = q || language || genre || year || type !== "all";
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-12">
+    <div className="w-full pb-12">
       <h1 className="mb-6 font-[var(--font-heading)] text-3xl text-white md:text-4xl">Search</h1>
       
       <div className="mb-6 flex flex-col gap-4">
@@ -245,7 +245,7 @@ export default function SearchContent({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
           {filtered.map((item) => (
             <Link
               key={`${item.slug}-${item.type}`}

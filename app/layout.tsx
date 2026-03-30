@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import MobileSearchOverlay from "@/components/layout/MobileSearchOverlay";
+import AppShell from "@/components/layout/AppShell";
 import ContinueHydrator from "@/components/common/ContinueHydrator";
 import MyListHydrator from "@/components/common/MyListHydrator";
 import ServiceWorkerRegister from "@/components/providers/sw-register";
@@ -51,16 +52,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           />
         )}
       </head>
-      <body className="font-[var(--font-body)] antialiased">
+      <body className="flex min-h-screen flex-col bg-[#141414] font-[var(--font-body)] antialiased">
         <ReduxProvider>
           <ContinueHydrator />
           <MyListHydrator />
           <ServiceWorkerRegister />
           <Navbar />
           <MobileSearchOverlay />
-          <main className="mx-auto min-h-screen max-w-[1600px] px-3 pb-24 pt-14 sm:px-4 md:px-8 md:pb-10 md:pt-20">
-            {children}
-          </main>
+          <AppShell>{children}</AppShell>
           <Footer />
           <MobileBottomNav />
         </ReduxProvider>
