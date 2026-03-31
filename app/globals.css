@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #141414;
+  --card: #181818;
+  --border: #2a2a2a;
+  --primary: #e50914;
+  --secondary: #b81d24;
+  --accent: #ffffff;
+  --text: #f5f5f1;
+  --muted: #b3b3b3;
+  --font-heading: "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+  --font-body: "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+}
+
+html {
+  min-height: 100%;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  min-height: 100%;
+  background: #141414;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+main {
+  min-height: 100%;
+}
+
+.glass {
+  background: rgba(24, 24, 24, 0.92);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #1b1b1b;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.section-title::before {
+  content: "";
+  width: 4px;
+  height: 22px;
+  border-radius: 999px;
+  background: #e50914;
+}
+
+.media-default-skin--video {
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: manipulation;
+}
+
+.media-default-skin--video .media-controls,
+.media-default-skin--video .media-controls[data-visible="true"],
+.media-default-skin--video .media-controls:not([data-visible]) {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+  pointer-events: auto !important;
+}
+
+.media-default-skin--video .media-button {
+  min-width: 44px !important;
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.media-default-skin--video .media-icon {
+  width: 24px !important;
+  height: 24px !important;
+  display: block !important;
+}
