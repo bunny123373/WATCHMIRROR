@@ -3,42 +3,37 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   const src = request.nextUrl.searchParams.get("src") || "";
   const poster = request.nextUrl.searchParams.get("poster") || "";
+  const thumbnails = request.nextUrl.searchParams.get("thumbnails") || "";
+  const title = request.nextUrl.searchParams.get("title") || "Video";
 
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script type="module" src="https://cdn.jsdelivr.net/npm/vidstack@1.12.13/+esm"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/vidstack@1.12.13/player/layouts/default/+esm"></script>
+  <link rel="stylesheet" href="https://cdn.vidstack.io/player/styles/base.css" />
+  <link rel="stylesheet" href="https://cdn.vidstack.io/player/styles/default/theme.css" />
+  <link rel="stylesheet" href="https://cdn.vidstack.io/player/styles/default/layouts/video.css" />
+  <script type="module" src="https://cdn.vidstack.io/player"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { margin: 0; background: black; overflow: hidden; }
-    media-player { width: 100%; height: 100vh; display: block; }
-    .vds-video { width: 100%; height: 100%; object-fit: contain; }
+    body { margin: 0; background: black; overflow: hidden; height: 100vh; }
+    #target { width: 100%; height: 100%; }
   </style>
 </head>
 <body>
-<media-player
-  class="player"
-  title="Player"
-  src="${src}"
-  crossorigin
-  playsinline
-  ${poster ? `poster="${poster}"` : ''}
->
-  <media-provider></media-provider>
-  <media-video-layout 
-    ${poster ? `thumbnails="${poster}"` : ''}
-  ></media-video-layout>
-</media-player>
-<script>
-  const player = document.querySelector('media-player');
-  player.addEventListener('ready', () => {
-    console.log('Player ready');
-  });
-  player.addEventListener('error', (e) => {
-    console.error('Player error:', e);
+<div id="target"></div>
+<script type="module">
+  import { VidstackPlayer, VidstackPlayerLayout } from 'https://cdn.vidstack.io/player';
+
+  const player = await VidstackPlayer.create({
+    target: '#target',
+    title: '${title}',
+    src: '${src}',
+    ${poster ? `poster: '${poster}',` : ''}
+    layout: new VidstackPlayerLayout({
+      ${thumbnails ? `thumbnails: '${thumbnails}',` : ''}
+    }),
   });
 </script>
 </body>

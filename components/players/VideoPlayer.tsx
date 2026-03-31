@@ -205,6 +205,8 @@ export function VideoPlayer({
   const [subtitleSize, setSubtitleSize] = useState(100);
   const [subtitleColor, setSubtitleColor] = useState("#ffffff");
   const [subtitleBg, setSubtitleBg] = useState("rgba(0,0,0,0.7)");
+  const [playerError, setPlayerError] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
   const playerShellRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -237,12 +239,16 @@ export function VideoPlayer({
   const muxEmbedUrl = playbackId ? `https://player.mux.com/${playbackId}?autoplay=1&muted=0` : null;
 
   useEffect(() => {
-    if (playerType !== "native" || !videoRef.current) return;
+    if (!videoRef.current) return;
 
     if (isMKV) {
-      console.warn("MKV format may not work in native player. Try Vidstack or WebComponent player.");
+      if (playerType === "native") {
+        setPlayerType("vidstack");
+      }
       return;
     }
+
+    if (playerType !== "native") return;
 
     if (isHLS && Hls.isSupported()) {
       if (hlsRef.current) hlsRef.current.destroy();
@@ -507,9 +513,34 @@ export function VideoPlayer({
       onEnded?.();
     };
 
+    const handleError = (e: Event) => {
+      const target = e.target as HTMLVideoElement;
+      let errorMsg = "Video playback error";
+      
+      if (target.error) {
+        switch (target.error.code) {
+          case MediaError.MEDIA_ERR_ABORTED:
+            errorMsg = "Playback aborted";
+            break;
+          case MediaError.MEDIA_ERR_NETWORK:
+            errorMsg = "Network error - check your connection";
+            break;
+          case MediaError.MEDIA_ERR_DECODE:
+            errorMsg = "Decode error - format not supported";
+            break;
+          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMsg = "Source not supported";
+            break;
+        }
+      }
+      
+      setPlayerError(errorMsg);
+    };
+
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('pause', handlePause);
     video.addEventListener('ended', handleEnded);
+    video.addEventListener('error', handleError);
     
     return () => {
       if (video.currentTime > 0 && video.duration > 0) {
@@ -519,8 +550,23 @@ export function VideoPlayer({
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('pause', handlePause);
       video.removeEventListener('ended', handleEnded);
+      video.removeEventListener('error', handleError);
     };
   }, [dispatch, episodeNumber, onEnded, onNearEndChange, playerType, seasonNumber, slug, syncContinueWatching]);
+
+  const handleRetry = () => {
+    setPlayerError(null);
+    setIsRetrying(true);
+    if (videoRef.current) {
+      videoRef.current.load();
+    }
+    setTimeout(() => setIsRetrying(false), 100);
+  };
+
+  const switchPlayer = (newType: PlayerType) => {
+    setPlayerError(null);
+    setPlayerType(newType);
+  };
 
   const playerOptions = [
     { type: "native" as PlayerType, label: "Native", available: true },
@@ -534,6 +580,37 @@ export function VideoPlayer({
   return (
     <div className="w-full bg-black">
       <div ref={playerShellRef} className="relative w-full" style={{ aspectRatio: '16/9' }}>
+        {/* Error Overlay */}
+        {playerError && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/90">
+            <svg className="h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p className="mt-3 text-center text-sm font-medium text-gray-300">{playerError}</p>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={handleRetry}
+                disabled={isRetrying}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {isRetrying ? "Retrying..." : "Retry"}
+              </button>
+              <button
+                onClick={() => switchPlayer("vidstack")}
+                className="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20"
+              >
+                Try Vidstack
+              </button>
+              <button
+                onClick={() => switchPlayer("playerjs")}
+                className="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20"
+              >
+                Try Playerjs
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Controls Bar */}
         <div className="absolute top-2 right-2 z-20 flex gap-2">
           {(introEnd || outroStart) && (playerType === "native" || playerType === "playerjs") && (
@@ -700,7 +777,7 @@ export function VideoPlayer({
         {/* Web Component Player */}
         {playerType === "webcomponent" && isHLS && (
           <iframe
-            src={`/api/vidstack-iframe?src=${encodeURIComponent(src)}&poster=${encodeURIComponent(poster || '')}`}
+            src={`/api/vidstack-iframe?src=${encodeURIComponent(src)}&poster=${encodeURIComponent(poster || '')}&title=${encodeURIComponent(title || '')}&thumbnails=${encodeURIComponent(subtitleTracks.find(t => t.isDefault)?.url || '')}`}
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
             className="h-full w-full border-0"
