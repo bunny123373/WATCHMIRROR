@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Home, AlertCircle } from "lucide-react";
+import { ArrowLeft, Home, AlertCircle, Search, Film, Tv, TrendingUp, MoreVertical } from "lucide-react";
 import ContentRow from "@/components/common/ContentRow";
 import SeriesWatchClient from "@/components/series/SeriesWatchClient";
 import WatchHistoryTracker from "@/components/common/WatchHistoryTracker";
@@ -42,24 +42,61 @@ export default async function SeriesWatchPage({ params }: { params: Promise<{ sl
     <div className="min-h-screen bg-black">
       <WatchHistoryTracker slug={content.slug} />
       
-      <Link 
-        href={`/series/${content.slug}`}
-        className="fixed left-3 top-3 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur-sm transition hover:bg-black/90 md:left-4 md:top-4 md:h-12 md:w-12"
-        aria-label="Back to series details"
-      >
-        <ArrowLeft size={20} className="md:h-6 md:w-6" />
-      </Link>
+      <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between border-b border-white/10 bg-gradient-to-b from-black/95 via-black/80 to-transparent px-3 md:h-16 md:px-6">
+        <div className="flex items-center gap-2 md:gap-4">
+          <Link 
+            href={`/series/${content.slug}`}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20 md:h-10 md:w-10"
+            aria-label="Back to series details"
+          >
+            <ArrowLeft size={18} className="md:h-5 md:w-5" />
+          </Link>
+          
+          <div className="hidden items-center gap-1 md:flex">
+            <Link href="/" className="flex items-center gap-1 rounded px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white">
+              <Home size={16} />
+              <span>Home</span>
+            </Link>
+            <Link href="/movies" className="flex items-center gap-1 rounded px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white">
+              <Film size={16} />
+              <span>Movies</span>
+            </Link>
+            <Link href="/series" className="flex items-center gap-1 rounded px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white">
+              <Tv size={16} />
+              <span>Series</span>
+            </Link>
+            <Link href="/trending" className="flex items-center gap-1 rounded px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white">
+              <TrendingUp size={16} />
+              <span>Trending</span>
+            </Link>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-1 md:gap-2">
+          <Link href="/search" className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20 md:h-10 md:w-10">
+            <Search size={18} />
+          </Link>
+          <button
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20 md:h-10 md:w-10"
+            aria-label="More options"
+          >
+            <MoreVertical size={18} />
+          </button>
+        </div>
+      </header>
+      
+      <div className="pt-14 md:pt-16">
+        <SeriesWatchClient content={content} />
 
-      <SeriesWatchClient content={content} />
+        <div className="px-3 py-4 md:px-4 md:py-6">
+          <h1 className="font-[var(--font-heading)] text-lg font-bold text-white md:text-2xl lg:text-3xl">
+            {content.title}
+          </h1>
+        </div>
 
-      <div className="px-3 py-4 md:px-4 md:py-6">
-        <h1 className="font-[var(--font-heading)] text-lg font-bold text-white md:text-2xl lg:text-3xl">
-          {content.title}
-        </h1>
-      </div>
-
-      <div className="px-3 pb-8 md:px-4 md:pb-12">
-        <ContentRow title="More Like This" items={similar.filter((item) => item.type === "series")} />
+        <div className="px-3 pb-8 md:px-4 md:pb-12">
+          <ContentRow title="More Like This" items={similar.filter((item) => item.type === "series")} />
+        </div>
       </div>
     </div>
   );
