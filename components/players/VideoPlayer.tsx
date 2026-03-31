@@ -573,7 +573,7 @@ export function VideoPlayer({
     { type: "videojs" as PlayerType, label: "Video.js", available: true },
     { type: "mux" as PlayerType, label: "Mux", available: isMux },
     { type: "vidstack" as PlayerType, label: "Vidstack", available: true },
-    { type: "webcomponent" as PlayerType, label: "WebComponent", available: isHLS || isMKV },
+    { type: "webcomponent" as PlayerType, label: "WebComponent", available: isHLS || isMKV || isMP4 },
     { type: "playerjs" as PlayerType, label: "Playerjs", available: true },
   ].filter(opt => opt.available);
 
@@ -775,7 +775,7 @@ export function VideoPlayer({
         )}
 
         {/* Web Component Player */}
-        {playerType === "webcomponent" && isHLS && (
+        {playerType === "webcomponent" && (
           <iframe
             src={`/api/vidstack-iframe?src=${encodeURIComponent(src)}&poster=${encodeURIComponent(poster || '')}&title=${encodeURIComponent(title || '')}&thumbnails=${encodeURIComponent(subtitleTracks.find(t => t.isDefault)?.url || '')}`}
             allow="autoplay; fullscreen; picture-in-picture"
