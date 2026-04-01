@@ -23,6 +23,7 @@
     "@vidstack/react": "^1.12.13",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
+    "dplayer": "^1.27.1",
     "framer-motion": "^12.6.2",
     "hls.js": "^1.6.15",
     "jsonwebtoken": "^9.0.3",

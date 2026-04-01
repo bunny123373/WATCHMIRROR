@@ -3,8 +3,9 @@
 import { useState, useMemo } from "react";
 import { VideoPlayer } from "@/components/players/VideoPlayer";
 import IframePlayer from "@/components/players/IframePlayer";
+import DPlayer from "@/components/players/DPlayer";
 import { ContentType, SubtitleTrack, VideoSource } from "@/types/content";
-import { Globe } from "lucide-react";
+import { Globe, Play } from "lucide-react";
 
 type SourceType = "hls" | "iframe";
 
@@ -54,6 +55,7 @@ const LANGUAGES = [
 export default function StreamingPlayer(props: StreamingPlayerProps) {
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [activeSourceIndex, setActiveSourceIndex] = useState(0);
+  const [playerType, setPlayerType] = useState<"video" | "dplayer">("video");
   const hasUsableSource = (source?: VideoSource | null) =>
     Boolean(
       source?.hlsLink?.trim() ||
@@ -131,8 +133,12 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
 
   if (!activeSource && !vidsrcEmbedUrl) {
     return (
-      <div className="flex aspect-video items-center justify-center bg-[#181818] text-gray-400">
-        Streaming not available
+      <div className="flex aspect-video flex-col items-center justify-center bg-[#181818] text-gray-400">
+        <svg className="h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+        <p className="mt-2 text-sm">Streaming not available</p>
+        <p className="mt-1 text-xs text-gray-500">Please try again later</p>
       </div>
     );
   }
@@ -143,21 +149,62 @@ export default function StreamingPlayer(props: StreamingPlayerProps) {
 
   return (
     <div>
+      {activeSource.type === "hls" && (
+        <div className="mb-2 ml-4 mt-2 flex items-center gap-2">
+          <span className="text-xs text-gray-400">Player:</span>
+          <button
+            onClick={() => setPlayerType("video")}
+            className={`rounded px-2 py-1 text-xs ${
+              playerType === "video" ? "bg-red-600 text-white" : "bg-[#2a2a2a] text-gray-300"
+            }`}
+          >
+            Video
+          </button>
+          <button
+            onClick={() => setPlayerType("dplayer")}
+            className={`rounded px-2 py-1 text-xs ${
+              playerType === "dplayer" ? "bg-red-600 text-white" : "bg-[#2a2a2a] text-gray-300"
+            }`}
+          >
+            DPlayer
+          </button>
+        </div>
+      )}
+
       {activeSource.type === "hls" ? (
-        <VideoPlayer 
-          src={activeSource.url} 
-          poster={props.poster}
-          subtitleTracks={currentLanguageSource?.subtitleTracks || props.subtitleTracks}
-          introEnd={props.introEnd}
-          outroStart={props.outroStart}
-          slug={props.slug}
-          type={props.type}
-          seasonNumber={props.seasonNumber}
-          episodeNumber={props.episodeNumber}
-          title={props.title}
-          onNearEndChange={props.onNearEndChange}
-          onEnded={props.onEnded}
-        />
+        playerType === "dplayer" ? (
+          <DPlayer
+            videoUrl={activeSource.url}
+            videoPic={props.poster}
+            subtitleUrl={currentLanguageSource?.subtitleTracks?.[0]?.url || props.subtitleTracks?.[0]?.url}
+            subtitleTracks={currentLanguageSource?.subtitleTracks?.map((t) => ({ label: t.label, url: t.url })) || props.subtitleTracks?.map((t) => ({ label: t.label, url: t.url }))}
+            subtitleType="webvtt"
+            danmakuId={props.slug}
+            danmakuApi="https://api.prprpr.me/dplayer/"
+            screenshot
+            onEnded={props.onEnded}
+            onTimeUpdate={(time) => {
+              if (props.slug) {
+                localStorage.setItem(`dplayer_${props.slug}`, String(time));
+              }
+            }}
+          />
+        ) : (
+          <VideoPlayer 
+            src={activeSource.url} 
+            poster={props.poster}
+            subtitleTracks={currentLanguageSource?.subtitleTracks || props.subtitleTracks}
+            introEnd={props.introEnd}
+            outroStart={props.outroStart}
+            slug={props.slug}
+            type={props.type}
+            seasonNumber={props.seasonNumber}
+            episodeNumber={props.episodeNumber}
+            title={props.title}
+            onNearEndChange={props.onNearEndChange}
+            onEnded={props.onEnded}
+          />
+        )
       ) : (
         <IframePlayer src={activeSource.url} />
       )}
