@@ -12,6 +12,7 @@ import AppShell from "@/components/layout/AppShell";
 import ContinueHydrator from "@/components/common/ContinueHydrator";
 import MyListHydrator from "@/components/common/MyListHydrator";
 import ServiceWorkerRegister from "@/components/providers/sw-register";
+import PwaInstallPrompt from "@/components/common/PwaInstallPrompt";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://watchmirror.vercel.app"),
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon1.png"
   },
-  manifest: "/manifest.webmanifest",
+  manifest: "/manifest.json",
   description: "WATCHMIRROR is a premium OTT movie and web series streaming platform.",
   openGraph: {
     title: "WATCHMIRROR",
@@ -47,6 +48,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <head>
+        <link rel="stylesheet" href="https://cdn.vidstack.io/player/theme.css" />
+        <link rel="stylesheet" href="https://cdn.vidstack.io/player/video.css" />
+        <script src="https://cdn.vidstack.io/player@1.11.21" type="module"></script>
         {playerjsUrl && (
           <Script
             src={playerjsUrl}
@@ -67,6 +71,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </ProfileGate>
             <Footer />
             <MobileBottomNav />
+            <PwaInstallPrompt />
           </AuthProvider>
         </ReduxProvider>
       </body>
