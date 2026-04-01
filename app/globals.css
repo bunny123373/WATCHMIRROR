@@ -115,3 +115,72 @@ main {
   height: 24px !important;
   display: block !important;
 }
+
+/* Vidstack Classic Theme */
+.vds-player.classic-theme {
+  --vds-theme-primary: #e50914;
+  --vds-theme-primary-hover: #b81d24;
+  --vds-theme-secondary: #ffffff;
+  --vds-theme-bg: rgba(20, 20, 20, 0.9);
+  --vds-theme-surface: rgba(30, 30, 30, 0.95);
+  --vds-theme-text: #ffffff;
+  --vds-theme-text-low: #b3b3b3;
+  --vds-theme-border: rgba(255, 255, 255, 0.15);
+  --vds-radius-sm: 4px;
+  --vds-radius-md: 6px;
+  --vds-radius-lg: 8px;
+}
+
+.vds-player.classic-theme .vds-control-bar {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7)) !important;
+}
+
+.vds-player.classic-theme .vds-time {
+  font-family: "Helvetica Neue", "Segoe UI", Arial, sans-serif !important;
+  font-size: 13px !important;
+}
+
+.vds-player.classic-theme .vds-play-button button,
+.vds-player.classic-theme .vds-mute-button button,
+.vds-player.classic-theme .vds-fullscreen-button button {
+  background: transparent !important;
+}
+
+.vds-player.classic-theme .vds-play-button button:hover,
+.vds-player.classic-theme .vds-mute-button button:hover,
+.vds-player.classic-theme .vds-fullscreen-button button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.vds-player.classic-theme .vds-progress-bar {
+  --vds-progress-buffered: rgba(255, 255, 255, 0.3);
+  --vds-progress-played: #e50914;
+}
+
+.vds-player.classic-theme .vds-progress-input::-webkit-slider-thumb {
+  background: #e50914 !important;
+  width: 14px !important;
+  height: 14px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+.vds-player.classic-theme .vds-menu {
+  background: rgba(20, 20, 20, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+}
+
+.vds-player.classic-theme .vds-menu-item:hover {
+  background: rgba(229, 9, 20, 0.2) !important;
+}
+
+.vds-player.classic-theme .vds-menu-item[aria-checked="true"] {
+  color: #e50914 !important;
+}
+
+.vds-player.classic-theme .vds-caption-display {
+  font-family: "Helvetica Neue", "Segoe UI", Arial, sans-serif !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+}

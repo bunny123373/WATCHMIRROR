@@ -30,6 +30,7 @@ interface VideoPlayerProps {
 }
 
 type PlayerType = "native" | "videojs" | "vidstack" | "mux" | "webcomponent" | "playerjs";
+type VidstackTheme = "default" | "classic";
 const CONTINUE_KEY = "watchmirror_continue_watching";
 const PROFILE_KEY = "watchmirror_profile";
 
@@ -762,7 +763,7 @@ export function VideoPlayer({
             playsInline
             poster={poster}
             autoplay
-            className="h-full w-full"
+            className="h-full w-full vds-player classic-theme"
           >
             <MediaProvider>
               <Poster className="vds-poster" />
